@@ -24,14 +24,14 @@ Route::get('/categorias', [CategoriaController::class, 'index']);
 Route::post('/categoria', [CategoriaController::class, 'store']);
 Route::get('/categoria/{id}', [CategoriaController::class, 'show']);
 Route::put('/categoria/{id}', [CategoriaController::class, 'update']);
-Route::delete('/categorias/{id}', [CategoriaController::class, 'destroy']);
+Route::delete('/categoria/{id}', [CategoriaController::class, 'destroy']);
 
 // subcategoria
 Route::get('/subCategorias', [SubCategoriaController::class, 'index']);
 Route::post('/subCategoria', [SubCategoriaController::class, 'store']);
 Route::get('/subCategoria/{id}', [SubCategoriaController::class, 'show']);
 Route::put('/subCategoria/{id}', [SubCategoriaController::class, 'update']);
-Route::delete('/subCategorias/{id}', [SubCategoriaController::class, 'destroy']);
+Route::delete('/subCategoria/{id}', [SubCategoriaController::class, 'destroy']);
 //producto
 
 Route::get('/productos', [ProductoController::class, 'index']);
