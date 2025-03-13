@@ -11,11 +11,13 @@ use App\Http\Controllers\SubCategoriaController;
 use App\Http\Controllers\CotizadorController;
 
 // Sucursales
+/*
 Route::get('/sucursales', [SucursalController::class, 'index']);
 Route::get('/sucursal/{id}', [SucursalController::class, 'show']);
 Route::post('/sucursal', [SucursalController::class, 'store']);
 Route::put('/sucursal/{id}', [SucursalController::class, 'update']);
 Route::delete('/sucursal/{id}', [SucursalController::class, 'destroy']);
+*/  
 
 //categorias
 Route::get('/categorias', [CategoriaController::class, 'index']);
