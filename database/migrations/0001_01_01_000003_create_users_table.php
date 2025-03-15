@@ -3,6 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 return new class extends Migration
 {
@@ -38,6 +40,19 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
+        
+        // Insertar usuario con id_sucursal = 1
+        DB::table('users')->insert([
+            [
+                'name' => 'Admin User',
+                'username' => 'admin',
+                'email' => 'admin@example.com',
+                'password' => Hash::make('password123'), // Encriptar la contraseña
+                'id_sucursal' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
     }
 
     /**

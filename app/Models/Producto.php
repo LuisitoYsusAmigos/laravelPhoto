@@ -17,7 +17,8 @@ class Producto extends Model
         'actualizacion',
         'sucursal_id',
         'categoria_id',
-        'sub_categoria_id'
+        'sub_categoria_id',
+        'imagen'
     ];
 
     // Relaciones con otras tablas
@@ -34,5 +35,9 @@ class Producto extends Model
     public function subCategoria()
     {
         return $this->belongsTo(SubCategoria::class);
+    }
+    public function getImagenUrlAttribute()
+    {
+        return $this->imagen ? asset('storage/' . $this->imagen) : null;
     }
 }

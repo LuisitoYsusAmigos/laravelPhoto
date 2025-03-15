@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB; // Importar DB
 
 return new class extends Migration
 {
@@ -16,7 +17,13 @@ return new class extends Migration
             $table->string('lugar');
             $table->timestamps();
         });
-        
+
+        // Insertar datos iniciales
+        DB::table('sucursal')->insert([
+            ['lugar' => 'Tarija', 'created_at' => now(), 'updated_at' => now()],
+            ['lugar' => 'Sucursal Norte', 'created_at' => now(), 'updated_at' => now()],
+            ['lugar' => 'Sucursal Sur', 'created_at' => now(), 'updated_at' => now()],
+        ]);
     }
 
     /**

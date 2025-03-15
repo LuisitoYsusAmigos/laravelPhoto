@@ -7,6 +7,8 @@ use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SubCategoriaController;
+use App\Http\Controllers\MateriaPrimaVarillaController;
+
 
 use App\Http\Controllers\CotizadorController;
 
@@ -39,6 +41,14 @@ Route::post('/producto', [ProductoController::class, 'store']);
 Route::get('/producto/{id}', [ProductoController::class, 'show']);
 Route::put('/producto/{id}', [ProductoController::class, 'update']);
 Route::delete('/producto/{id}', [ProductoController::class, 'destroy']);
+
+// mateira prima varilla
+// Materia Prima Varillas
+Route::get('/materiaPrimaVarillas', [MateriaPrimaVarillaController::class, 'index']);
+Route::post('/materiaPrimaVarilla', [MateriaPrimaVarillaController::class, 'store']);
+Route::get('/materiaPrimaVarilla/{id}', [MateriaPrimaVarillaController::class, 'show']);
+Route::put('/materiaPrimaVarillas/{id}', [MateriaPrimaVarillaController::class, 'update']);
+Route::delete('/materiaPrimaVarillas/{id}', [MateriaPrimaVarillaController::class, 'destroy']);
 
 
 
