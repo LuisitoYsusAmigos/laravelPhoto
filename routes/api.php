@@ -47,8 +47,8 @@ Route::delete('/producto/{id}', [ProductoController::class, 'destroy']);
 Route::get('/materiaPrimaVarillas', [MateriaPrimaVarillaController::class, 'index']);
 Route::post('/materiaPrimaVarilla', [MateriaPrimaVarillaController::class, 'store']);
 Route::get('/materiaPrimaVarilla/{id}', [MateriaPrimaVarillaController::class, 'show']);
-Route::put('/materiaPrimaVarillas/{id}', [MateriaPrimaVarillaController::class, 'update']);
-Route::delete('/materiaPrimaVarillas/{id}', [MateriaPrimaVarillaController::class, 'destroy']);
+Route::put('/materiaPrimaVarilla/{id}', [MateriaPrimaVarillaController::class, 'update']);
+Route::delete('/materiaPrimaVarilla/{id}', [MateriaPrimaVarillaController::class, 'destroy']);
 
 
 
