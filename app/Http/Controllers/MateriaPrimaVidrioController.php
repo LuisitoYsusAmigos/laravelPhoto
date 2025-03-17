@@ -2,64 +2,94 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MateriaPrimaVidrio;
 use Illuminate\Http\Request;
+use App\Models\MateriaPrimaVidrio;
+use Illuminate\Support\Facades\Validator;
 
 class MateriaPrimaVidrioController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Obtener todos los vidrios
     public function index()
     {
-        //
+        $vidrios = MateriaPrimaVidrio::all();
+        return response()->json($vidrios);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Crear un nuevo vidrio
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'descripcion' => 'required|string',
+            'grosor' => 'required|integer|min:1',
+            'factor_desperdicio' => 'required|numeric|min:0|max:100',
+            'categoria' => 'required|string',
+            'sub_categoria' => 'required|string',
+            'stock_global_actual' => 'required|integer|min:0',
+            'stock_global_minimo' => 'required|integer|min:0',
+            'id_sucursal' => 'required|exists:sucursal,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        $vidrio = MateriaPrimaVidrio::create($request->all());
+
+        return response()->json($vidrio, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(MateriaPrimaVidrio $materiaPrimaVidrio)
+    // Obtener un vidrio por su ID
+    public function show($id)
     {
-        //
+        $vidrio = MateriaPrimaVidrio::find($id);
+        
+        if (!$vidrio) {
+            return response()->json(['message' => 'Vidrio no encontrado'], 404);
+        }
+
+        return response()->json($vidrio);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(MateriaPrimaVidrio $materiaPrimaVidrio)
+    // Actualizar un vidrio
+    public function update(Request $request, $id)
     {
-        //
+        $vidrio = MateriaPrimaVidrio::find($id);
+
+        if (!$vidrio) {
+            return response()->json(['message' => 'Vidrio no encontrado'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'descripcion' => 'sometimes|string',
+            'grosor' => 'sometimes|integer|min:1',
+            'factor_desperdicio' => 'sometimes|numeric|min:0|max:100',
+            'categoria' => 'sometimes|string',
+            'sub_categoria' => 'sometimes|string',
+            'stock_global_actual' => 'sometimes|integer|min:0',
+            'stock_global_minimo' => 'sometimes|integer|min:0',
+            'id_sucursal' => 'sometimes|exists:sucursal,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        $vidrio->update($request->all());
+
+        return response()->json($vidrio);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, MateriaPrimaVidrio $materiaPrimaVidrio)
+    // Eliminar un vidrio
+    public function destroy($id)
     {
-        //
-    }
+        $vidrio = MateriaPrimaVidrio::find($id);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(MateriaPrimaVidrio $materiaPrimaVidrio)
-    {
-        //
+        if (!$vidrio) {
+            return response()->json(['message' => 'Vidrio no encontrado'], 404);
+        }
+
+        $vidrio->delete();
+
+        return response()->json(['message' => 'Vidrio eliminado correctamente']);
     }
 }

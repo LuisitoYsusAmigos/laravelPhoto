@@ -9,6 +9,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SubCategoriaController;
 use App\Http\Controllers\MateriaPrimaVarillaController;
 use App\Http\Controllers\MateriaPrimaTrupanController;
+use App\Http\Controllers\MateriaPrimaVidrioController;
 
 use App\Http\Controllers\CotizadorController;
 
@@ -57,6 +58,12 @@ Route::get('/materiaPrimaTrupan/{id}', [MateriaPrimaTrupanController::class, 'sh
 Route::put('/materiaPrimaTrupan/{id}', [MateriaPrimaTrupanController::class, 'update']);
 Route::delete('/materiaPrimaTrupan/{id}', [MateriaPrimaTrupanController::class, 'destroy']);
 
+//materia prima vidrio
+Route::get('/materiaPrimaVidrios', [MateriaPrimaVidrioController::class, 'index']);
+Route::post('/materiaPrimaVidrio', [MateriaPrimaVidrioController::class, 'store']);
+Route::get('/materiaPrimaVidrio/{id}', [MateriaPrimaVidrioController::class, 'show']);
+Route::put('/materiaPrimaVidrio/{id}', [MateriaPrimaVidrioController::class, 'update']);
+Route::delete('/materiaPrimaVidrio/{id}', [MateriaPrimaVidrioController::class, 'destroy']);
 
 
 
