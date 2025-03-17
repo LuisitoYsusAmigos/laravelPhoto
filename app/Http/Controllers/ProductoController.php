@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Producto;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 
 class ProductoController extends Controller
 {
@@ -20,6 +20,9 @@ class ProductoController extends Controller
     // Crear un nuevo producto
     public function store(Request $request)
     {
+        Log::info('📥 Nueva solicitud para crear un producto.');
+
+        // Validar los datos del request
         $validator = Validator::make($request->all(), [
             'descripcion' => 'required|string',
             'precioCompra' => 'required|integer',
@@ -34,23 +37,45 @@ class ProductoController extends Controller
         ]);
 
         if ($validator->fails()) {
+            Log::error('❌ Error de validación', ['errors' => $validator->errors()]);
             return response()->json($validator->errors(), 400);
         }
 
         // Crear el producto sin imagen para obtener el ID
         $producto = Producto::create($request->except('imagen'));
 
-       
+        // Verificar si se subió una imagen
         if ($request->hasFile('imagen')) {
             $file = $request->file('imagen');
-            $extension = $file->getClientOriginalExtension(); // Obtener la extensión
-            $filename = $producto->id . '.' . $extension; // Nombre basado en el ID
 
-            // Guardar la imagen en 'storage/app/public/productos/'
-            $path = $file->storeAs('productos', $filename, 'public');
+            if (!$file->isValid()) {
+                Log::error('❌ La imagen subida no es válida.');
+                return response()->json(['error' => 'Archivo de imagen no válido'], 400);
+            }
 
-            // Guardar la ruta en la base de datos
-            $producto->imagen = $path;
+            Log::info('✅ Imagen recibida', [
+                'nombre_original' => $file->getClientOriginalName(),
+                'tamaño' => $file->getSize(),
+                'tipo' => $file->getMimeType()
+            ]);
+
+            // Definir la ruta de almacenamiento en public/storage/productos
+            $destinationPath = public_path('storage/productos');
+
+            // Asegurar que la carpeta existe
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0777, true);
+            }
+
+            // Crear el nombre de archivo con el ID del producto
+            $extension = $file->getClientOriginalExtension();
+            $filename = $producto->id . '.' . $extension;
+
+            // Mover la imagen a la carpeta deseada
+            $file->move($destinationPath, $filename);
+
+            // Guardar la ruta relativa en la base de datos
+            $producto->imagen = 'storage/productos/' . $filename;
             $producto->save();
         }
 
@@ -61,7 +86,7 @@ class ProductoController extends Controller
     public function show($id)
     {
         $producto = Producto::find($id);
-        
+
         if (!$producto) {
             return response()->json(['message' => 'Producto no encontrado'], 404);
         }
@@ -73,7 +98,7 @@ class ProductoController extends Controller
     public function update(Request $request, $id)
     {
         $producto = Producto::find($id);
-        
+
         if (!$producto) {
             return response()->json(['message' => 'Producto no encontrado'], 404);
         }
@@ -101,19 +126,18 @@ class ProductoController extends Controller
         // Si se sube una nueva imagen, eliminar la anterior y guardar la nueva con el ID
         if ($request->hasFile('imagen')) {
             // Eliminar la imagen anterior si existe
-            if ($producto->imagen) {
-                Storage::disk('public')->delete($producto->imagen);
+            if ($producto->imagen && File::exists(public_path($producto->imagen))) {
+                File::delete(public_path($producto->imagen));
             }
 
             $file = $request->file('imagen');
             $extension = $file->getClientOriginalExtension();
-            $filename = $producto->id . '.' . $extension; // Nombre con ID
+            $filename = $producto->id . '.' . $extension;
 
-            // Guardar la imagen con el nuevo nombre en 'storage/app/public/productos/'
-            $path = $file->storeAs('productos', $filename, 'public');
+            $destinationPath = public_path('storage/productos');
+            $file->move($destinationPath, $filename);
 
-            // Guardar la ruta en la base de datos
-            $producto->imagen = $path;
+            $producto->imagen = 'storage/productos/' . $filename;
         }
 
         $producto->save();
@@ -125,14 +149,14 @@ class ProductoController extends Controller
     public function destroy($id)
     {
         $producto = Producto::find($id);
-        
+
         if (!$producto) {
             return response()->json(['message' => 'Producto no encontrado'], 404);
         }
 
         // Eliminar la imagen si existe
-        if ($producto->imagen) {
-            Storage::disk('public')->delete($producto->imagen);
+        if ($producto->imagen && File::exists(public_path($producto->imagen))) {
+            File::delete(public_path($producto->imagen));
         }
 
         $producto->delete();
