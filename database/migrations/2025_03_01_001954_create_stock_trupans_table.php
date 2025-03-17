@@ -12,8 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('stock_trupans', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+            $table->id(); // ID autoincremental
+            $table->integer('largo'); // Largo en cm
+            $table->integer('precio'); // Precio en centavos
+            $table->integer('stock'); // Stock disponible
+            $table->boolean('contable'); // Contable (true/false)
+            $table->foreignId('id_materia_prima_varilla')->constrained('materia_prima_varillas')->onDelete('cascade'); // Relación con materia_prima_varilla
+            $table->timestamps(); // created_at y updated_at
         });
     }
 
