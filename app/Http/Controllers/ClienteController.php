@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cliente;
 use Illuminate\Http\Request;
+use App\Models\Cliente;
+use Illuminate\Support\Facades\Validator;
 
 class ClienteController extends Controller
 {
@@ -12,7 +13,8 @@ class ClienteController extends Controller
      */
     public function index()
     {
-        //
+        $clientes = Cliente::all();
+        return response()->json($clientes);
     }
 
     /**
@@ -28,15 +30,37 @@ class ClienteController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'ci' => 'required|string|unique:clientes,ci',
+            'nombre' => 'required|string',
+            'apellido' => 'required|string',
+            'fechaNacimiento' => 'required|date',
+            'telefono' => 'required|string',
+            'direccion' => 'required|string',
+            'email' => 'required|email|unique:clientes,email'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        $cliente = Cliente::create($request->all());
+
+        return response()->json($cliente, 201);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Cliente $cliente)
+    public function show($id)
     {
-        //
+        $cliente = Cliente::find($id);
+        
+        if (!$cliente) {
+            return response()->json(['message' => 'Cliente no encontrado'], 404);
+        }
+
+        return response()->json($cliente);
     }
 
     /**
@@ -50,16 +74,46 @@ class ClienteController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Cliente $cliente)
+    public function update(Request $request, $id)
     {
-        //
+        $cliente = Cliente::find($id);
+        
+        if (!$cliente) {
+            return response()->json(['message' => 'Cliente no encontrado'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'ci' => 'required|string|unique:clientes,ci,' . $id,
+            'nombre' => 'required|string',
+            'apellido' => 'required|string',
+            'fechaNacimiento' => 'required|date',
+            'telefono' => 'required|string',
+            'direccion' => 'required|string',
+            'email' => 'required|email|unique:clientes,email,' . $id
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        $cliente->update($request->all());
+
+        return response()->json($cliente);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Cliente $cliente)
+    public function destroy($id)
     {
-        //
+        $cliente = Cliente::find($id);
+        
+        if (!$cliente) {
+            return response()->json(['message' => 'Cliente no encontrado'], 404);
+        }
+
+        $cliente->delete();
+
+        return response()->json(['message' => 'Cliente eliminado correctamente']);
     }
 }

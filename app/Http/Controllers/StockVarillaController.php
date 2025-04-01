@@ -2,64 +2,88 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\StockVarilla;
 use Illuminate\Http\Request;
+use App\Models\StockVarilla;
+use Illuminate\Support\Facades\Validator;
 
 class StockVarillaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Obtener todos los registros de stock de varillas
     public function index()
     {
-        //
+        $stock = StockVarilla::with('materiaPrimaVarilla')->get();
+        return response()->json($stock);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Crear un nuevo registro de stock
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'largo' => 'required|integer|min:1',
+            'precio' => 'required|integer|min:0',
+            'stock' => 'required|integer|min:0',
+            'contable' => 'required|boolean',
+            'id_materia_prima_varilla' => 'required|exists:materia_prima_varillas,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        $stockVarilla = StockVarilla::create($request->all());
+
+        return response()->json($stockVarilla, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(StockVarilla $stockVarilla)
+    // Obtener un registro específico
+    public function show($id)
     {
-        //
+        $stockVarilla = StockVarilla::with('materiaPrimaVarilla')->find($id);
+
+        if (!$stockVarilla) {
+            return response()->json(['message' => 'Registro no encontrado'], 404);
+        }
+
+        return response()->json($stockVarilla);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(StockVarilla $stockVarilla)
+    // Actualizar un registro existente
+    public function update(Request $request, $id)
     {
-        //
+        $stockVarilla = StockVarilla::find($id);
+
+        if (!$stockVarilla) {
+            return response()->json(['message' => 'Registro no encontrado'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'largo' => 'sometimes|required|integer|min:1',
+            'precio' => 'sometimes|required|integer|min:0',
+            'stock' => 'sometimes|required|integer|min:0',
+            'contable' => 'sometimes|required|boolean',
+            'id_materia_prima_varilla' => 'sometimes|required|exists:materia_prima_varillas,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        $stockVarilla->update($request->all());
+
+        return response()->json($stockVarilla);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, StockVarilla $stockVarilla)
+    // Eliminar un registro
+    public function destroy($id)
     {
-        //
-    }
+        $stockVarilla = StockVarilla::find($id);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(StockVarilla $stockVarilla)
-    {
-        //
+        if (!$stockVarilla) {
+            return response()->json(['message' => 'Registro no encontrado'], 404);
+        }
+
+        $stockVarilla->delete();
+
+        return response()->json(['message' => 'Registro eliminado correctamente']);
     }
 }

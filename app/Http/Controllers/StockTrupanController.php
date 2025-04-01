@@ -2,64 +2,83 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\StockTrupan;
 use Illuminate\Http\Request;
+use App\Models\StockTrupan;
+use Illuminate\Support\Facades\Validator;
 
 class StockTrupanController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $stock = StockTrupan::with('materiaPrimaVarilla')->get();
+        return response()->json($stock);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'largo' => 'required|integer|min:1',
+            'precio' => 'required|integer|min:0',
+            'stock' => 'required|integer|min:0',
+            'contable' => 'required|boolean',
+            'id_materia_prima_varilla' => 'required|exists:materia_prima_varillas,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        $stock = StockTrupan::create($request->all());
+
+        return response()->json($stock, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(StockTrupan $stockTrupan)
+    public function show($id)
     {
-        //
+        $stock = StockTrupan::with('materiaPrimaVarilla')->find($id);
+
+        if (!$stock) {
+            return response()->json(['message' => 'Registro no encontrado'], 404);
+        }
+
+        return response()->json($stock);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(StockTrupan $stockTrupan)
+    public function update(Request $request, $id)
     {
-        //
+        $stock = StockTrupan::find($id);
+
+        if (!$stock) {
+            return response()->json(['message' => 'Registro no encontrado'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'largo' => 'sometimes|required|integer|min:1',
+            'precio' => 'sometimes|required|integer|min:0',
+            'stock' => 'sometimes|required|integer|min:0',
+            'contable' => 'sometimes|required|boolean',
+            'id_materia_prima_varilla' => 'sometimes|required|exists:materia_prima_varillas,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        $stock->update($request->all());
+
+        return response()->json($stock);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, StockTrupan $stockTrupan)
+    public function destroy($id)
     {
-        //
-    }
+        $stock = StockTrupan::find($id);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(StockTrupan $stockTrupan)
-    {
-        //
+        if (!$stock) {
+            return response()->json(['message' => 'Registro no encontrado'], 404);
+        }
+
+        $stock->delete();
+
+        return response()->json(['message' => 'Registro eliminado correctamente']);
     }
 }
