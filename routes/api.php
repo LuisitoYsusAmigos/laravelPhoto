@@ -14,8 +14,8 @@ use App\Http\Controllers\StockVarillaController;
 use App\Http\Controllers\StockVidrioController;
 use App\Http\Controllers\StockTrupanController;
 use App\Http\Controllers\ClienteController;
-
 use App\Http\Controllers\CotizadorController;
+use App\Http\Controllers\UserController;
 
 // Sucursales
 
@@ -64,7 +64,7 @@ Route::delete('/materiaPrimaTrupan/{id}', [MateriaPrimaTrupanController::class, 
 
 //materia prima vidrio
 Route::get('/materiaPrimaVidrios', [MateriaPrimaVidrioController::class, 'index']);
-Route::post('/materiaPrimaVidrio', [MateriaPrimaVidrioController::class, 'store']);
+Route::post('/materiaPrixmaVidrio', [MateriaPrimaVidrioController::class, 'store']);
 Route::get('/materiaPrimaVidrio/{id}', [MateriaPrimaVidrioController::class, 'show']);
 Route::put('/materiaPrimaVidrio/{id}', [MateriaPrimaVidrioController::class, 'update']);
 Route::delete('/materiaPrimaVidrio/{id}', [MateriaPrimaVidrioController::class, 'destroy']);
@@ -109,3 +109,10 @@ Route::get('/cotizar',[CotizadorController::class, 'index']);
 Route::middleware('auth:sanctum')->group(function(){
     Route::get('/logout', [AuthController::class, 'logout']);
 });
+
+//user
+Route::get('/users', [UserController::class, 'index']); // Obtener todos los usuarios
+//Route::post('/user', [UserController::class, 'store']); // Crear un nuevo usuario
+Route::get('/user/{id}', [UserController::class, 'show']); // Obtener un usuario por ID
+Route::put('/user/{id}', [UserController::class, 'update']); // Actualizar un usuario
+Route::delete('/user/{id}', [UserController::class, 'destroy']); // Eliminar un usuario
