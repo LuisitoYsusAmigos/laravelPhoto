@@ -93,6 +93,8 @@ Route::delete('/stockTrupans/{id}', [StockTrupanController::class, 'destroy']); 
 
 //cliente
 Route::get('/clientes', [ClienteController::class, 'index']); // Obtener todos los registros
+Route::get('/clientes/paginados', [ClienteController::class, 'indexPaginado']); // Obtener registros paginados
+Route::get('/clientes/search', [ClienteController::class, 'search']); // Buscar clientes
 Route::post('/cliente', [ClienteController::class, 'store']); // Crear un nuevo registro
 Route::get('/cliente/{id}', [ClienteController::class, 'show']); // Obtener un registro por ID
 Route::put('/cliente/{id}', [ClienteController::class, 'update']); // Actualizar un registro

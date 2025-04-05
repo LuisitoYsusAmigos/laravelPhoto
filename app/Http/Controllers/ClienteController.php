@@ -18,6 +18,68 @@ class ClienteController extends Controller
     }
 
     /**
+     * Display a paginated listing of the resource.
+     */
+    public function indexPaginado(Request $request)
+    {
+        // Obtener parámetros de paginación con valores por defecto
+        $page = $request->input('page', 1);
+        $perPage = $request->input('perPage', 10);
+        
+        // Obtener el total de registros
+        $totalItems = Cliente::count();
+        
+        // Calcular el total de páginas
+        $totalPages = ceil($totalItems / $perPage);
+        
+        // Obtener los clientes paginados
+        $clientes = Cliente::skip(($page - 1) * $perPage)
+                           ->take($perPage)
+                           ->get();
+        
+        // Devolver la respuesta con el formato solicitado
+        return response()->json([
+            'currentPage' => (int)$page,
+            'perPage' => (int)$perPage,
+            'totalItems' => $totalItems,
+            'totalPages' => $totalPages,
+            'data' => $clientes
+        ]);
+    }
+
+    /**
+     * Buscar clientes en varios campos a la vez.
+     */
+    public function search(Request $request)
+    {
+        // Obtener el término de búsqueda
+        $searchTerm = $request->input('search', '');
+        
+        // Si el término de búsqueda está vacío, devolver todos los clientes
+        if (empty($searchTerm)) {
+            return response()->json(Cliente::all());
+        }
+        
+        // Buscar en múltiples campos
+        $clientes = Cliente::where('ci', 'LIKE', "%{$searchTerm}%")
+                           ->orWhere('telefono', 'LIKE', "%{$searchTerm}%")
+                           ->orWhere('email', 'LIKE', "%{$searchTerm}%")
+                           ->orWhere('nombre', 'LIKE', "%{$searchTerm}%")
+                           ->orWhere('apellido', 'LIKE', "%{$searchTerm}%")
+                           ->get();
+        
+        // Verificar si hay coincidencias
+        if ($clientes->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron coincidencias para: ' . $searchTerm,
+                'data' => []
+            ]);
+        }
+        
+        return response()->json($clientes);
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()
