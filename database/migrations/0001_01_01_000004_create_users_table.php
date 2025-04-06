@@ -21,6 +21,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->foreignId('id_sucursal')->constrained('sucursal')->onDelete('cascade');
+            $table->foreignId('id_rol')->constrained('roles')->onDelete('cascade');
 
             $table->rememberToken();
             $table->timestamps();
@@ -49,6 +50,7 @@ return new class extends Migration
                 'email' => 'admin@example.com',
                 'password' => Hash::make('password123'), // Encriptar la contraseña
                 'id_sucursal' => 1,
+                'id_rol' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

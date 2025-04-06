@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Cliente;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class ClienteController extends Controller
 {
@@ -177,5 +178,17 @@ class ClienteController extends Controller
         $cliente->delete();
 
         return response()->json(['message' => 'Cliente eliminado correctamente']);
+    }
+
+    /**
+     * Obtiene el total de clientes.
+     */
+    public function totalClientes()
+    {
+        $resultado = DB::select("SELECT COUNT(*) AS total_clientes FROM clientes");
+        
+        return response()->json([
+            'total_clientes' => $resultado[0]->total_clientes
+        ]);
     }
 }

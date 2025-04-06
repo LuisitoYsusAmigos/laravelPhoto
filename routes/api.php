@@ -16,6 +16,8 @@ use App\Http\Controllers\StockTrupanController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\CotizadorController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\FuncionesGeneralesController;
+use App\Http\Controllers\RolController;
 
 // Sucursales
 
@@ -95,10 +97,18 @@ Route::delete('/stockTrupans/{id}', [StockTrupanController::class, 'destroy']); 
 Route::get('/clientes', [ClienteController::class, 'index']); // Obtener todos los registros
 Route::get('/clientes/paginados', [ClienteController::class, 'indexPaginado']); // Obtener registros paginados
 Route::get('/clientes/search', [ClienteController::class, 'search']); // Buscar clientes
+Route::get('/clientes/total', [ClienteController::class, 'totalClientes']); // Obtener total de clientes
 Route::post('/cliente', [ClienteController::class, 'store']); // Crear un nuevo registro
 Route::get('/cliente/{id}', [ClienteController::class, 'show']); // Obtener un registro por ID
 Route::put('/cliente/{id}', [ClienteController::class, 'update']); // Actualizar un registro
 Route::delete('/cliente/{id}', [ClienteController::class, 'destroy']); // Eliminar un registro
+
+//roles
+Route::get('/roles', [RolController::class, 'index']); // Obtener todos los roles
+Route::post('/rol', [RolController::class, 'store']); // Crear un nuevo rol
+Route::get('/rol/{id}', [RolController::class, 'show']); // Obtener un rol por ID
+Route::put('/rol/{id}', [RolController::class, 'update']); // Actualizar un rol
+Route::delete('/rol/{id}', [RolController::class, 'destroy']); // Eliminar un rol
 
 
 //auth
@@ -118,3 +128,8 @@ Route::get('/users', [UserController::class, 'index']); // Obtener todos los usu
 Route::get('/user/{id}', [UserController::class, 'show']); // Obtener un usuario por ID
 Route::put('/user/{id}', [UserController::class, 'update']); // Actualizar un usuario
 Route::delete('/user/{id}', [UserController::class, 'destroy']); // Eliminar un usuario
+
+// Funciones Generales
+Route::get('/estadisticas/clientesNuevos', [FuncionesGeneralesController::class, 'ClientesNuevos']);
+//4 del cuadro de estadisticas
+//Route::get('/clientes/total', [ClienteController::class, 'totalClientes']);

@@ -16,7 +16,8 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
-        'id_sucursal' // Asegúrate de agregar 'id_sucursal' aquí.
+        'id_sucursal',
+        'id_rol'
     ];
 
     protected $hidden = [
@@ -38,5 +39,13 @@ class User extends Authenticatable
     public function sucursal()
     {
         return $this->belongsTo(Sucursal::class, 'id_sucursal');
+    }
+
+    /**
+     * Relación con la tabla 'roles'.
+     */
+    public function rol()
+    {
+        return $this->belongsTo(Rol::class, 'id_rol');
     }
 }
