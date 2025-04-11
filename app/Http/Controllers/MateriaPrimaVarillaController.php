@@ -94,4 +94,85 @@ class MateriaPrimaVarillaController extends Controller
 
         return response()->json(['message' => 'Varilla eliminada correctamente']);
     }
+
+    public function indexPaginado(Request $request)
+    {
+        $page = max((int)$request->input('page', 1), 1);
+        $perPage = max((int)$request->input('perPage', 10), 1);
+
+        $totalItems = MateriaPrimaVarilla::count();
+        $totalPages = ceil($totalItems / $perPage);
+
+        $varillas = MateriaPrimaVarilla::skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
+
+        return response()->json([
+            'currentPage' => $page,
+            'perPage' => $perPage,
+            'totalItems' => $totalItems,
+            'totalPages' => $totalPages,
+            'data' => $varillas
+        ]);
+    }
+
+    public function search(Request $request)
+    {
+        $searchTerm = $request->input('search', '');
+
+        if (empty($searchTerm)) {
+            return response()->json(MateriaPrimaVarilla::all());
+        }
+
+        $varillas = MateriaPrimaVarilla::where('descripcion', 'LIKE', "%{$searchTerm}%")
+            ->orWhere('categoria', 'LIKE', "%{$searchTerm}%")
+            ->orWhere('sub_categoria', 'LIKE', "%{$searchTerm}%")
+            ->get();
+
+        if ($varillas->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron coincidencias para: ' . $searchTerm,
+                'data' => []
+            ]);
+        }
+
+        return response()->json($varillas);
+    }
+
+    public function searchCategorias(Request $request)
+    {
+        $categoria = $request->input('categoria');
+        $subCategoria = $request->input('sub_categoria');
+        $page = max((int)$request->input('page', 1), 1);
+        $perPage = max((int)$request->input('perPage', 10), 1);
+
+        $query = MateriaPrimaVarilla::query();
+
+        if ($categoria) {
+            $query->where('categoria', $categoria);
+        }
+
+        if ($subCategoria) {
+            $query->where('sub_categoria', $subCategoria);
+        }
+
+        $totalItems = $query->count();
+        $totalPages = ceil($totalItems / $perPage);
+
+        $varillas = $query->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
+
+        return response()->json([
+            'currentPage' => $page,
+            'perPage' => $perPage,
+            'totalItems' => $totalItems,
+            'totalPages' => $totalPages,
+            'filters' => [
+                'categoria' => $categoria,
+                'sub_categoria' => $subCategoria
+            ],
+            'data' => $varillas
+        ]);
+    }
 }

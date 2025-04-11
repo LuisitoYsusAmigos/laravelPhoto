@@ -42,7 +42,7 @@ class MateriaPrimaTrupanController extends Controller
     public function show($id)
     {
         $trupan = MateriaPrimaTrupan::find($id);
-        
+
         if (!$trupan) {
             return response()->json(['message' => 'Trupan no encontrado'], 404);
         }
@@ -91,5 +91,83 @@ class MateriaPrimaTrupanController extends Controller
         $trupan->delete();
 
         return response()->json(['message' => 'Trupan eliminado correctamente']);
+    }
+    public function indexPaginado(Request $request)
+    {
+        $page = max((int)$request->input('page', 1), 1);
+        $perPage = max((int)$request->input('perPage', 10), 1);
+
+        $totalItems = MateriaPrimaTrupan::count();
+        $totalPages = ceil($totalItems / $perPage);
+
+        $trupanes = MateriaPrimaTrupan::skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
+
+        return response()->json([
+            'currentPage' => $page,
+            'perPage' => $perPage,
+            'totalItems' => $totalItems,
+            'totalPages' => $totalPages,
+            'data' => $trupanes
+        ]);
+    }
+    public function search(Request $request)
+    {
+        $searchTerm = $request->input('search', '');
+
+        if (empty($searchTerm)) {
+            return response()->json(MateriaPrimaTrupan::all());
+        }
+
+        $trupanes = MateriaPrimaTrupan::where('descripcion', 'LIKE', "%{$searchTerm}%")
+            ->orWhere('categoria', 'LIKE', "%{$searchTerm}%")
+            ->orWhere('sub_categoria', 'LIKE', "%{$searchTerm}%")
+            ->get();
+
+        if ($trupanes->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron coincidencias para: ' . $searchTerm,
+                'data' => []
+            ]);
+        }
+
+        return response()->json($trupanes);
+    }
+    public function searchCategorias(Request $request)
+    {
+        $categoria = $request->input('categoria');
+        $subCategoria = $request->input('sub_categoria');
+        $page = max((int)$request->input('page', 1), 1);
+        $perPage = max((int)$request->input('perPage', 10), 1);
+
+        $query = MateriaPrimaTrupan::query();
+
+        if ($categoria) {
+            $query->where('categoria', $categoria);
+        }
+
+        if ($subCategoria) {
+            $query->where('sub_categoria', $subCategoria);
+        }
+
+        $totalItems = $query->count();
+        $totalPages = ceil($totalItems / $perPage);
+
+        $trupanes = $query->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
+
+        return response()->json([
+            'currentPage' => $page,
+            'perPage' => $perPage,
+            'totalItems' => $totalItems,
+            'totalPages' => $totalPages,
+            'filters' => [
+                'categoria' => $categoria,
+                'sub_categoria' => $subCategoria
+            ],
+            'data' => $trupanes
+        ]);
     }
 }

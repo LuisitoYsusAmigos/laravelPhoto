@@ -19,6 +19,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\FuncionesGeneralesController;
 use App\Http\Controllers\RolController;
 
+
 // Sucursales
 
 Route::get('/sucursales', [SucursalController::class, 'index']);
@@ -48,6 +49,10 @@ Route::post('/producto', [ProductoController::class, 'store']);
 Route::get('/producto/{id}', [ProductoController::class, 'show']);
 Route::put('/producto/{id}', [ProductoController::class, 'update']);
 Route::delete('/producto/{id}', [ProductoController::class, 'destroy']);
+Route::get('/productos/search', [ProductoController::class, 'search']);
+Route::get('/productos/search-categorias', [ProductoController::class, 'searchCategorias']);
+Route::get('/productos/paginados', [ProductoController::class, 'indexPaginado']);
+
 
 // mateira prima varilla
 // Materia Prima Varillas
@@ -57,12 +62,23 @@ Route::get('/materiaPrimaVarilla/{id}', [MateriaPrimaVarillaController::class, '
 Route::put('/materiaPrimaVarilla/{id}', [MateriaPrimaVarillaController::class, 'update']);
 Route::delete('/materiaPrimaVarilla/{id}', [MateriaPrimaVarillaController::class, 'destroy']);
 
+// Funciones adicionales para Materia Prima Varilla
+Route::get('/materiaPrimaVarillas/paginados', [MateriaPrimaVarillaController::class, 'indexPaginado']);
+Route::get('/materiaPrimaVarillas/search', [MateriaPrimaVarillaController::class, 'search']);
+Route::get('/materiaPrimaVarillas/search-categorias', [MateriaPrimaVarillaController::class, 'searchCategorias']);
+
+
 // mateira prima trupan
 Route::get('/materiaPrimaTrupanes', [MateriaPrimaTrupanController::class, 'index']);
 Route::post('/materiaPrimaTrupan', [MateriaPrimaTrupanController::class, 'store']);
 Route::get('/materiaPrimaTrupan/{id}', [MateriaPrimaTrupanController::class, 'show']);
 Route::put('/materiaPrimaTrupan/{id}', [MateriaPrimaTrupanController::class, 'update']);
 Route::delete('/materiaPrimaTrupan/{id}', [MateriaPrimaTrupanController::class, 'destroy']);
+
+Route::get('/materiaPrimaTrupanes/paginados', [MateriaPrimaTrupanController::class, 'indexPaginado']); // Listado paginado
+Route::get('/materiaPrimaTrupanes/search', [MateriaPrimaTrupanController::class, 'search']); // Búsqueda general
+Route::get('/materiaPrimaTrupanes/search-categorias', [MateriaPrimaTrupanController::class, 'searchCategorias']); // Filtro por categoría y subcategoría
+
 
 //materia prima vidrio
 Route::get('/materiaPrimaVidrios', [MateriaPrimaVidrioController::class, 'index']);
@@ -116,7 +132,7 @@ Route::post('/register', [AuthController::class, 'register']);
 
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::get('/cotizar',[CotizadorController::class, 'index']);
+Route::get('/cotizar',[CotizadorController::class, 'calcular']);
 
 Route::middleware('auth:sanctum')->group(function(){
     Route::get('/logout', [AuthController::class, 'logout']);

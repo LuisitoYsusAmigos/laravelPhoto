@@ -3,23 +3,48 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-class CotizadorController extends Controller {
-    public function index() {
-        $cocha = 20;
-        $espejo3MM = 0;
-        $espejo2MM = 1;
-        $a = 35;
-        $b = 40;
-        // Fin de constantes
+use App\Services\CalculosSistema;
 
-        $tarija = $cocha + 3;
-        $varilla = $tarija / 2.8;
-        $calculoVarilla = ((((($a * 2) + ($b * 2)) / 100) * $varilla) * 1.6);
-        $costoEspejo3mmArg = (((($a / 100) * ($b / 100)) * $espejo3MM) * 94.4) * 1.4;
-        $costoEspejo2mm = (((((1 / 100) * (1 / 100)) * $espejo2MM) * 67.3) * 1.4);
-        $subtotal = $calculoVarilla + $costoEspejo3mmArg + $costoEspejo2mm;
-        $precioFinal = $subtotal * 2;
+class CotizadorController extends Controller
+{
+    public function calcular(Request $request, CalculosSistema $calculos)
+    {
+        $ancho = $request->query('ancho');
+        $alto = $request->query('alto');
+        $grosor = $request->query('grosor');
 
-        return "precioFinal: $precioFinal";
+        // Validación manual: que todos sean números enteros positivos
+        $errores = [];
+
+        if (!ctype_digit($ancho)) {
+            $errores['ancho'] = 'El ancho debe ser un número entero positivo.';
+        }
+
+        if (!ctype_digit($alto)) {
+            $errores['alto'] = 'El alto debe ser un número entero positivo.';
+        }
+
+        if (!ctype_digit($grosor)) {
+            $errores['grosor'] = 'El grosor debe ser un número entero positivo.';
+        }
+
+        if (!empty($errores)) {
+            return response()->json([
+                'success' => false,
+                'errores' => $errores,
+            ], 422);
+        }
+
+        // Convertimos los strings validados a int
+        $ancho = (int) $ancho;
+        $alto = (int) $alto;
+        $grosor = (int) $grosor;
+
+        $resultado = $calculos->calcularMargenExterno($ancho, $alto, $grosor);
+
+        return response()->json([
+            'success' => true,
+            'datos' => $resultado,
+        ]);
     }
 }

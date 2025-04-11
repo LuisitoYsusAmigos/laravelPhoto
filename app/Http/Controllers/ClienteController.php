@@ -191,4 +191,8 @@ class ClienteController extends Controller
             'total_clientes' => $resultado[0]->total_clientes
         ]);
     }
+
+
+
+    
 }
