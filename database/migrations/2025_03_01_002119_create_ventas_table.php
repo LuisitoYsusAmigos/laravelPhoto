@@ -1,27 +1,44 @@
 <?php
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
+class CreateVentasTable extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::create('ventas', function (Blueprint $table) {
             $table->id();
+
+            $table->integer('precioProducto')->default(0);
+            $table->integer('precioPerzonalizado')->default(0);
+            $table->integer('precioTotal')->default(0);
+            $table->integer('saldo');
+
+            $table->boolean('recogido')->default(false);
+            $table->dateTime('fecha');
+
+            $table->foreignId('idCliente')->constrained('clientes')->onDelete('cascade');
+            $table->foreignId('idSucursal')->constrained('sucursal')->onDelete('cascade');
+
             $table->timestamps();
         });
+
+        // Inserción automática de una venta con cliente 1 y sucursal 1
+        DB::table('ventas')->insert([
+            'saldo' => 0,
+            'recogido' => false,
+            'fecha' => now(),
+            'idCliente' => 1,
+            'idSucursal' => 1,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('ventas');
     }
-};
+}

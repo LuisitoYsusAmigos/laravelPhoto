@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\CalculosSistema;
 
+use App\Models\MateriaPrimaVarilla;
+use App\Models\MateriaPrimaVidrio;
+use App\Models\MateriaPrimaTrupan;
+use App\Models\Producto;
 class CotizadorController extends Controller
 {
     public function calcular(Request $request, CalculosSistema $calculos)
@@ -47,4 +51,144 @@ class CotizadorController extends Controller
             'datos' => $resultado,
         ]);
     }
+
+    public function indexPaginadoGeneral(Request $request)
+{
+    $page = (int) $request->input('page', 1);
+    $perPage = (int) $request->input('perPage', 10);
+
+    // Obtener y mapear cada modelo
+    $varillas = MateriaPrimaVarilla::all()->map(function ($item) {
+        return [
+            'tipo' => 'varilla',
+            'descripcion' => $item->descripcion,
+            'categoria' => $item->categoria,
+            'sub_categoria' => $item->sub_categoria,
+            'stock' => $item->stock_global_actual,
+            'sucursal_id' => $item->id_sucursal,
+        ];
+    });
+
+    $vidrios = MateriaPrimaVidrio::all()->map(function ($item) {
+        return [
+            'tipo' => 'vidrio',
+            'descripcion' => $item->descripcion,
+            'categoria' => $item->categoria,
+            'sub_categoria' => $item->sub_categoria,
+            'stock' => $item->stock_global_actual,
+            'sucursal_id' => $item->id_sucursal,
+        ];
+    });
+
+    $trupan = MateriaPrimaTrupan::all()->map(function ($item) {
+        return [
+            'tipo' => 'trupan',
+            'descripcion' => $item->descripcion,
+            'categoria' => $item->categoria,
+            'sub_categoria' => $item->sub_categoria,
+            'stock' => $item->stock_global_actual,
+            'sucursal_id' => $item->id_sucursal,
+        ];
+    });
+
+    $productos = Producto::all()->map(function ($item) {
+        return [
+            'tipo' => 'producto',
+            'descripcion' => $item->descripcion,
+            'categoria' => $item->categoria_id,
+            'sub_categoria' => $item->sub_categoria_id,
+            'stock' => $item->stock,
+            'sucursal_id' => $item->sucursal_id,
+        ];
+    });
+
+    // Unificar resultados
+    $todos = $varillas->concat($vidrios)
+                      ->concat($trupan)
+                      ->concat($productos)
+                      ->values();
+
+    // Paginación manual
+    $total = $todos->count();
+    $totalPages = ceil($total / $perPage);
+    $resultados = $todos->slice(($page - 1) * $perPage, $perPage)->values();
+
+    return response()->json([
+        'currentPage' => $page,
+        'perPage' => $perPage,
+        'totalItems' => $total,
+        'totalPages' => $totalPages,
+        'data' => $resultados
+    ]);
+}
+
+public function searchPaginadoGeneral(Request $request)
+{
+    $search = $request->input('search', '');
+    $page = (int) $request->input('page', 1);
+    $perPage = (int) $request->input('perPage', 10);
+
+    // Buscar en cada tabla
+    $varillas = MateriaPrimaVarilla::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
+        return [
+            'tipo' => 'varilla',
+            'descripcion' => $item->descripcion,
+            'categoria' => $item->categoria,
+            'sub_categoria' => $item->sub_categoria,
+            'stock' => $item->stock_global_actual,
+            'sucursal_id' => $item->id_sucursal,
+        ];
+    });
+
+    $vidrios = MateriaPrimaVidrio::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
+        return [
+            'tipo' => 'vidrio',
+            'descripcion' => $item->descripcion,
+            'categoria' => $item->categoria,
+            'sub_categoria' => $item->sub_categoria,
+            'stock' => $item->stock_global_actual,
+            'sucursal_id' => $item->id_sucursal,
+        ];
+    });
+
+    $trupan = MateriaPrimaTrupan::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
+        return [
+            'tipo' => 'trupan',
+            'descripcion' => $item->descripcion,
+            'categoria' => $item->categoria,
+            'sub_categoria' => $item->sub_categoria,
+            'stock' => $item->stock_global_actual,
+            'sucursal_id' => $item->id_sucursal,
+        ];
+    });
+
+    $productos = Producto::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
+        return [
+            'tipo' => 'producto',
+            'descripcion' => $item->descripcion,
+            'categoria' => $item->categoria_id,
+            'sub_categoria' => $item->sub_categoria_id,
+            'stock' => $item->stock,
+            'sucursal_id' => $item->sucursal_id,
+        ];
+    });
+
+    $resultados = $varillas->concat($vidrios)->concat($trupan)->concat($productos)->values();
+
+    // Paginación manual
+    $total = $resultados->count();
+    $totalPages = ceil($total / $perPage);
+    $pagina = $resultados->slice(($page - 1) * $perPage, $perPage)->values();
+
+    return response()->json([
+        'currentPage' => $page,
+        'perPage' => $perPage,
+        'totalItems' => $total,
+        'totalPages' => $totalPages,
+        'data' => $pagina
+    ]);
+}
+
+
+    
 }

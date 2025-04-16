@@ -127,6 +127,12 @@ Route::put('/rol/{id}', [RolController::class, 'update']); // Actualizar un rol
 Route::delete('/rol/{id}', [RolController::class, 'destroy']); // Eliminar un rol
 
 
+//todo de productos
+Route::get('/materias-primas-paginado', [CotizadorController::class, 'indexPaginadoGeneral']);
+Route::get('/materias-primas-search', [CotizadorController::class, 'searchPaginadoGeneral']);
+
+
+
 //auth
 Route::post('/register', [AuthController::class, 'register']);
 
