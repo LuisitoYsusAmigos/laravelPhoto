@@ -14,6 +14,18 @@ class CategoriaController extends Controller
         $categorias = Categoria::all();
         return response()->json($categorias);
     }
+    // Obtener categorías filtradas por palabra en el campo 'tipo'
+public function indexPorTipo($tipo)
+{
+    $categorias = Categoria::where('tipo', 'like', '%' . $tipo . '%')->get();
+
+    if ($categorias->isEmpty()) {
+        return response()->json(['message' => 'No se encontraron categorías con ese tipo'], 404);
+    }
+
+    return response()->json($categorias);
+}
+
 
     // Crear una nueva categoría
     public function store(Request $request)

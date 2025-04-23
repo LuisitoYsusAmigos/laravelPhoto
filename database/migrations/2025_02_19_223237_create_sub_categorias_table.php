@@ -15,12 +15,26 @@ return new class extends Migration
         Schema::create('sub_categorias', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
+            $table->foreignId('id_categoria')->constrained('categorias')->onDelete('cascade');
             $table->timestamps();
         });
 
         DB::table('sub_categorias')->insert([
             [
-                'nombre' => 'Jardineria'
+                'nombre' => 'fotografia',
+                'id_categoria' => 1
+            ],
+            [
+                'nombre' => 'sub de varilla',
+                'id_categoria' => 2
+            ],
+            [
+                'nombre' => 'sub de trupan',
+                'id_categoria' => 3
+            ],
+            [
+                'nombre' => 'sub de vidrio',
+                'id_categoria' => 4
             ],
         ]);
     }

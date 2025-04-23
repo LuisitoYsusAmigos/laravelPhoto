@@ -35,6 +35,7 @@ Route::post('/categoria', [CategoriaController::class, 'store']);
 Route::get('/categoria/{id}', [CategoriaController::class, 'show']);
 Route::put('/categoria/{id}', [CategoriaController::class, 'update']);
 Route::delete('/categoria/{id}', [CategoriaController::class, 'destroy']);
+Route::get('/categorias/tipo/{palabraX}', [CategoriaController::class, 'indexPorTipo']);
 
 // subcategoria
 Route::get('/subCategorias', [SubCategoriaController::class, 'index']);

@@ -15,12 +15,34 @@ return new class extends Migration
         Schema::create('categorias', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
+            $table->string('tipo');
             $table->timestamps();
         });
     
         DB::table('categorias')->insert([
             [
-                'nombre' => 'Herramientas'
+                'nombre' => 'Servicio',
+                'tipo' => 'producto',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'nombre' => 'sencillo',
+                'tipo' => 'varilla',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'nombre' => 'premiun',
+                'tipo' => 'trupan',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'nombre' => 'durable',
+                'tipo' => 'vidrio',
+                'created_at' => now(),
+                'updated_at' => now()
             ],
         ]);
     }
