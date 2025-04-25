@@ -31,7 +31,8 @@ public function indexPorTipo($tipo)
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|unique:categorias,nombre'
+            'nombre' => 'required|string|unique:categorias,nombre',
+            'tipo' => 'required|string'
         ]);
 
         if ($validator->fails()) {
@@ -39,7 +40,8 @@ public function indexPorTipo($tipo)
         }
 
         $categoria = Categoria::create([
-            'nombre' => $request->nombre
+            'nombre' => $request->nombre,
+            'tipo' => $request->tipo
         ]);
 
         return response()->json($categoria, 201);
@@ -67,7 +69,8 @@ public function indexPorTipo($tipo)
         }
 
         $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|unique:categorias,nombre,' . $id
+            'nombre' => 'required|string|unique:categorias,nombre,' . $id,
+            'tipo' => 'required|string'
         ]);
 
         if ($validator->fails()) {
