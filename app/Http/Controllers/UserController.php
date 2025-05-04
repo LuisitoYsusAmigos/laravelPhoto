@@ -24,7 +24,8 @@ class UserController extends Controller
             'username' => 'required|string|unique:users,username',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
-            'id_sucursal' => 'required|exists:sucursal,id'
+            'id_sucursal' => 'required|exists:sucursal,id',
+            'rol' => 'required|exists:roles,id'
         ]);
 
         if ($validator->fails()) {
@@ -36,7 +37,8 @@ class UserController extends Controller
             'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'id_sucursal' => $request->id_sucursal
+            'id_sucursal' => $request->id_sucursal,
+            'rol' => $request->rol
         ]);
 
         return response()->json($user, 201);
@@ -68,7 +70,8 @@ class UserController extends Controller
             'username' => 'required|string|unique:users,username,' . $id,
             'email' => 'required|email|unique:users,email,' . $id,
             'password' => 'nullable|string|min:6',
-            'id_sucursal' => 'required|exists:sucursal,id'
+            'id_sucursal' => 'required|exists:sucursal,id',
+            'rol' => 'required|exists:roles,id'
         ]);
 
         if ($validator->fails()) {

@@ -189,6 +189,81 @@ public function searchPaginadoGeneral(Request $request)
     ]);
 }
 
+public function indexPaginadoGeneralPorMasReciente(Request $request)
+{
+    $page = (int) $request->input('page', 1);
+    $perPage = (int) $request->input('perPage', 10);
+
+    $varillas = MateriaPrimaVarilla::all()->map(function ($item) {
+        return [
+            'tipo' => 'varilla',
+            'descripcion' => $item->descripcion,
+            'categoria' => $item->categoria,
+            'sub_categoria' => $item->sub_categoria,
+            'stock' => $item->stock_global_actual,
+            'sucursal_id' => $item->id_sucursal,
+            'created_at' => $item->created_at,
+        ];
+    });
+
+    $vidrios = MateriaPrimaVidrio::all()->map(function ($item) {
+        return [
+            'tipo' => 'vidrio',
+            'descripcion' => $item->descripcion,
+            'categoria' => $item->categoria,
+            'sub_categoria' => $item->sub_categoria,
+            'stock' => $item->stock_global_actual,
+            'sucursal_id' => $item->id_sucursal,
+            'created_at' => $item->created_at,
+        ];
+    });
+
+    $trupan = MateriaPrimaTrupan::all()->map(function ($item) {
+        return [
+            'tipo' => 'trupan',
+            'descripcion' => $item->descripcion,
+            'categoria' => $item->categoria,
+            'sub_categoria' => $item->sub_categoria,
+            'stock' => $item->stock_global_actual,
+            'sucursal_id' => $item->id_sucursal,
+            'created_at' => $item->created_at,
+        ];
+    });
+
+    $productos = Producto::all()->map(function ($item) {
+        return [
+            'tipo' => 'producto',
+            'descripcion' => $item->descripcion,
+            'categoria' => $item->categoria_id,
+            'sub_categoria' => $item->sub_categoria_id,
+            'stock' => $item->stock,
+            'sucursal_id' => $item->sucursal_id,
+            'created_at' => $item->created_at,
+        ];
+    });
+
+    $todos = $varillas->concat($vidrios)
+                      ->concat($trupan)
+                      ->concat($productos)
+                      ->sortByDesc('created_at') // 👈 Ordenar por fecha descendente
+                      ->values();
+
+    $total = $todos->count();
+    $totalPages = ceil($total / $perPage);
+    $resultados = $todos->slice(($page - 1) * $perPage, $perPage)->values();
+
+    return response()->json([
+        'currentPage' => $page,
+        'perPage' => $perPage,
+        'totalItems' => $total,
+        'totalPages' => $totalPages,
+        'data' => $resultados
+    ]);
+}
+
+
 
     
 }
+
+

@@ -43,12 +43,14 @@ Route::post('/subCategoria', [SubCategoriaController::class, 'store']);
 Route::get('/subCategoria/{id}', [SubCategoriaController::class, 'show']);
 Route::put('/subCategoria/{id}', [SubCategoriaController::class, 'update']);
 Route::delete('/subCategoria/{id}', [SubCategoriaController::class, 'destroy']);
+Route::get('/subCategoria/porCategoria/{id}', [SubCategoriaController::class, 'subcategoriasPorCategoria']);
+
 //producto
 
 Route::get('/productos', [ProductoController::class, 'index']);
 Route::post('/producto', [ProductoController::class, 'store']);
 Route::get('/producto/{id}', [ProductoController::class, 'show']);
-Route::put('/producto/{id}', [ProductoController::class, 'update']);
+Route::post('/producto/edit/{id}', [ProductoController::class, 'update']);
 Route::delete('/producto/{id}', [ProductoController::class, 'destroy']);
 Route::get('/productos/search', [ProductoController::class, 'search']);
 Route::get('/productos/search-categorias', [ProductoController::class, 'searchCategorias']);
@@ -129,7 +131,7 @@ Route::delete('/rol/{id}', [RolController::class, 'destroy']); // Eliminar un ro
 
 
 //todo de productos
-Route::get('/materias-primas-paginado', [CotizadorController::class, 'indexPaginadoGeneral']);
+Route::get('/materias-primas-paginado', [CotizadorController::class, 'indexPaginadoGeneralPorMasReciente']);
 Route::get('/materias-primas-search', [CotizadorController::class, 'searchPaginadoGeneral']);
 
 

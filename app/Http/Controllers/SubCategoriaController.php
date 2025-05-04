@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\SubCategoria;
+use App\Models\Categoria;
 use Illuminate\Support\Facades\Validator;
 
 class SubCategoriaController extends Controller
@@ -19,7 +20,8 @@ class SubCategoriaController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|unique:sub_categorias,nombre'
+            'nombre' => 'required|string|unique:sub_categorias,nombre',
+            'id_categoria' => 'required|exists:categorias,id' // Validar que exista la categoría
         ]);
 
         if ($validator->fails()) {
@@ -27,7 +29,8 @@ class SubCategoriaController extends Controller
         }
 
         $subcategoria = SubCategoria::create([
-            'nombre' => $request->nombre
+            'nombre' => $request->nombre,
+            'id_categoria' => $request->id_categoria // Agregar categoría al crear la subcategoría
         ]);
 
         return response()->json($subcategoria, 201);
@@ -55,7 +58,8 @@ class SubCategoriaController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|unique:sub_categorias,nombre,' . $id
+            'nombre' => 'required|string|unique:sub_categorias,nombre,' . $id,
+            'id_categoria' => 'required|exists:categorias,id' // Validar que exista la categoría
         ]);
 
         if ($validator->fails()) {
@@ -80,4 +84,17 @@ class SubCategoriaController extends Controller
 
         return response()->json(['message' => 'Subcategoría eliminada correctamente']);
     }
+    public function subcategoriasPorCategoria($id_categoria)
+{
+    // Verificar si la categoría existe
+    $categoria = Categoria::find($id_categoria);
+    if (!$categoria) {
+        return response()->json(['message' => 'Categoría no encontrada'], 404);
+    }
+
+    // Obtener las subcategorías asociadas
+    $subcategorias = SubCategoria::where('id_categoria', $id_categoria)->get();
+
+    return response()->json($subcategorias);
+}
 }

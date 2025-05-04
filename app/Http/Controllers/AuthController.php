@@ -16,7 +16,8 @@ class AuthController extends Controller
             'username' => 'required|string|unique:users,username',
             'email' => 'required|string|unique:users,email',
             'password' => 'required|string|confirmed',
-            'id_sucursal' => 'required|exists:sucursal,id' // Validar que exista la sucursal
+            'id_sucursal' => 'required|exists:sucursal,id', // Validar que exista la sucursal
+            'id_rol' => 'required|exists:roles,id', // Validar que exista el rol
         ]);
 
         if ($validator->fails()) {
@@ -28,7 +29,8 @@ class AuthController extends Controller
             'username' => $request->username,
             'email' => $request->email,
             'password' => bcrypt($request->password),
-            'id_sucursal' => $request->id_sucursal // Agregar sucursal al crear el usuario
+            'id_sucursal' => $request->id_sucursal, // Agregar sucursal al crear el usuario
+            'id_rol' => $request->id_rol, // Agregar rol al crear el usuario
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;

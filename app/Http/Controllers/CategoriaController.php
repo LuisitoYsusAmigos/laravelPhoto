@@ -30,6 +30,8 @@ public function indexPorTipo($tipo)
     // Crear una nueva categoría
     public function store(Request $request)
     {
+        //dd($request->all());
+
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|string|unique:categorias,nombre',
             'tipo' => 'required|string'

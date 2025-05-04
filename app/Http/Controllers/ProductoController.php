@@ -122,55 +122,107 @@ class ProductoController extends Controller
     }
 
     // Actualizar un producto (cambia la imagen si se sube una nueva)
+    /*
     public function update(Request $request, $id)
     {
         $producto = Producto::find($id);
-
+        
         if (!$producto) {
             return response()->json(['message' => 'Producto no encontrado'], 404);
         }
-
+    
         $validator = Validator::make($request->all(), [
-            'descripcion' => 'sometimes|string',
-            'precioCompra' => 'sometimes|integer',
-            'precioVenta' => 'sometimes|integer',
-            'stock' => 'sometimes|integer',
-            'stockMin' => 'sometimes|integer',
-            'actualizacion' => 'sometimes|date',
-            'sucursal_id' => 'sometimes|exists:sucursal,id',
-            'categoria_id' => 'sometimes|exists:categorias,id',
-            'sub_categoria_id' => 'sometimes|exists:sub_categorias,id',
-            'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            'descripcion' => 'required|string',
+            'precioCompra' => 'required|integer',
+            'precioVenta' => 'required|integer',
+            'stock' => 'required|integer',
+            'stockMin' => 'required|integer',
+            'actualizacion' => 'required|date',
+            'sucursal_id' => 'required|exists:sucursal,id',
+            'categoria_id' => 'required|exists:categorias,id',
+            'sub_categoria_id' => 'required|exists:sub_categorias,id'
+            // imagen sigue siendo ignorado
         ]);
-
+    
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
-
-        // Actualizar datos del producto (excepto imagen)
-        $producto->fill($request->except('imagen'));
-
-        // Si se sube una nueva imagen, eliminar la anterior y guardar la nueva con el ID
-        if ($request->hasFile('imagen')) {
-            // Eliminar la imagen anterior si existe
-            if ($producto->imagen && File::exists(public_path($producto->imagen))) {
-                File::delete(public_path($producto->imagen));
-            }
-
-            $file = $request->file('imagen');
-            $extension = $file->getClientOriginalExtension();
-            $filename = $producto->id . '.' . $extension;
-
-            $destinationPath = public_path('storage/productos');
-            $file->move($destinationPath, $filename);
-
-            $producto->imagen = 'storage/productos/' . $filename;
+    
+        // Eliminar imagen actual si existe
+        if ($producto->imagen && \File::exists(public_path($producto->imagen))) {
+            \File::delete(public_path($producto->imagen));
+            $producto->imagen = null; // También limpiamos la referencia en base de datos
         }
-
-        $producto->save();
-
+    
+        // Actualizar el resto de los campos (excepto imagen)
+        $producto->update($request->except('imagen'));
+    
         return response()->json($producto);
     }
+    */
+    
+    public function update(Request $request, $id)
+{
+    $producto = Producto::find($id);
+    
+    if (!$producto) {
+        return response()->json(['message' => 'Producto no encontrado'], 404);
+    }
+
+    $validator = Validator::make($request->all(), [
+        'descripcion' => 'required|string',
+        'precioCompra' => 'required|integer',
+        'precioVenta' => 'required|integer',
+        'stock' => 'required|integer',
+        'stockMin' => 'required|integer',
+        'actualizacion' => 'required|date',
+        'sucursal_id' => 'required|exists:sucursal,id',
+        'categoria_id' => 'required|exists:categorias,id',
+        'sub_categoria_id' => 'required|exists:sub_categorias,id',
+        'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json($validator->errors(), 400);
+    }
+
+    // Eliminar imagen anterior si existe
+    if ($producto->imagen && \File::exists(public_path($producto->imagen))) {
+        \File::delete(public_path($producto->imagen));
+        $producto->imagen = null;
+    }
+
+    // Actualizar campos excepto imagen
+    $producto->update($request->except('imagen'));
+
+    // Si viene una nueva imagen, subirla
+    if ($request->hasFile('imagen')) {
+        $file = $request->file('imagen');
+
+        if (!$file->isValid()) {
+            return response()->json(['error' => 'Archivo de imagen no válido'], 400);
+        }
+
+        $destinationPath = public_path('storage/productos');
+
+        if (!file_exists($destinationPath)) {
+            mkdir($destinationPath, 0777, true);
+        }
+
+        $extension = $file->getClientOriginalExtension();
+        $filename = $producto->id . '.' . $extension;
+
+        $file->move($destinationPath, $filename);
+
+        $producto->imagen = 'storage/productos/' . $filename;
+        $producto->save();
+    }
+
+    return response()->json($producto);
+}
+
+    
+    
 
     // Eliminar un producto (también borra la imagen del almacenamiento)
     public function destroy($id)
