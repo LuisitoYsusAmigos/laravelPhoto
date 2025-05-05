@@ -85,10 +85,15 @@ Route::get('/materiaPrimaTrupanes/search-categorias', [MateriaPrimaTrupanControl
 
 //materia prima vidrio
 Route::get('/materiaPrimaVidrios', [MateriaPrimaVidrioController::class, 'index']);
-Route::post('/materiaPrixmaVidrio', [MateriaPrimaVidrioController::class, 'store']);
+Route::post('/materiaPrimaVidrio', [MateriaPrimaVidrioController::class, 'store']);
 Route::get('/materiaPrimaVidrio/{id}', [MateriaPrimaVidrioController::class, 'show']);
-Route::put('/materiaPrimaVidrio/{id}', [MateriaPrimaVidrioController::class, 'update']);
+Route::post('/materiaPrimaVidrio/edit/{id}', [MateriaPrimaVidrioController::class, 'update']);
 Route::delete('/materiaPrimaVidrio/{id}', [MateriaPrimaVidrioController::class, 'destroy']);
+
+Route::get('/materiaPrimaVidrios/paginados', [MateriaPrimaVidrioController::class, 'indexPaginado']); // Listado paginado
+Route::get('/materiaPrimaVidrios/search', [MateriaPrimaVidrioController::class, 'search']); // Búsqueda general
+Route::get('/materiaPrimaVidrios/search-categorias', [MateriaPrimaVidrioController::class, 'searchCategorias']); // Filtro por categoría y subcategoría
+
 
 // stock varila 
 

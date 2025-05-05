@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -8,41 +7,50 @@ use Illuminate\Support\Facades\Validator;
 
 class MateriaPrimaVidrioController extends Controller
 {
-    // Obtener todos los vidrios
     public function index()
     {
-        $vidrios = MateriaPrimaVidrio::all();
-        return response()->json($vidrios);
+        return response()->json(MateriaPrimaVidrio::all());
     }
 
-    // Crear un nuevo vidrio
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'descripcion' => 'required|string',
             'grosor' => 'required|integer|min:1',
             'factor_desperdicio' => 'required|numeric|min:0|max:100',
-            'categoria' => 'required|string',
-            'sub_categoria' => 'required|string',
+            'categoria_id' => 'required|exists:categorias,id',
+            'sub_categoria_id' => 'required|exists:sub_categorias,id',
             'stock_global_actual' => 'required|integer|min:0',
             'stock_global_minimo' => 'required|integer|min:0',
             'id_sucursal' => 'required|exists:sucursal,id',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 
-        $vidrio = MateriaPrimaVidrio::create($request->all());
+        $vidrio = MateriaPrimaVidrio::create($request->except('imagen'));
+
+        if ($request->hasFile('imagen')) {
+            $file = $request->file('imagen');
+            $filename = $vidrio->id . '.' . $file->getClientOriginalExtension();
+            $path = public_path('storage/materias_primas_vidrio');
+
+            if (!file_exists($path)) mkdir($path, 0777, true);
+
+            $file->move($path, $filename);
+            $vidrio->imagen = 'storage/materias_primas_vidrio/' . $filename;
+            $vidrio->save();
+        }
 
         return response()->json($vidrio, 201);
     }
 
-    // Obtener un vidrio por su ID
     public function show($id)
     {
         $vidrio = MateriaPrimaVidrio::find($id);
-        
+
         if (!$vidrio) {
             return response()->json(['message' => 'Vidrio no encontrado'], 404);
         }
@@ -50,7 +58,6 @@ class MateriaPrimaVidrioController extends Controller
         return response()->json($vidrio);
     }
 
-    // Actualizar un vidrio
     public function update(Request $request, $id)
     {
         $vidrio = MateriaPrimaVidrio::find($id);
@@ -63,23 +70,39 @@ class MateriaPrimaVidrioController extends Controller
             'descripcion' => 'sometimes|string',
             'grosor' => 'sometimes|integer|min:1',
             'factor_desperdicio' => 'sometimes|numeric|min:0|max:100',
-            'categoria' => 'sometimes|string',
-            'sub_categoria' => 'sometimes|string',
+            'categoria_id' => 'sometimes|exists:categorias,id',
+            'sub_categoria_id' => 'sometimes|exists:sub_categorias,id',
             'stock_global_actual' => 'sometimes|integer|min:0',
             'stock_global_minimo' => 'sometimes|integer|min:0',
             'id_sucursal' => 'sometimes|exists:sucursal,id',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 
-        $vidrio->update($request->all());
+        if ($request->hasFile('imagen')) {
+            if ($vidrio->imagen && file_exists(public_path($vidrio->imagen))) {
+                unlink(public_path($vidrio->imagen));
+            }
+
+            $file = $request->file('imagen');
+            $filename = $vidrio->id . '.' . $file->getClientOriginalExtension();
+            $path = public_path('storage/materias_primas_vidrio');
+
+            if (!file_exists($path)) mkdir($path, 0777, true);
+
+            $file->move($path, $filename);
+            $vidrio->imagen = 'storage/materias_primas_vidrio/' . $filename;
+        }
+
+        $vidrio->update($request->except('imagen'));
+        $vidrio->save();
 
         return response()->json($vidrio);
     }
 
-    // Eliminar un vidrio
     public function destroy($id)
     {
         $vidrio = MateriaPrimaVidrio::find($id);
@@ -88,8 +111,90 @@ class MateriaPrimaVidrioController extends Controller
             return response()->json(['message' => 'Vidrio no encontrado'], 404);
         }
 
+        if ($vidrio->imagen && file_exists(public_path($vidrio->imagen))) {
+            unlink(public_path($vidrio->imagen));
+        }
+
         $vidrio->delete();
 
         return response()->json(['message' => 'Vidrio eliminado correctamente']);
+    }
+
+    public function indexPaginado(Request $request)
+    {
+        $page = max((int)$request->input('page', 1), 1);
+        $perPage = max((int)$request->input('perPage', 10), 1);
+
+        $totalItems = MateriaPrimaVidrio::count();
+        $totalPages = ceil($totalItems / $perPage);
+
+        $vidrios = MateriaPrimaVidrio::skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
+
+        return response()->json([
+            'currentPage' => $page,
+            'perPage' => $perPage,
+            'totalItems' => $totalItems,
+            'totalPages' => $totalPages,
+            'data' => $vidrios
+        ]);
+    }
+
+    public function search(Request $request)
+    {
+        $searchTerm = $request->input('search', '');
+
+        if (empty($searchTerm)) {
+            return response()->json(MateriaPrimaVidrio::all());
+        }
+
+        $vidrios = MateriaPrimaVidrio::where('descripcion', 'LIKE', "%{$searchTerm}%")->get();
+
+        if ($vidrios->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron coincidencias para: ' . $searchTerm,
+                'data' => []
+            ]);
+        }
+
+        return response()->json($vidrios);
+    }
+
+    public function searchCategorias(Request $request)
+    {
+        $categoria = $request->input('categoria_id');
+        $subCategoria = $request->input('sub_categoria_id');
+        $page = max((int)$request->input('page', 1), 1);
+        $perPage = max((int)$request->input('perPage', 10), 1);
+
+        $query = MateriaPrimaVidrio::query();
+
+        if ($categoria) {
+            $query->where('categoria_id', $categoria);
+        }
+
+        if ($subCategoria) {
+            $query->where('sub_categoria_id', $subCategoria);
+        }
+
+        $totalItems = $query->count();
+        $totalPages = ceil($totalItems / $perPage);
+
+        $vidrios = $query->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
+
+        return response()->json([
+            'currentPage' => $page,
+            'perPage' => $perPage,
+            'totalItems' => $totalItems,
+            'totalPages' => $totalPages,
+            'filters' => [
+                'categoria_id' => $categoria,
+                'sub_categoria_id' => $subCategoria
+            ],
+            'data' => $vidrios
+        ]);
     }
 }
