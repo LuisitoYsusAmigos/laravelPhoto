@@ -62,7 +62,7 @@ Route::get('/productos/paginados', [ProductoController::class, 'indexPaginado'])
 Route::get('/materiaPrimaVarillas', [MateriaPrimaVarillaController::class, 'index']);
 Route::post('/materiaPrimaVarilla', [MateriaPrimaVarillaController::class, 'store']);
 Route::get('/materiaPrimaVarilla/{id}', [MateriaPrimaVarillaController::class, 'show']);
-Route::put('/materiaPrimaVarilla/{id}', [MateriaPrimaVarillaController::class, 'update']);
+Route::post('/materiaPrimaVarilla/edit/{id}', [MateriaPrimaVarillaController::class, 'update']);
 Route::delete('/materiaPrimaVarilla/{id}', [MateriaPrimaVarillaController::class, 'destroy']);
 
 // Funciones adicionales para Materia Prima Varilla
@@ -75,7 +75,7 @@ Route::get('/materiaPrimaVarillas/search-categorias', [MateriaPrimaVarillaContro
 Route::get('/materiaPrimaTrupanes', [MateriaPrimaTrupanController::class, 'index']);
 Route::post('/materiaPrimaTrupan', [MateriaPrimaTrupanController::class, 'store']);
 Route::get('/materiaPrimaTrupan/{id}', [MateriaPrimaTrupanController::class, 'show']);
-Route::put('/materiaPrimaTrupan/{id}', [MateriaPrimaTrupanController::class, 'update']);
+Route::post('/materiaPrimaTrupan/edit/{id}', [MateriaPrimaTrupanController::class, 'update']);
 Route::delete('/materiaPrimaTrupan/{id}', [MateriaPrimaTrupanController::class, 'destroy']);
 
 Route::get('/materiaPrimaTrupanes/paginados', [MateriaPrimaTrupanController::class, 'indexPaginado']); // Listado paginado

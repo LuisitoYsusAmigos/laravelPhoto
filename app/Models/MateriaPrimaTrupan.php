@@ -8,23 +8,35 @@ use Illuminate\Database\Eloquent\Model;
 class MateriaPrimaTrupan extends Model
 {
     use HasFactory;
-
-    protected $table = 'materia_prima_trupans'; // Nombre de la tabla en la BD
-
     protected $fillable = [
         'descripcion',
         'grosor',
         'factor_desperdicio',
-        'categoria',
-        'sub_categoria',
+        'categoria_id',
+        'sub_categoria_id',
         'stock_global_actual',
         'stock_global_minimo',
         'id_sucursal',
+        'imagen'
     ];
-
-    // Relación con la tabla Sucursal
+    
+    public function categoria()
+    {
+        return $this->belongsTo(Categoria::class);
+    }
+    
+    public function subCategoria()
+    {
+        return $this->belongsTo(SubCategoria::class);
+    }
+    
     public function sucursal()
     {
         return $this->belongsTo(Sucursal::class, 'id_sucursal');
+    }
+    
+    public function getImagenUrlAttribute()
+    {
+        return $this->imagen ? asset('storage/materias_primas_trupan/' . basename($this->imagen)) : null;
     }
 }

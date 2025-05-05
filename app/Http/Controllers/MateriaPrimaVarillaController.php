@@ -8,14 +8,11 @@ use Illuminate\Support\Facades\Validator;
 
 class MateriaPrimaVarillaController extends Controller
 {
-    // Obtener todas las varillas
     public function index()
     {
-        $varillas = MateriaPrimaVarilla::all();
-        return response()->json($varillas);
+        return response()->json(MateriaPrimaVarilla::all());
     }
 
-    // Crear una nueva varilla
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -23,23 +20,37 @@ class MateriaPrimaVarillaController extends Controller
             'grosor' => 'required|integer',
             'ancho' => 'required|integer',
             'factor_desperdicio' => 'required|numeric|between:0,100',
-            'categoria' => 'required|string',
-            'sub_categoria' => 'required|string',
+            'categoria_id' => 'required|exists:categorias,id',
+            'sub_categoria_id' => 'required|exists:sub_categorias,id',
             'stock_global_actual' => 'required|integer',
             'stock_global_minimo' => 'required|integer',
-            'id_sucursal' => 'required|exists:sucursal,id'
+            'id_sucursal' => 'required|exists:sucursal,id',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 
-        $varilla = MateriaPrimaVarilla::create($request->all());
+        $varilla = MateriaPrimaVarilla::create($request->except('imagen'));
+
+        if ($request->hasFile('imagen')) {
+            $file = $request->file('imagen');
+            $filename = $varilla->id . '.' . $file->getClientOriginalExtension();
+            $destinationPath = public_path('storage/materias_primas');
+
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0777, true);
+            }
+
+            $file->move($destinationPath, $filename);
+            $varilla->imagen = 'storage/materias_primas/' . $filename;
+            $varilla->save();
+        }
 
         return response()->json($varilla, 201);
     }
 
-    // Obtener una varilla por su ID
     public function show($id)
     {
         $varilla = MateriaPrimaVarilla::find($id);
@@ -51,7 +62,6 @@ class MateriaPrimaVarillaController extends Controller
         return response()->json($varilla);
     }
 
-    // Actualizar una varilla
     public function update(Request $request, $id)
     {
         $varilla = MateriaPrimaVarilla::find($id);
@@ -65,29 +75,52 @@ class MateriaPrimaVarillaController extends Controller
             'grosor' => 'sometimes|integer',
             'ancho' => 'sometimes|integer',
             'factor_desperdicio' => 'sometimes|numeric|between:0,100',
-            'categoria' => 'sometimes|string',
-            'sub_categoria' => 'sometimes|string',
+            'categoria_id' => 'sometimes|exists:categorias,id',
+            'sub_categoria_id' => 'sometimes|exists:sub_categorias,id',
             'stock_global_actual' => 'sometimes|integer',
             'stock_global_minimo' => 'sometimes|integer',
-            'id_sucursal' => 'sometimes|exists:sucursal,id'
+            'id_sucursal' => 'sometimes|exists:sucursal,id',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            //'imagen' => 'image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 
-        $varilla->update($request->all());
+        if ($request->hasFile('imagen')) {
+            if ($varilla->imagen && file_exists(public_path($varilla->imagen))) {
+                unlink(public_path($varilla->imagen));
+            }
+
+            $file = $request->file('imagen');
+            $filename = $varilla->id . '.' . $file->getClientOriginalExtension();
+            $destinationPath = public_path('storage/materias_primas');
+
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0777, true);
+            }
+
+            $file->move($destinationPath, $filename);
+            $varilla->imagen = 'storage/materias_primas/' . $filename;
+        }
+
+        $varilla->update($request->except('imagen'));
+        $varilla->save();
 
         return response()->json($varilla);
     }
 
-    // Eliminar una varilla
     public function destroy($id)
     {
         $varilla = MateriaPrimaVarilla::find($id);
 
         if (!$varilla) {
             return response()->json(['message' => 'Varilla no encontrada'], 404);
+        }
+
+        if ($varilla->imagen && file_exists(public_path($varilla->imagen))) {
+            unlink(public_path($varilla->imagen));
         }
 
         $varilla->delete();
@@ -124,10 +157,7 @@ class MateriaPrimaVarillaController extends Controller
             return response()->json(MateriaPrimaVarilla::all());
         }
 
-        $varillas = MateriaPrimaVarilla::where('descripcion', 'LIKE', "%{$searchTerm}%")
-            ->orWhere('categoria', 'LIKE', "%{$searchTerm}%")
-            ->orWhere('sub_categoria', 'LIKE', "%{$searchTerm}%")
-            ->get();
+        $varillas = MateriaPrimaVarilla::where('descripcion', 'LIKE', "%{$searchTerm}%")->get();
 
         if ($varillas->isEmpty()) {
             return response()->json([
@@ -141,19 +171,19 @@ class MateriaPrimaVarillaController extends Controller
 
     public function searchCategorias(Request $request)
     {
-        $categoria = $request->input('categoria');
-        $subCategoria = $request->input('sub_categoria');
+        $categoria = $request->input('categoria_id');
+        $subCategoria = $request->input('sub_categoria_id');
         $page = max((int)$request->input('page', 1), 1);
         $perPage = max((int)$request->input('perPage', 10), 1);
 
         $query = MateriaPrimaVarilla::query();
 
         if ($categoria) {
-            $query->where('categoria', $categoria);
+            $query->where('categoria_id', $categoria);
         }
 
         if ($subCategoria) {
-            $query->where('sub_categoria', $subCategoria);
+            $query->where('sub_categoria_id', $subCategoria);
         }
 
         $totalItems = $query->count();
@@ -169,8 +199,8 @@ class MateriaPrimaVarillaController extends Controller
             'totalItems' => $totalItems,
             'totalPages' => $totalPages,
             'filters' => [
-                'categoria' => $categoria,
-                'sub_categoria' => $subCategoria
+                'categoria_id' => $categoria,
+                'sub_categoria_id' => $subCategoria
             ],
             'data' => $varillas
         ]);

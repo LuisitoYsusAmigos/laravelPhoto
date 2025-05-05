@@ -18,11 +18,12 @@ return new class extends Migration
             $table->integer('grosor'); // Grosor en unidades (ejemplo: mm)
             $table->integer('ancho'); // Ancho en unidades (ejemplo: mm)
             $table->decimal('factor_desperdicio', 5, 2); // Factor de desperdicio con 2 decimales
-            $table->string('categoria'); // Categoría de la varilla
-            $table->string('sub_categoria'); // Subcategoría
+            $table->foreignId('categoria_id')->constrained('categorias')->onDelete('cascade');
+            $table->foreignId('sub_categoria_id')->constrained('sub_categorias')->onDelete('cascade');  
             $table->integer('stock_global_actual'); // Stock actual
             $table->integer('stock_global_minimo'); // Stock mínimo
             $table->foreignId('id_sucursal')->constrained('sucursal')->onDelete('cascade'); // Relación con la tabla sucursales
+            $table->string('imagen')->nullable();     
             $table->timestamps(); // created_at y updated_at
         });
 
@@ -33,8 +34,8 @@ return new class extends Migration
                 'grosor' => 12,
                 'ancho' => 10,
                 'factor_desperdicio' => 1.05,
-                'categoria' => 'Metálica',
-                'sub_categoria' => 'Acero',
+                'categoria_id' => 1,
+                'sub_categoria_id' => 1,
                 'stock_global_actual' => 150,
                 'stock_global_minimo' => 50,
                 'id_sucursal' => 1,
@@ -46,8 +47,8 @@ return new class extends Migration
                 'grosor' => 10,
                 'ancho' => 8,
                 'factor_desperdicio' => 1.03,
-                'categoria' => 'Metálica',
-                'sub_categoria' => 'Hierro',
+                'categoria_id' => 1,
+                'sub_categoria_id' => 1,
                 'stock_global_actual' => 100,
                 'stock_global_minimo' => 40,
                 'id_sucursal' => 1,
@@ -59,8 +60,8 @@ return new class extends Migration
                 'grosor' => 15,
                 'ancho' => 12,
                 'factor_desperdicio' => 1.08,
-                'categoria' => 'Galvanizada',
-                'sub_categoria' => 'Zinc',
+                'categoria_id' => 1,
+                'sub_categoria_id' => 1,
                 'stock_global_actual' => 120,
                 'stock_global_minimo' => 30,
                 'id_sucursal' => 1,
@@ -72,8 +73,8 @@ return new class extends Migration
                 'grosor' => 16,
                 'ancho' => 14,
                 'factor_desperdicio' => 1.10,
-                'categoria' => 'Metálica',
-                'sub_categoria' => 'Reforzada',
+                'categoria_id' => 1,
+                'sub_categoria_id' => 1,
                 'stock_global_actual' => 90,
                 'stock_global_minimo' => 25,
                 'id_sucursal' => 1,
@@ -85,8 +86,8 @@ return new class extends Migration
                 'grosor' => 8,
                 'ancho' => 6,
                 'factor_desperdicio' => 1.02,
-                'categoria' => 'Ligera',
-                'sub_categoria' => 'Aluminio',
+                'categoria_id' => 1,
+                'sub_categoria_id' => 1,
                 'stock_global_actual' => 80,
                 'stock_global_minimo' => 20,
                 'id_sucursal' => 1,

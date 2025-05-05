@@ -8,37 +8,48 @@ use Illuminate\Support\Facades\Validator;
 
 class MateriaPrimaTrupanController extends Controller
 {
-    // Obtener todos los trupanes
     public function index()
     {
-        $trupanes = MateriaPrimaTrupan::all();
-        return response()->json($trupanes);
+        return response()->json(MateriaPrimaTrupan::all());
     }
 
-    // Crear un nuevo trupan
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'descripcion' => 'required|string',
             'grosor' => 'required|integer|min:1',
             'factor_desperdicio' => 'required|numeric|min:0|max:100',
-            'categoria' => 'required|string',
-            'sub_categoria' => 'required|string',
+            'categoria_id' => 'required|exists:categorias,id',
+            'sub_categoria_id' => 'required|exists:sub_categorias,id',
             'stock_global_actual' => 'required|integer|min:0',
             'stock_global_minimo' => 'required|integer|min:0',
             'id_sucursal' => 'required|exists:sucursal,id',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 
-        $trupan = MateriaPrimaTrupan::create($request->all());
+        $trupan = MateriaPrimaTrupan::create($request->except('imagen'));
+
+        if ($request->hasFile('imagen')) {
+            $file = $request->file('imagen');
+            $filename = $trupan->id . '.' . $file->getClientOriginalExtension();
+            $destinationPath = public_path('storage/materias_primas_trupan');
+
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0777, true);
+            }
+
+            $file->move($destinationPath, $filename);
+            $trupan->imagen = 'storage/materias_primas_trupan/' . $filename;
+            $trupan->save();
+        }
 
         return response()->json($trupan, 201);
     }
 
-    // Obtener un trupan por su ID
     public function show($id)
     {
         $trupan = MateriaPrimaTrupan::find($id);
@@ -50,7 +61,6 @@ class MateriaPrimaTrupanController extends Controller
         return response()->json($trupan);
     }
 
-    // Actualizar un trupan
     public function update(Request $request, $id)
     {
         $trupan = MateriaPrimaTrupan::find($id);
@@ -63,23 +73,41 @@ class MateriaPrimaTrupanController extends Controller
             'descripcion' => 'sometimes|string',
             'grosor' => 'sometimes|integer|min:1',
             'factor_desperdicio' => 'sometimes|numeric|min:0|max:100',
-            'categoria' => 'sometimes|string',
-            'sub_categoria' => 'sometimes|string',
+            'categoria_id' => 'sometimes|exists:categorias,id',
+            'sub_categoria_id' => 'sometimes|exists:sub_categorias,id',
             'stock_global_actual' => 'sometimes|integer|min:0',
             'stock_global_minimo' => 'sometimes|integer|min:0',
             'id_sucursal' => 'sometimes|exists:sucursal,id',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 
-        $trupan->update($request->all());
+        if ($request->hasFile('imagen')) {
+            if ($trupan->imagen && file_exists(public_path($trupan->imagen))) {
+                unlink(public_path($trupan->imagen));
+            }
+
+            $file = $request->file('imagen');
+            $filename = $trupan->id . '.' . $file->getClientOriginalExtension();
+            $destinationPath = public_path('storage/materias_primas_trupan');
+
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0777, true);
+            }
+
+            $file->move($destinationPath, $filename);
+            $trupan->imagen = 'storage/materias_primas_trupan/' . $filename;
+        }
+
+        $trupan->update($request->except('imagen'));
+        $trupan->save();
 
         return response()->json($trupan);
     }
 
-    // Eliminar un trupan
     public function destroy($id)
     {
         $trupan = MateriaPrimaTrupan::find($id);
@@ -88,10 +116,15 @@ class MateriaPrimaTrupanController extends Controller
             return response()->json(['message' => 'Trupan no encontrado'], 404);
         }
 
+        if ($trupan->imagen && file_exists(public_path($trupan->imagen))) {
+            unlink(public_path($trupan->imagen));
+        }
+
         $trupan->delete();
 
         return response()->json(['message' => 'Trupan eliminado correctamente']);
     }
+
     public function indexPaginado(Request $request)
     {
         $page = max((int)$request->input('page', 1), 1);
@@ -112,6 +145,7 @@ class MateriaPrimaTrupanController extends Controller
             'data' => $trupanes
         ]);
     }
+
     public function search(Request $request)
     {
         $searchTerm = $request->input('search', '');
@@ -120,10 +154,7 @@ class MateriaPrimaTrupanController extends Controller
             return response()->json(MateriaPrimaTrupan::all());
         }
 
-        $trupanes = MateriaPrimaTrupan::where('descripcion', 'LIKE', "%{$searchTerm}%")
-            ->orWhere('categoria', 'LIKE', "%{$searchTerm}%")
-            ->orWhere('sub_categoria', 'LIKE', "%{$searchTerm}%")
-            ->get();
+        $trupanes = MateriaPrimaTrupan::where('descripcion', 'LIKE', "%{$searchTerm}%")->get();
 
         if ($trupanes->isEmpty()) {
             return response()->json([
@@ -134,21 +165,22 @@ class MateriaPrimaTrupanController extends Controller
 
         return response()->json($trupanes);
     }
+
     public function searchCategorias(Request $request)
     {
-        $categoria = $request->input('categoria');
-        $subCategoria = $request->input('sub_categoria');
+        $categoria = $request->input('categoria_id');
+        $subCategoria = $request->input('sub_categoria_id');
         $page = max((int)$request->input('page', 1), 1);
         $perPage = max((int)$request->input('perPage', 10), 1);
 
         $query = MateriaPrimaTrupan::query();
 
         if ($categoria) {
-            $query->where('categoria', $categoria);
+            $query->where('categoria_id', $categoria);
         }
 
         if ($subCategoria) {
-            $query->where('sub_categoria', $subCategoria);
+            $query->where('sub_categoria_id', $subCategoria);
         }
 
         $totalItems = $query->count();
@@ -164,8 +196,8 @@ class MateriaPrimaTrupanController extends Controller
             'totalItems' => $totalItems,
             'totalPages' => $totalPages,
             'filters' => [
-                'categoria' => $categoria,
-                'sub_categoria' => $subCategoria
+                'categoria_id' => $categoria,
+                'sub_categoria_id' => $subCategoria
             ],
             'data' => $trupanes
         ]);

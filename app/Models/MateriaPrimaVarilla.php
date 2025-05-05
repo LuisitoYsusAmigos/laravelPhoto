@@ -13,16 +13,31 @@ class MateriaPrimaVarilla extends Model
         'grosor',
         'ancho',
         'factor_desperdicio',
-        'categoria',
-        'sub_categoria',
+        'categoria_id',
+        'sub_categoria_id',
         'stock_global_actual',
         'stock_global_minimo',
-        'id_sucursal'
+        'id_sucursal',
+        'imagen',
     ];
 
-    // Relación con la sucursal
     public function sucursal()
     {
         return $this->belongsTo(Sucursal::class, 'id_sucursal');
+    }
+
+    public function categoria()
+    {
+        return $this->belongsTo(Categoria::class);
+    }
+
+    public function subCategoria()
+    {
+        return $this->belongsTo(SubCategoria::class);
+    }
+
+    public function getImagenUrlAttribute()
+    {
+        return $this->imagen ? asset('storage/materias_primas/' . basename($this->imagen)) : null;
     }
 }
