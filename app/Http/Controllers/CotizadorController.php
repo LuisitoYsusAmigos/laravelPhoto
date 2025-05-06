@@ -203,6 +203,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'stock' => $item->stock_global_actual,
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
+            'imagen'=> $item->imagen,
         ];
     });
 
@@ -215,6 +216,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'stock' => $item->stock_global_actual,
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
+            'imagen'=> $item->imagen,
         ];
     });
 
@@ -227,6 +229,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'stock' => $item->stock_global_actual,
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
+            'imagen'=> $item->imagen,
         ];
     });
 
@@ -239,6 +242,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'stock' => $item->stock,
             'sucursal_id' => $item->sucursal_id,
             'created_at' => $item->created_at,
+            'imagen'=> $item->imagen,
         ];
     });
 
