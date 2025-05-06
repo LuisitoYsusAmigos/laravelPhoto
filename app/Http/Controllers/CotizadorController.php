@@ -139,6 +139,11 @@ public function searchPaginadoGeneral(Request $request)
             'stock' => $item->stock_global_actual,
             'sucursal_id' => $item->id_sucursal,
             'imagen'=> $item->imagen,
+            'grosor'=> $item->grosor,
+            'ancho'=> $item->ancho,
+            'stock_global_actual'=> $item->stock_global_actual,
+            'stock_global_minimo'=> $item->stock_global_minimo,
+            'factor_desperdicio'=> $item->factor_desperdicio,
         ];
     });
 
@@ -152,6 +157,10 @@ public function searchPaginadoGeneral(Request $request)
             'stock' => $item->stock_global_actual,
             'sucursal_id' => $item->id_sucursal,
             'imagen'=> $item->imagen,
+            'grosor'=> $item->grosor,
+            'stock_global_actual'=> $item->stock_global_actual,
+            'stock_global_minimo'=> $item->stock_global_minimo,
+            'factor_desperdicio'=> $item->factor_desperdicio,
         ];
     });
 
@@ -165,6 +174,10 @@ public function searchPaginadoGeneral(Request $request)
             'stock' => $item->stock_global_actual,
             'sucursal_id' => $item->id_sucursal,
             'imagen'=> $item->imagen,
+            'grosor'=> $item->grosor,
+            'stock_global_actual'=> $item->stock_global_actual,
+            'stock_global_minimo'=> $item->stock_global_minimo,
+            'factor_desperdicio'=> $item->factor_desperdicio,
         ];
     });
 
@@ -178,6 +191,9 @@ public function searchPaginadoGeneral(Request $request)
             'stock' => $item->stock,
             'sucursal_id' => $item->sucursal_id,
             'imagen'=> $item->imagen,
+            'precioCompra'=> $item->precioCompra,
+            'precioVenta'=> $item->precioVenta,
+            'stockMin'=> $item->stockMin,
         ];
     });
 
@@ -213,6 +229,11 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
+            'grosor'=> $item->grosor,
+            'ancho'=> $item->ancho,
+            'stock_global_actual'=> $item->stock_global_actual,
+            'stock_global_minimo'=> $item->stock_global_minimo,
+            'factor_desperdicio'=> $item->factor_desperdicio,
         ];
     });
 
@@ -227,6 +248,10 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
+            'grosor'=> $item->grosor,
+            'stock_global_actual'=> $item->stock_global_actual,
+            'stock_global_minimo'=> $item->stock_global_minimo,
+            'factor_desperdicio'=> $item->factor_desperdicio,
         ];
     });
 
@@ -241,6 +266,10 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
+            'grosor'=> $item->grosor,
+            'stock_global_actual'=> $item->stock_global_actual,
+            'stock_global_minimo'=> $item->stock_global_minimo,
+            'factor_desperdicio'=> $item->factor_desperdicio,
         ];
     });
 
@@ -255,6 +284,9 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'sucursal_id' => $item->sucursal_id,
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
+            'precioCompra'=> $item->precioCompra,
+            'precioVenta'=> $item->precioVenta,
+            'stockMin'=> $item->stockMin,
         ];
     });
 
