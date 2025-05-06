@@ -24,7 +24,7 @@ class MateriaPrimaVarillaController extends Controller
             'sub_categoria_id' => 'required|exists:sub_categorias,id',
             'stock_global_actual' => 'required|integer',
             'stock_global_minimo' => 'required|integer',
-            'sucursal_id' => 'required|exists:sucursal,id',
+            'id_sucursal' => 'required|exists:sucursal,id',
             'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
@@ -79,7 +79,7 @@ class MateriaPrimaVarillaController extends Controller
             'sub_categoria_id' => 'sometimes|exists:sub_categorias,id',
             'stock_global_actual' => 'sometimes|integer',
             'stock_global_minimo' => 'sometimes|integer',
-            'sucursal_id' => 'sometimes|exists:sucursal,id',
+            'id_sucursal' => 'sometimes|exists:sucursal,id',
             'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
             //'imagen' => 'image|mimes:jpg,jpeg,png|max:2048'
         ]);
