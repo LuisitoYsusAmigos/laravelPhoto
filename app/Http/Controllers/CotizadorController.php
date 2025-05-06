@@ -131,6 +131,7 @@ public function searchPaginadoGeneral(Request $request)
     // Buscar en cada tabla
     $varillas = MateriaPrimaVarilla::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
         return [
+            'id' => $item->id,
             'tipo' => 'varilla',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria,
@@ -143,6 +144,7 @@ public function searchPaginadoGeneral(Request $request)
 
     $vidrios = MateriaPrimaVidrio::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
         return [
+            'id' => $item->id,
             'tipo' => 'vidrio',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria,
@@ -155,6 +157,7 @@ public function searchPaginadoGeneral(Request $request)
 
     $trupan = MateriaPrimaTrupan::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
         return [
+            'id' => $item->id,
             'tipo' => 'trupan',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria,
@@ -167,6 +170,7 @@ public function searchPaginadoGeneral(Request $request)
 
     $productos = Producto::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
         return [
+            'id' => $item->id,
             'tipo' => 'producto',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria,
@@ -200,6 +204,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
 
     $varillas = MateriaPrimaVarilla::all()->map(function ($item) {
         return [
+            'id' => $item->id,
             'tipo' => 'varilla',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria,
@@ -213,6 +218,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
 
     $vidrios = MateriaPrimaVidrio::all()->map(function ($item) {
         return [
+            'id' => $item->id,
             'tipo' => 'vidrio',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria,
@@ -226,6 +232,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
 
     $trupan = MateriaPrimaTrupan::all()->map(function ($item) {
         return [
+            'id' => $item->id,
             'tipo' => 'trupan',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria,
@@ -239,6 +246,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
 
     $productos = Producto::all()->map(function ($item) {
         return [
+            'id' => $item->id,
             'tipo' => 'producto',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria,
