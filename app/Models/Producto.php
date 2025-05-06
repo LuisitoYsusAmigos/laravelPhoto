@@ -15,7 +15,7 @@ class Producto extends Model
         'stock',
         'stockMin',
         'actualizacion',
-        'sucursal_id',
+        'id_sucursal',
         'categoria_id',
         'sub_categoria_id',
         'imagen'

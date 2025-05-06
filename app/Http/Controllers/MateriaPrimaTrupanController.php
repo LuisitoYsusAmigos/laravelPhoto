@@ -23,7 +23,7 @@ class MateriaPrimaTrupanController extends Controller
             'sub_categoria_id' => 'required|exists:sub_categorias,id',
             'stock_global_actual' => 'required|integer|min:0',
             'stock_global_minimo' => 'required|integer|min:0',
-            'id_sucursal' => 'required|exists:sucursal,id',
+            'sucursal_id' => 'required|exists:sucursal,id',
             'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
@@ -77,7 +77,7 @@ class MateriaPrimaTrupanController extends Controller
             'sub_categoria_id' => 'sometimes|exists:sub_categorias,id',
             'stock_global_actual' => 'sometimes|integer|min:0',
             'stock_global_minimo' => 'sometimes|integer|min:0',
-            'id_sucursal' => 'sometimes|exists:sucursal,id',
+            'sucursal_id' => 'sometimes|exists:sucursal,id',
             'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 

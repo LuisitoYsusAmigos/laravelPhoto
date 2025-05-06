@@ -166,7 +166,7 @@ public function searchPaginadoGeneral(Request $request)
         return [
             'tipo' => 'producto',
             'descripcion' => $item->descripcion,
-            'categoria' => $item->categoria_id,
+            'categoria' => $item->categoria,
             'sub_categoria' => $item->sub_categoria_id,
             'stock' => $item->stock,
             'sucursal_id' => $item->sucursal_id,
@@ -237,8 +237,8 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
         return [
             'tipo' => 'producto',
             'descripcion' => $item->descripcion,
-            'categoria' => $item->categoria_id,
-            'sub_categoria' => $item->sub_categoria_id,
+            'categoria' => $item->categoria,
+            'sub_categoria' => $item->sub_categoria,
             'stock' => $item->stock,
             'sucursal_id' => $item->sucursal_id,
             'created_at' => $item->created_at,

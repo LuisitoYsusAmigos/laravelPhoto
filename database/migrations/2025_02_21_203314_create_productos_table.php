@@ -21,7 +21,7 @@ return new class extends Migration
             $table->integer('stock');
             $table->integer('stockMin');
             $table->date('actualizacion');
-            $table->foreignId('sucursal_id')->constrained('sucursal')->onDelete('cascade');
+            $table->foreignId('id_sucursal')->constrained('sucursal')->onDelete('cascade');
             $table->foreignId('categoria_id')->constrained('categorias')->onDelete('cascade');
             $table->foreignId('sub_categoria_id')->constrained('sub_categorias')->onDelete('cascade');      
             $table->string('imagen')->nullable();      
@@ -35,7 +35,7 @@ return new class extends Migration
                 'stock'=> 50,
                 'stockMin'=> 10,
                 'actualizacion'=> '2024-03-13',
-                'sucursal_id'=> 1,
+                'id_sucursal'=> 1,
                 'categoria_id'=> 1,
                 'sub_categoria_id'=> 1
             ],
