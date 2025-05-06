@@ -133,7 +133,8 @@ class MateriaPrimaTrupanController extends Controller
         $totalItems = MateriaPrimaTrupan::count();
         $totalPages = ceil($totalItems / $perPage);
 
-        $trupanes = MateriaPrimaTrupan::skip(($page - 1) * $perPage)
+        $trupanes = MateriaPrimaTrupan::latest()
+            ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
 

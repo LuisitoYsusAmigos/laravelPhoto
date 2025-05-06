@@ -137,6 +137,7 @@ public function searchPaginadoGeneral(Request $request)
             'sub_categoria' => $item->sub_categoria,
             'stock' => $item->stock_global_actual,
             'sucursal_id' => $item->id_sucursal,
+            'imagen'=> $item->imagen,
         ];
     });
 
@@ -148,6 +149,7 @@ public function searchPaginadoGeneral(Request $request)
             'sub_categoria' => $item->sub_categoria,
             'stock' => $item->stock_global_actual,
             'sucursal_id' => $item->id_sucursal,
+            'imagen'=> $item->imagen,
         ];
     });
 
@@ -159,6 +161,7 @@ public function searchPaginadoGeneral(Request $request)
             'sub_categoria' => $item->sub_categoria,
             'stock' => $item->stock_global_actual,
             'sucursal_id' => $item->id_sucursal,
+            'imagen'=> $item->imagen,
         ];
     });
 
@@ -170,6 +173,7 @@ public function searchPaginadoGeneral(Request $request)
             'sub_categoria' => $item->sub_categoria_id,
             'stock' => $item->stock,
             'sucursal_id' => $item->sucursal_id,
+            'imagen'=> $item->imagen,
         ];
     });
 

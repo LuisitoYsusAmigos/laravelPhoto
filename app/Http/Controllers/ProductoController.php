@@ -12,31 +12,32 @@ class ProductoController extends Controller
 {
     // Obtener todos los productos
     public function indexPaginado(Request $request)
-{
-    // Obtener parámetros de paginación con valores por defecto
-    $page = (int) $request->input('page', 1);
-    $perPage = (int) $request->input('perPage', 10);
+    {
+        // Obtener parámetros de paginación con valores por defecto
+        $page = (int) $request->input('page', 1);
+        $perPage = (int) $request->input('perPage', 10);
 
-    // Obtener el total de registros
-    $totalItems = Producto::count();
+        // Obtener el total de registros
+        $totalItems = Producto::count();
 
-    // Calcular el total de páginas
-    $totalPages = $perPage > 0 ? ceil($totalItems / $perPage) : 1;
+        // Calcular el total de páginas
+        $totalPages = $perPage > 0 ? ceil($totalItems / $perPage) : 1;
 
-    // Obtener los productos paginados
-    $productos = Producto::skip(($page - 1) * $perPage)
-                         ->take($perPage)
-                         ->get();
+        // Obtener los productos paginados
+        $productos = Producto::latest()
+                            ->skip(($page - 1) * $perPage)
+                            ->take($perPage)
+                            ->get();
 
-    // Devolver la respuesta con el formato solicitado
-    return response()->json([
-        'currentPage' => $page,
-        'perPage' => $perPage,
-        'totalItems' => $totalItems,
-        'totalPages' => $totalPages,
-        'data' => $productos
-    ]);
-}
+        // Devolver la respuesta con el formato solicitado
+        return response()->json([
+            'currentPage' => $page,
+            'perPage' => $perPage,
+            'totalItems' => $totalItems,
+            'totalPages' => $totalPages,
+            'data' => $productos
+        ]);
+    }
 
     public function index()
     {

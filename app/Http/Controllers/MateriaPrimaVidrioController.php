@@ -128,7 +128,8 @@ class MateriaPrimaVidrioController extends Controller
         $totalItems = MateriaPrimaVidrio::count();
         $totalPages = ceil($totalItems / $perPage);
 
-        $vidrios = MateriaPrimaVidrio::skip(($page - 1) * $perPage)
+        $vidrios = MateriaPrimaVidrio::latest()
+        ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
 

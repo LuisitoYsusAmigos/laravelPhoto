@@ -136,7 +136,8 @@ class MateriaPrimaVarillaController extends Controller
         $totalItems = MateriaPrimaVarilla::count();
         $totalPages = ceil($totalItems / $perPage);
 
-        $varillas = MateriaPrimaVarilla::skip(($page - 1) * $perPage)
+        $varillas = MateriaPrimaVarilla::latest()
+            ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
 
