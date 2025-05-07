@@ -50,13 +50,15 @@ class ProductoController extends Controller
     {
         Log::info('📥 Nueva solicitud para crear un producto.');
 
+
+        
         // Validar los datos del request
         $validator = Validator::make($request->all(), [
             'descripcion' => 'required|string',
             'precioCompra' => 'required|integer',
             'precioVenta' => 'required|integer',
-            'stock' => 'required|integer',
-            'stockMin' => 'required|integer',
+            'stock_global_actual' => 'required|integer',
+            'stock_global_minimo' => 'required|integer',
             'actualizacion' => 'required|date',
             'id_sucursal' => 'required|exists:sucursal,id',
             'categoria_id' => 'required|exists:categorias,id',
@@ -174,8 +176,8 @@ class ProductoController extends Controller
         'descripcion' => 'required|string',
         'precioCompra' => 'required|integer',
         'precioVenta' => 'required|integer',
-        'stock' => 'required|integer',
-        'stockMin' => 'required|integer',
+        'stock_global_actual' => 'required|integer',
+        'stock_global_minimo' => 'required|integer',
         'actualizacion' => 'required|date',
         'id_sucursal' => 'required|exists:sucursal,id',
         'categoria_id' => 'required|exists:categorias,id',
