@@ -188,12 +188,12 @@ public function searchPaginadoGeneral(Request $request)
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria,
             'sub_categoria' => $item->sub_categoria_id,
-            'stock' => $item->stock,
+            'stock_global_actual' => $item->stock,
             'sucursal_id' => $item->sucursal_id,
             'imagen'=> $item->imagen,
             'precioCompra'=> $item->precioCompra,
             'precioVenta'=> $item->precioVenta,
-            'stockMin'=> $item->stockMin,
+            'stock_global_minimo'=> $item->stockMin,
         ];
     });
 
