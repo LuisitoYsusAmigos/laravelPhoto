@@ -50,10 +50,13 @@ class StockVarillaController extends Controller
     // Actualizar un registro existente
     public function update(Request $request, $id)
     {
+        echo"aqui dios nos abandona";
         $stockVarilla = StockVarilla::find($id);
 
         if (!$stockVarilla) {
-            return response()->json(['message' => 'Registro no encontrado'], 404);
+            echo   "Registro no encontrado "+ $stockVarilla;
+            return response()->json(['message' => 'Registro no encontrado',
+        'estado'=> $stockVarilla], 404);
         }
 
         $validator = Validator::make($request->all(), [

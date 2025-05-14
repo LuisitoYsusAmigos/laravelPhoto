@@ -21,7 +21,7 @@ class StockTrupanController extends Controller
             'precio' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
             'contable' => 'required|boolean',
-            'id_materia_prima_varilla' => 'required|exists:materia_prima_varillas,id',
+            'id_materia_prima_trupan' => 'required|exists:materia_prima_trupans,id',
         ]);
 
         if ($validator->fails()) {
@@ -57,7 +57,7 @@ class StockTrupanController extends Controller
             'precio' => 'sometimes|required|integer|min:0',
             'stock' => 'sometimes|required|integer|min:0',
             'contable' => 'sometimes|required|boolean',
-            'id_materia_prima_varilla' => 'sometimes|required|exists:materia_prima_varillas,id',
+            'id_materia_prima_trupan' => 'sometimes|required|exists:materia_prima_trupans,id',
         ]);
 
         if ($validator->fails()) {

@@ -39,8 +39,8 @@ class StockVidrioController extends Controller
     // Obtener un registro específico
     public function show($id)
     {
-        $stockVidrio = StockVidrio::with('materiaPrimaVidrio')->find($id);
-
+       // $stockVidrio = StockVidrio::with('materiaPrimaVidrio')->find($id);
+        $stockVidrio = StockVidrio::find($id);
         if (!$stockVidrio) {
             return response()->json(['message' => 'Registro no encontrado'], 404);
         }

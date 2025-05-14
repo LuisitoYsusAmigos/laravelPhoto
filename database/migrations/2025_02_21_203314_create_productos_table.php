@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('descripcion');
             $table->integer('precioCompra');
             $table->integer('precioVenta');
-            $table->integer('stock');
-            $table->integer('stockMin');
+            $table->integer('stock_global_actual');
+            $table->integer('stock_global_minimo');
             $table->date('actualizacion');
             $table->foreignId('id_sucursal')->constrained('sucursal')->onDelete('cascade');
             $table->foreignId('categoria_id')->constrained('categorias')->onDelete('cascade');

@@ -99,16 +99,16 @@ Route::get('/materiaPrimaVidrios/search-categorias', [MateriaPrimaVidrioControll
 
 Route::get('/stockVarillas', [StockVarillaController::class, 'index']); // Obtener todos los registros
 Route::post('/stockVarillas', [StockVarillaController::class, 'store']); // Crear un nuevo registro
-Route::get('/stockVarillas/{id}', [StockVarillaController::class, 'show']); // Obtener un registro por ID
-Route::put('/stockVarillas/{id}', [StockVarillaController::class, 'update']); // Actualizar un registro
-Route::delete('/stockVarillas/{id}', [StockVarillaController::class, 'destroy']); // Eliminar un registro
+Route::get('/stockVarilla/{id}', [StockVarillaController::class, 'show']); // Obtener un registro por ID
+Route::put('/stockVarilla/{id}', [StockVarillaController::class, 'update']); // Actualizar un registro
+Route::delete('/stockVarilla/{id}', [StockVarillaController::class, 'destroy']); // Eliminar un registro
 
 // stock vidrio
 Route::get('/stockVidrios', [StockVidrioController::class, 'index']); // Obtener todos los registros
 Route::post('/stockVidrio', [StockVidrioController::class, 'store']); // Crear un nuevo registro
 Route::get('/stockVidrio/{id}', [StockVidrioController::class, 'show']); // Obtener un registro por ID
-Route::put('/stockVarillas/{id}', [StockVidrioController::class, 'update']); // Actualizar un registro
-Route::delete('/stockVarillas/{id}', [StockVidrioController::class, 'destroy']); // Eliminar un registro
+Route::put('/stockVidrio/{id}', [StockVidrioController::class, 'update']); // Actualizar un registro
+Route::delete('/stockVidrio/{id}', [StockVidrioController::class, 'destroy']); // Eliminar un registro
 
 //stock trupan
 Route::get('/stockTrupans', [StockTrupanController::class, 'index']); // Obtener todos los registros
