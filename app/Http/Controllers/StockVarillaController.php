@@ -50,7 +50,7 @@ class StockVarillaController extends Controller
     // Actualizar un registro existente
     public function update(Request $request, $id)
     {
-        echo"aqui dios nos abandona";
+        
         $stockVarilla = StockVarilla::find($id);
 
         if (!$stockVarilla) {

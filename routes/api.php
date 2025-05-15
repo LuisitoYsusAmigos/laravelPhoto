@@ -13,6 +13,8 @@ use App\Http\Controllers\MateriaPrimaVidrioController;
 use App\Http\Controllers\StockVarillaController;
 use App\Http\Controllers\StockVidrioController;
 use App\Http\Controllers\StockTrupanController;
+use App\Http\Controllers\StockProductoController;
+
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\CotizadorController;
 use App\Http\Controllers\UserController;
@@ -112,10 +114,18 @@ Route::delete('/stockVidrio/{id}', [StockVidrioController::class, 'destroy']); /
 
 //stock trupan
 Route::get('/stockTrupans', [StockTrupanController::class, 'index']); // Obtener todos los registros
-Route::post('/stockTrupans', [StockTrupanController::class, 'store']); // Crear un nuevo registro
+Route::post('/stockTrupans ', [StockTrupanController::class, 'store']); // Crear un nuevo registro
 Route::get('/stockTrupans/{id}', [StockTrupanController::class, 'show']); // Obtener un registro por ID
 Route::put('/stockTrupans/{id}', [StockTrupanController::class, 'update']); // Actualizar un registro
 Route::delete('/stockTrupans/{id}', [StockTrupanController::class, 'destroy']); // Eliminar un registro
+
+// Stock de Productos
+Route::get  ('/stockProductos',           [StockProductoController::class, 'index']);   // Obtener todos los registros
+Route::post ('/stockProducto',           [StockProductoController::class, 'store']);   // Crear un nuevo registro
+Route::get  ('/stockProducto/{id}',      [StockProductoController::class, 'show']);    // Obtener un registro por ID
+Route::put  ('/stockProducto/{id}',      [StockProductoController::class, 'update']);  // Actualizar un registro
+Route::delete('/stockProducto/{id}',      [StockProductoController::class, 'destroy']); // Eliminar un registro
+
 
 //cliente
 Route::get('/clientes', [ClienteController::class, 'index']); // Obtener todos los registros

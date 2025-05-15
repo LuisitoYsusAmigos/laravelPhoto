@@ -16,7 +16,7 @@ class StockTrupan extends Model
         'precio',
         'stock',
         'contable',
-        'id_materia_prima_varilla',
+        'id_materia_prima_trupans',
     ];
 
     /**
@@ -24,6 +24,6 @@ class StockTrupan extends Model
      */
     public function materiaPrimaVarilla()
     {
-        return $this->belongsTo(MateriaPrimaVarilla::class, 'id_materia_prima_varilla');
+        return $this->belongsTo(MateriaPrimaTrupan::class, 'id_materia_prima_trupans');
     }
 }

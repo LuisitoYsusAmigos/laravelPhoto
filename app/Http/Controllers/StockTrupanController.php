@@ -10,7 +10,7 @@ class StockTrupanController extends Controller
 {
     public function index()
     {
-        $stock = StockTrupan::with('materiaPrimaVarilla')->get();
+        $stock = StockTrupan::with('materiaPrimaTrupans')->get();
         return response()->json($stock);
     }
 
@@ -21,7 +21,7 @@ class StockTrupanController extends Controller
             'precio' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
             'contable' => 'required|boolean',
-            'id_materia_prima_trupan' => 'required|exists:materia_prima_trupans,id',
+            'id_materia_prima_trupans' => 'required|exists:materia_prima_trupans,id',
         ]);
 
         if ($validator->fails()) {
@@ -35,7 +35,7 @@ class StockTrupanController extends Controller
 
     public function show($id)
     {
-        $stock = StockTrupan::with('materiaPrimaVarilla')->find($id);
+        $stock = StockTrupan::with('materiaPrimaTrupans')->find($id);
 
         if (!$stock) {
             return response()->json(['message' => 'Registro no encontrado'], 404);
