@@ -10,6 +10,9 @@ class MateriaPrimaVarilla extends Model
 
     protected $fillable = [
         'descripcion',
+        'precioCompra',
+        'precioVenta',
+        'largo',
         'grosor',
         'ancho',
         'factor_desperdicio',

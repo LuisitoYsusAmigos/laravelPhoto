@@ -9,6 +9,10 @@ class MateriaPrimaVidrio extends Model
 
     protected $fillable = [
         'descripcion',
+        'precioCompra',
+        'precioVenta',
+        'largo',
+        'alto',
         'grosor',
         'factor_desperdicio',
         'categoria_id',

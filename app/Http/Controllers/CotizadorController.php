@@ -144,6 +144,10 @@ public function searchPaginadoGeneral(Request $request)
             'stock_global_actual'=> $item->stock_global_actual,
             'stock_global_minimo'=> $item->stock_global_minimo,
             'factor_desperdicio'=> $item->factor_desperdicio,
+            'precioCompra'=> $item->precioCompra,
+            'precioVenta'=> $item->precioVenta,
+            //'alto'=> $item->alto,
+            'largo'=> $item->largo,
         ];
     });
 
@@ -157,7 +161,11 @@ public function searchPaginadoGeneral(Request $request)
             //'stock' => $item->stock_global_actual,
             'sucursal_id' => $item->id_sucursal,
             'imagen'=> $item->imagen,
+            'alto'=> $item->alto,
+            'largo'=> $item->largo,
             'grosor'=> $item->grosor,
+            'precioCompra'=> $item->precioCompra,
+            'precioVenta'=> $item->precioVenta,
             'stock_global_actual'=> $item->stock_global_actual,
             'stock_global_minimo'=> $item->stock_global_minimo,
             'factor_desperdicio'=> $item->factor_desperdicio,
@@ -174,6 +182,10 @@ public function searchPaginadoGeneral(Request $request)
             //'stock' => $item->stock_global_actual,
             'sucursal_id' => $item->id_sucursal,
             'imagen'=> $item->imagen,
+            'alto'=> $item->alto,
+            'largo'=> $item->largo,
+            'precioCompra'=> $item->precioCompra,
+            'precioVenta'=> $item->precioVenta,
             'grosor'=> $item->grosor,
             'stock_global_actual'=> $item->stock_global_actual,
             'stock_global_minimo'=> $item->stock_global_minimo,
@@ -234,6 +246,11 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'stock_global_actual'=> $item->stock_global_actual,
             'stock_global_minimo'=> $item->stock_global_minimo,
             'factor_desperdicio'=> $item->factor_desperdicio,
+            'precioCompra'=> $item->precioCompra,
+            'precioVenta'=> $item->precioVenta,
+            //'alto'=> $item->alto,
+            'largo'=> $item->largo,
+            //'stock'=> $item->stock,
         ];
     });
 
@@ -249,9 +266,13 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
             'grosor'=> $item->grosor,
+            'alto'=> $item->alto,
+            'largo'=> $item->largo,
             'stock_global_actual'=> $item->stock_global_actual,
             'stock_global_minimo'=> $item->stock_global_minimo,
             'factor_desperdicio'=> $item->factor_desperdicio,
+            'precioCompra'=> $item->precioCompra,
+            'precioVenta'=> $item->precioVenta,
         ];
     });
 
@@ -267,6 +288,10 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
             'grosor'=> $item->grosor,
+            'alto'=> $item->alto,
+            'largo'=> $item->largo,
+            'precioCompra'=> $item->precioCompra,
+            'precioVenta'=> $item->precioVenta,
             'stock_global_actual'=> $item->stock_global_actual,
             'stock_global_minimo'=> $item->stock_global_minimo,
             'factor_desperdicio'=> $item->factor_desperdicio,

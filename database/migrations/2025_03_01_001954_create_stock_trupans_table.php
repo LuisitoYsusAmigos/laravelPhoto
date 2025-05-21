@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('stock_trupans', function (Blueprint $table) {
             $table->id(); // ID autoincremental
             $table->integer('largo'); // Largo en cm
+            $table->integer('alto'); // alto en cm
             $table->integer('precio'); // Precio en centavos
             $table->integer('stock'); // Stock disponible
             $table->boolean('contable'); // Contable (true/false)

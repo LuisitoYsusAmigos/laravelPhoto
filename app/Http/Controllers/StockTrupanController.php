@@ -10,13 +10,14 @@ class StockTrupanController extends Controller
 {
     public function index()
     {
-        $stock = StockTrupan::with('materiaPrimaTrupans')->get();
-        return response()->json($stock);
+    $stock = StockTrupan::with('materiaPrimaTrupan')->get();
+    return response()->json($stock);
     }
 
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'alto' => 'required|integer|min:1',
             'largo' => 'required|integer|min:1',
             'precio' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
@@ -33,16 +34,16 @@ class StockTrupanController extends Controller
         return response()->json($stock, 201);
     }
 
-    public function show($id)
-    {
-        $stock = StockTrupan::with('materiaPrimaTrupans')->find($id);
+public function show($id)
+{
+    $stock = StockTrupan::with('materiaPrimaTrupan')->find($id);
 
-        if (!$stock) {
-            return response()->json(['message' => 'Registro no encontrado'], 404);
-        }
-
-        return response()->json($stock);
+    if (!$stock) {
+        return response()->json(['message' => 'Registro no encontrado'], 404);
     }
+
+    return response()->json($stock);
+}
 
     public function update(Request $request, $id)
     {

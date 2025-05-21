@@ -16,6 +16,10 @@ class MateriaPrimaVidrioController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'descripcion' => 'required|string',
+            'precioCompra' => 'required|numeric|min:0',
+            'precioVenta' => 'required|numeric|min:0',
+            'alto' => 'required|integer|min:1',
+            'largo' => 'required|integer|min:1',
             'grosor' => 'required|integer|min:1',
             'factor_desperdicio' => 'required|numeric|min:0|max:100',
             'categoria_id' => 'required|exists:categorias,id',
@@ -44,6 +48,18 @@ class MateriaPrimaVidrioController extends Controller
             $vidrio->save();
         }
 
+        $stock = [
+            'largo' => $request->largo,
+            'alto' => $request->alto,
+            'precio' => $request->precioCompra,
+            'stock' => $request->stock_global_actual,
+            'contable' => true,
+            'id_materia_prima_vidrio' => $vidrio->id,
+        ];
+        // llamar al controlador de stock
+        $stockController = new StockVidrioController();// StockVidrioController::store($stock);
+        $stockController->store(new Request($stock));
+        
         return response()->json($vidrio, 201);
     }
 

@@ -12,6 +12,7 @@ class StockTrupan extends Model
     protected $table = 'stock_trupans';
 
     protected $fillable = [
+        'alto',
         'largo',
         'precio',
         'stock',
@@ -22,8 +23,9 @@ class StockTrupan extends Model
     /**
      * Relación con materia_prima_varilla.
      */
-    public function materiaPrimaVarilla()
-    {
-        return $this->belongsTo(MateriaPrimaTrupan::class, 'id_materia_prima_trupans');
-    }
+    public function materiaPrimaTrupan()
+{
+    return $this->belongsTo(MateriaPrimaTrupan::class, 'id_materia_prima_trupans');
+}
+
 }

@@ -50,8 +50,6 @@ class ProductoController extends Controller
     {
         Log::info('📥 Nueva solicitud para crear un producto.');
 
-
-        
         // Validar los datos del request
         $validator = Validator::make($request->all(), [
             'descripcion' => 'required|string',
@@ -108,6 +106,21 @@ class ProductoController extends Controller
             $producto->imagen = 'storage/productos/' . $filename;
             $producto->save();
         }
+        //datos para el stock
+        $stock = [
+            'stock' => $request->input('stock_global_actual'),
+            'precio' => $request->input('precioCompra'),
+            'contable' => true,
+            'id_producto' => $producto->id
+        ];
+        // llamar al controller de stock
+        $stockController = new StockProductoController();
+        $stockController->store(new Request($stock));
+        Log::info('✅ Producto creado con éxito', ['producto_id' => $producto->id]);
+        Log::info('✅ Stock creado con éxito', ['stock_id' => $stock['id_producto']]); 
+        
+
+        //
 
         return response()->json($producto, 201);
     }

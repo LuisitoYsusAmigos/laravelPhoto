@@ -15,6 +15,10 @@ return new class extends Migration
         Schema::create('materia_prima_trupans', function (Blueprint $table) {
             $table->id();
             $table->string('descripcion');
+            $table->integer('precioCompra');
+            $table->integer('precioVenta');
+            $table->integer('alto'); // Alto en cm
+            $table->integer('largo'); // Largo en cm
             $table->integer('grosor');
             $table->decimal('factor_desperdicio', 5, 2);
             $table->foreignId('categoria_id')->constrained('categorias')->onDelete('cascade');
@@ -30,6 +34,10 @@ return new class extends Migration
         DB::table('materia_prima_trupans')->insert([
             [
                 'descripcion' => 'Trupán blanco 18mm',
+                'precioCompra' => 200,
+                'precioVenta' => 300,
+                'alto' => 120,
+                'largo' => 240,
                 'grosor' => 18,
                 'factor_desperdicio' => 1.05,
                 'categoria_id' => 1,
@@ -43,6 +51,10 @@ return new class extends Migration
             ],
             [
                 'descripcion' => 'Trupán MDF 15mm',
+                'precioCompra' => 180,
+                'precioVenta' => 280,
+                'alto' => 120,
+                'largo' => 240,
                 'grosor' => 15,
                 'factor_desperdicio' => 1.03,
                 'categoria_id' => 1,
@@ -56,6 +68,10 @@ return new class extends Migration
             ],
             [
                 'descripcion' => 'Trupán crudo 12mm',
+                'precioCompra' => 160,
+                'precioVenta' => 240,
+                'alto' => 120,
+                'largo' => 240,
                 'grosor' => 12,
                 'factor_desperdicio' => 1.02,
                 'categoria_id' => 1,
@@ -69,6 +85,10 @@ return new class extends Migration
             ],
             [
                 'descripcion' => 'Trupán laminado 10mm',
+                'precioCompra' => 140,
+                'precioVenta' => 210,
+                'alto' => 120,
+                'largo' => 240,
                 'grosor' => 10,
                 'factor_desperdicio' => 1.04,
                 'categoria_id' => 1,
@@ -82,6 +102,10 @@ return new class extends Migration
             ],
             [
                 'descripcion' => 'Trupán impermeable 20mm',
+                'precioCompra' => 100,
+                'precioVenta' => 150,
+                'alto' => 120,
+                'largo' => 240,
                 'grosor' => 20,
                 'factor_desperdicio' => 1.06,
                 'categoria_id' => 1,

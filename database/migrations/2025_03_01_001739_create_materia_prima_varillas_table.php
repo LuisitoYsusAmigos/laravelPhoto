@@ -15,6 +15,9 @@ return new class extends Migration
         Schema::create('materia_prima_varillas', function (Blueprint $table) {
             $table->id(); // ID autoincremental
             $table->string('descripcion'); // Descripción de la varilla
+            $table->integer('precioCompra');
+            $table->integer('precioVenta');
+            $table->integer('largo'); // Alto en unidades (ejemplo: mm)
             $table->integer('grosor'); // Grosor en unidades (ejemplo: mm)
             $table->integer('ancho'); // Ancho en unidades (ejemplo: mm)
             $table->decimal('factor_desperdicio', 5, 2); // Factor de desperdicio con 2 decimales
@@ -31,6 +34,9 @@ return new class extends Migration
         DB::table('materia_prima_varillas')->insert([
             [
                 'descripcion' => 'Varilla 1/2"',
+                'precioCompra' => 100,
+                'precioVenta' => 150,
+                'largo' => 300,
                 'grosor' => 12,
                 'ancho' => 10,
                 'factor_desperdicio' => 1.05,
@@ -44,6 +50,9 @@ return new class extends Migration
             ],
             [
                 'descripcion' => 'Varilla 3/8"',
+                'precioCompra' => 100,
+                'precioVenta' => 150,
+                'largo' => 250,
                 'grosor' => 10,
                 'ancho' => 8,
                 'factor_desperdicio' => 1.03,
@@ -57,6 +66,9 @@ return new class extends Migration
             ],
             [
                 'descripcion' => 'Varilla galvanizada',
+                'precioCompra' => 100,
+                'precioVenta' => 150,
+                'largo' => 200,
                 'grosor' => 15,
                 'ancho' => 12,
                 'factor_desperdicio' => 1.08,
@@ -70,6 +82,9 @@ return new class extends Migration
             ],
             [
                 'descripcion' => 'Varilla reforzada',
+                'precioCompra' => 100,
+                'precioVenta' => 150,
+                'largo' => 180,
                 'grosor' => 16,
                 'ancho' => 14,
                 'factor_desperdicio' => 1.10,
@@ -83,6 +98,9 @@ return new class extends Migration
             ],
             [
                 'descripcion' => 'Varilla de aluminio',
+                'precioCompra' => 100,
+                'precioVenta' => 150,
+                'largo' => 150,
                 'grosor' => 8,
                 'ancho' => 6,
                 'factor_desperdicio' => 1.02,

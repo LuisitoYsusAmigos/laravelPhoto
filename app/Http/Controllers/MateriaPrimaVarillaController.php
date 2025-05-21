@@ -17,6 +17,9 @@ class MateriaPrimaVarillaController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'descripcion' => 'required|string',
+            'precioCompra' => 'required|numeric|min:0',
+            'precioVenta' => 'required|numeric|min:0',
+            'largo' => 'required|integer',
             'grosor' => 'required|integer',
             'ancho' => 'required|integer',
             'factor_desperdicio' => 'required|numeric|between:0,100',
@@ -47,6 +50,19 @@ class MateriaPrimaVarillaController extends Controller
             $varilla->imagen = 'storage/materias_primas/' . $filename;
             $varilla->save();
         }
+
+        
+        
+        $stock = [
+            'largo' => $request->largo,
+            'precio' => $request->precioCompra,
+            'stock' => $request->stock_global_actual,
+            'contable' => true,
+            'id_materia_prima_varilla' => $varilla->id,
+        ];
+        // LLAMO AL CONTROLADOR DE STOCK varilla
+        $stockController = new StockVarillaController();
+        $stockController->store(new Request($stock));
 
         return response()->json($varilla, 201);
     }
