@@ -54,6 +54,17 @@ return new class extends Migration
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'name' => 'Diego',
+                'username' => 'diego',
+                'email' => 'diego@example.com',
+                'password' => Hash::make('password'), // Encriptar la contraseña
+                'id_sucursal' => 1,
+                'id_rol' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+
+            ]
         ]);
     }
 

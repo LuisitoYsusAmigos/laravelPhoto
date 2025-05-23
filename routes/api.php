@@ -129,8 +129,10 @@ Route::delete('/stockProducto/{id}',      [StockProductoController::class, 'dest
 
 //cliente
 Route::get('/clientes', [ClienteController::class, 'index']); // Obtener todos los registros
+Route::get('/clientes/fullName', [ClienteController::class, 'indexFullName']); // Obtener todos los registros con nombre completo
 Route::get('/clientes/paginados', [ClienteController::class, 'indexPaginado']); // Obtener registros paginados
 Route::get('/clientes/search', [ClienteController::class, 'search']); // Buscar clientes
+Route::get('/clientes/searchFullName', [ClienteController::class, 'searchFullName']); // Buscar clientes
 Route::get('/clientes/total', [ClienteController::class, 'totalClientes']); // Obtener total de clientes
 Route::post('/cliente', [ClienteController::class, 'store']); // Crear un nuevo registro
 Route::get('/cliente/{id}', [ClienteController::class, 'show']); // Obtener un registro por ID

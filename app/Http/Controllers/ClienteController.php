@@ -17,6 +17,16 @@ class ClienteController extends Controller
         $clientes = Cliente::all();
         return response()->json($clientes);
     }
+    public function indexFullName()
+{
+    $clientes = Cliente::all()->map(function ($cliente) {
+        $cliente->full_name = $cliente->nombre . ' ' . $cliente->apellido;
+        return $cliente;
+    });
+
+    return response()->json($clientes);
+}
+
 
     /**
      * Display a paginated listing of the resource.
@@ -68,6 +78,39 @@ class ClienteController extends Controller
                            ->orWhere('nombre', 'LIKE', "%{$searchTerm}%")
                            ->orWhere('apellido', 'LIKE', "%{$searchTerm}%")
                            ->get();
+        
+        // Verificar si hay coincidencias
+        if ($clientes->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron coincidencias para: ' . $searchTerm,
+                'data' => []
+            ]);
+        }
+        
+        return response()->json($clientes);
+    }
+
+    public function searchFullName(Request $request)
+    {
+        // Obtener el término de búsqueda
+        $searchTerm = $request->input('search', '');
+        
+        // Si el término de búsqueda está vacío, devolver todos los clientes
+        if (empty($searchTerm)) {
+            return response()->json(Cliente::all());
+        }
+        
+        // Buscar en múltiples campos
+        $clientes = Cliente::where('ci', 'LIKE', "%{$searchTerm}%")
+                           ->orWhere('telefono', 'LIKE', "%{$searchTerm}%")
+                           ->orWhere('email', 'LIKE', "%{$searchTerm}%")
+                           ->orWhere('nombre', 'LIKE', "%{$searchTerm}%")
+                           ->orWhere('apellido', 'LIKE', "%{$searchTerm}%")
+                           ->get()
+                           ->map(function ($cliente) {
+                               $cliente->full_name = $cliente->nombre . ' ' . $cliente->apellido;
+                               return $cliente;
+                           });
         
         // Verificar si hay coincidencias
         if ($clientes->isEmpty()) {
