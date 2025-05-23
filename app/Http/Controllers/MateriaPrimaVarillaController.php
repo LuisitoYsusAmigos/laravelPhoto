@@ -34,6 +34,8 @@ class MateriaPrimaVarillaController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
+        $data = $request->except('imagen', 'stock_global_actual');
+        $data['stock_global_actual'] = 0;
 
         $varilla = MateriaPrimaVarilla::create($request->except('imagen'));
 

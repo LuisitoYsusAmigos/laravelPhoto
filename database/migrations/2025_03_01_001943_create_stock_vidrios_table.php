@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -12,15 +13,64 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('stock_vidrios', function (Blueprint $table) {
-            $table->id(); // ID autoincremental
-            $table->integer('largo'); // Largo en cm
-            $table->integer('alto'); // Alto en cm
-            $table->integer('stock'); // Stock disponible
-            $table->integer('precio'); // Precio en centavos
-            $table->boolean('contable'); // Contable (true/false)
-            $table->foreignId('id_materia_prima_vidrio')->constrained('materia_prima_vidrios')->onDelete('cascade'); // Relación con materia_prima_vidrio
-            $table->timestamps(); // created_at y updated_at
+            $table->id();
+            $table->integer('largo');
+            $table->integer('alto');
+            $table->integer('stock');
+            $table->integer('precio');
+            $table->boolean('contable');
+            $table->foreignId('id_materia_prima_vidrio')->constrained('materia_prima_vidrios')->onDelete('cascade');
+            $table->timestamps();
         });
+
+        // Trigger AFTER INSERT
+        DB::unprepared('
+            CREATE TRIGGER trg_after_insert_stock_vidrios
+            AFTER INSERT ON stock_vidrios
+            FOR EACH ROW
+            BEGIN
+                IF NEW.contable = 1 THEN
+                    UPDATE materia_prima_vidrios
+                    SET 
+                        stock_global_actual = stock_global_actual + NEW.stock,
+                        precioCompra = NEW.precio
+                    WHERE id = NEW.id_materia_prima_vidrio;
+                END IF;
+            END
+        ');
+
+        // Trigger AFTER UPDATE
+        DB::unprepared('
+            CREATE TRIGGER trg_after_update_stock_vidrios
+            AFTER UPDATE ON stock_vidrios
+            FOR EACH ROW
+            BEGIN
+                IF NEW.contable = 1 THEN
+                    IF NEW.id_materia_prima_vidrio = OLD.id_materia_prima_vidrio THEN
+                        UPDATE materia_prima_vidrios
+                        SET 
+                            stock_global_actual = stock_global_actual + (NEW.stock - OLD.stock),
+                            precioCompra = NEW.precio
+                        WHERE id = NEW.id_materia_prima_vidrio;
+                    END IF;
+                END IF;
+            END
+        ');
+
+        // Trigger AFTER DELETE
+        DB::unprepared('
+            CREATE TRIGGER trg_after_delete_stock_vidrios
+            AFTER DELETE ON stock_vidrios
+            FOR EACH ROW
+            BEGIN
+                IF OLD.contable = 1 THEN
+                    UPDATE materia_prima_vidrios
+                    SET 
+                        stock_global_actual = stock_global_actual - OLD.stock
+                    WHERE id = OLD.id_materia_prima_vidrio;
+                END IF;
+            END
+        ');
     }
 
     /**
@@ -28,6 +78,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Eliminar los triggers
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_after_insert_stock_vidrios');
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_after_update_stock_vidrios');
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_after_delete_stock_vidrios');
+
         Schema::dropIfExists('stock_vidrios');
     }
 };

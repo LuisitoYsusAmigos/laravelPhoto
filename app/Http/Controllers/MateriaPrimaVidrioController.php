@@ -30,9 +30,12 @@ class MateriaPrimaVidrioController extends Controller
             'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
+
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
+        $data = $request->except('imagen', 'stock_global_actual');
+    $data['stock_global_actual'] = 0;
 
         $vidrio = MateriaPrimaVidrio::create($request->except('imagen'));
 
@@ -45,6 +48,7 @@ class MateriaPrimaVidrioController extends Controller
 
             $file->move($path, $filename);
             $vidrio->imagen = 'storage/materias_primas_vidrio/' . $filename;
+            
             $vidrio->save();
         }
 

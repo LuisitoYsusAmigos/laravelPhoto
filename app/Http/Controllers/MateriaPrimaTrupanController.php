@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\MateriaPrimaTrupan;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class MateriaPrimaTrupanController extends Controller
 {
@@ -34,6 +35,8 @@ class MateriaPrimaTrupanController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
+        $data = $request->except('imagen', 'stock_global_actual');
+        $data['stock_global_actual'] = 0;
 
         $trupan = MateriaPrimaTrupan::create($request->except('imagen'));
 
@@ -50,6 +53,7 @@ class MateriaPrimaTrupanController extends Controller
             $trupan->imagen = 'storage/materias_primas_trupan/' . $filename;
             $trupan->save();
         }
+        //DB::statement('SET @DISABLE_TRIGGERS = 1');
         $stock =[
             'alto' => $request->alto,
             'largo' => $request->largo,
@@ -61,6 +65,7 @@ class MateriaPrimaTrupanController extends Controller
         //llamar al controlador de stock
         $stockTrupanController = new StockTrupanController();
         $stockTrupanController->store(new Request($stock));
+        //DB::statement('SET @DISABLE_TRIGGERS = 0');
         //llamar al controlador de stock
         
 

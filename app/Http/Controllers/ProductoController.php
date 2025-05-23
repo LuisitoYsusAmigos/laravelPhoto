@@ -68,6 +68,8 @@ class ProductoController extends Controller
             Log::error('❌ Error de validación', ['errors' => $validator->errors()]);
             return response()->json($validator->errors(), 400);
         }
+        $data = $request->except('imagen', 'stock_global_actual');
+        $data['stock_global_actual'] = 0;
 
         // Crear el producto sin imagen para obtener el ID
         $producto = Producto::create($request->except('imagen'));
