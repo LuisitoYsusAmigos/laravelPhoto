@@ -31,7 +31,11 @@ return new class extends Migration
                 IF NEW.contable = 1 THEN
                     UPDATE materia_prima_varillas
                     SET 
-                        stock_global_actual = stock_global_actual + NEW.stock,
+                        stock_global_actual = (
+                            SELECT IFNULL(SUM(stock), 0)
+                            FROM stock_varillas
+                            WHERE contable = 1 AND id_materia_prima_varilla = NEW.id_materia_prima_varilla
+                        ),
                         precioCompra = NEW.precio
                     WHERE id = NEW.id_materia_prima_varilla;
                 END IF;
@@ -45,13 +49,26 @@ return new class extends Migration
             FOR EACH ROW
             BEGIN
                 IF NEW.contable = 1 THEN
-                    IF NEW.id_materia_prima_varilla = OLD.id_materia_prima_varilla THEN
-                        UPDATE materia_prima_varillas
-                        SET 
-                            stock_global_actual = stock_global_actual + (NEW.stock - OLD.stock),
-                            precioCompra = NEW.precio
-                        WHERE id = NEW.id_materia_prima_varilla;
-                    END IF;
+                    UPDATE materia_prima_varillas
+                    SET 
+                        stock_global_actual = (
+                            SELECT IFNULL(SUM(stock), 0)
+                            FROM stock_varillas
+                            WHERE contable = 1 AND id_materia_prima_varilla = NEW.id_materia_prima_varilla
+                        ),
+                        precioCompra = NEW.precio
+                    WHERE id = NEW.id_materia_prima_varilla;
+                END IF;
+
+                IF OLD.contable = 1 AND (OLD.id_materia_prima_varilla != NEW.id_materia_prima_varilla OR NEW.contable = 0) THEN
+                    UPDATE materia_prima_varillas
+                    SET 
+                        stock_global_actual = (
+                            SELECT IFNULL(SUM(stock), 0)
+                            FROM stock_varillas
+                            WHERE contable = 1 AND id_materia_prima_varilla = OLD.id_materia_prima_varilla
+                        )
+                    WHERE id = OLD.id_materia_prima_varilla;
                 END IF;
             END
         ');
@@ -65,7 +82,11 @@ return new class extends Migration
                 IF OLD.contable = 1 THEN
                     UPDATE materia_prima_varillas
                     SET 
-                        stock_global_actual = stock_global_actual - OLD.stock
+                        stock_global_actual = (
+                            SELECT IFNULL(SUM(stock), 0)
+                            FROM stock_varillas
+                            WHERE contable = 1 AND id_materia_prima_varilla = OLD.id_materia_prima_varilla
+                        )
                     WHERE id = OLD.id_materia_prima_varilla;
                 END IF;
             END

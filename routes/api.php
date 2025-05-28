@@ -14,6 +14,7 @@ use App\Http\Controllers\StockVarillaController;
 use App\Http\Controllers\StockVidrioController;
 use App\Http\Controllers\StockTrupanController;
 use App\Http\Controllers\StockProductoController;
+use App\Http\Controllers\VentaController;
 
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\CotizadorController;
@@ -145,6 +146,31 @@ Route::post('/rol', [RolController::class, 'store']); // Crear un nuevo rol
 Route::get('/rol/{id}', [RolController::class, 'show']); // Obtener un rol por ID
 Route::put('/rol/{id}', [RolController::class, 'update']); // Actualizar un rol
 Route::delete('/rol/{id}', [RolController::class, 'destroy']); // Eliminar un rol
+
+
+//ventas
+// venta
+Route::get('/ventas', [VentaController::class, 'index']); // Obtener todas las ventas
+Route::get('/ventas/paginadas', [VentaController::class, 'indexPaginado']); // Obtener ventas paginadas
+Route::get('/ventas/search', [VentaController::class, 'search']); // Buscar ventas
+Route::get('/ventas/total', [VentaController::class, 'totalVentas']); // Obtener total de ventas
+Route::post('/venta', [VentaController::class, 'store']); // Crear una nueva venta
+Route::get('/venta/{id}', [VentaController::class, 'show']); // Obtener una venta por ID
+Route::put('/venta/{id}', [VentaController::class, 'update']); // Actualizar una venta
+Route::delete('/venta/{id}', [VentaController::class, 'destroy']); // Eliminar una venta
+//venta con detalle
+Route::post('/ventasConDetalle', [VentaController::class, 'storeConDetalle']); // Obtener todas las ventas con detalle
+
+//detalle venta producto
+use App\Http\Controllers\DetalleVentaProductoController;
+
+Route::get('/detalle-venta-productos', [DetalleVentaProductoController::class, 'index']); // Listar todos con paginación opcional
+Route::get('/detalle-venta-producto/{id}', [DetalleVentaProductoController::class, 'show']); // Ver uno por ID
+Route::post('/detalle-venta-producto', [DetalleVentaProductoController::class, 'store']); // Crear uno nuevo
+Route::put('/detalle-venta-producto/{id}', [DetalleVentaProductoController::class, 'update']); // Actualizar
+Route::delete('/detalle-venta-producto/{id}', [DetalleVentaProductoController::class, 'destroy']); // Eliminar
+
+
 
 
 //todo de productos

@@ -7,59 +7,69 @@ use Illuminate\Http\Request;
 
 class DetalleVentaProductoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    // Listado paginado
+    public function index(Request $request)
     {
-        //
+        $perPage = $request->input('perPage', 10);
+        $detalles = DetalleVentaProducto::paginate($perPage);
+        return response()->json($detalles);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Ver uno
+    public function show($id)
     {
-        //
+        $detalle = DetalleVentaProducto::find($id);
+
+        if (!$detalle) {
+            return response()->json(['message' => 'Detalle no encontrado'], 404);
+        }
+
+        return response()->json($detalle);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Crear nuevo
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'cantidad' => 'required|integer|min:1',
+            'idVenta' => 'required|exists:ventas,id',
+            'idProducto' => 'required|exists:productos,id',
+        ]);
+
+        // precio será calculado por trigger
+        $detalle = DetalleVentaProducto::create($validated);
+        return response()->json($detalle, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(DetalleVentaProducto $detalleVentaProducto)
+    // Actualizar
+    public function update(Request $request, $id)
     {
-        //
+        $detalle = DetalleVentaProducto::find($id);
+
+        if (!$detalle) {
+            return response()->json(['message' => 'Detalle no encontrado'], 404);
+        }
+
+        $validated = $request->validate([
+            'cantidad' => 'required|integer|min:1',
+            'idVenta' => 'required|exists:ventas,id',
+            'idProducto' => 'required|exists:productos,id',
+        ]);
+
+        $detalle->update($validated);
+        return response()->json($detalle);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(DetalleVentaProducto $detalleVentaProducto)
+    // Eliminar
+    public function destroy($id)
     {
-        //
-    }
+        $detalle = DetalleVentaProducto::find($id);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, DetalleVentaProducto $detalleVentaProducto)
-    {
-        //
-    }
+        if (!$detalle) {
+            return response()->json(['message' => 'Detalle no encontrado'], 404);
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(DetalleVentaProducto $detalleVentaProducto)
-    {
-        //
+        $detalle->delete();
+        return response()->json(['message' => 'Detalle eliminado correctamente']);
     }
 }
