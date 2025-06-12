@@ -11,14 +11,14 @@ class DetalleVentaProductoController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('perPage', 10);
-        $detalles = DetalleVentaProducto::paginate($perPage);
+        $detalles = DetalleVentaProducto::with(['producto', 'stockProducto', 'venta'])->paginate($perPage);
         return response()->json($detalles);
     }
 
     // Ver uno
     public function show($id)
     {
-        $detalle = DetalleVentaProducto::find($id);
+        $detalle = DetalleVentaProducto::with(['producto', 'stockProducto', 'venta'])->find($id);
 
         if (!$detalle) {
             return response()->json(['message' => 'Detalle no encontrado'], 404);
@@ -27,16 +27,17 @@ class DetalleVentaProductoController extends Controller
         return response()->json($detalle);
     }
 
-    // Crear nuevo
+    // Crear nuevo (registro manual, normalmente se hace desde VentaController)
     public function store(Request $request)
     {
         $validated = $request->validate([
             'cantidad' => 'required|integer|min:1',
+            'precio' => 'required|numeric|min:0',
             'idVenta' => 'required|exists:ventas,id',
             'idProducto' => 'required|exists:productos,id',
+            'id_stock_producto' => 'required|exists:stock_productos,id',
         ]);
 
-        // precio será calculado por trigger
         $detalle = DetalleVentaProducto::create($validated);
         return response()->json($detalle, 201);
     }
@@ -52,8 +53,10 @@ class DetalleVentaProductoController extends Controller
 
         $validated = $request->validate([
             'cantidad' => 'required|integer|min:1',
+            'precio' => 'required|numeric|min:0',
             'idVenta' => 'required|exists:ventas,id',
             'idProducto' => 'required|exists:productos,id',
+            'id_stock_producto' => 'required|exists:stock_productos,id',
         ]);
 
         $detalle->update($validated);

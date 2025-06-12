@@ -15,18 +15,25 @@ class DetalleVentaProducto extends Model
         'cantidad',
         'precio',
         'idVenta',
-        'idProducto'
+        'idProducto',
+        'id_stock_producto', // Nuevo campo para rastrear lote
     ];
 
-    // Relación con Venta
+    // Relación con la venta
     public function venta()
     {
         return $this->belongsTo(Venta::class, 'idVenta');
     }
 
-    // Relación con Producto
+    // Relación con el producto
     public function producto()
     {
         return $this->belongsTo(Producto::class, 'idProducto');
+    }
+
+    // Relación con el lote (stock_producto)
+    public function stockProducto()
+    {
+        return $this->belongsTo(StockProducto::class, 'id_stock_producto');
     }
 }

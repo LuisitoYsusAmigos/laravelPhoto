@@ -155,7 +155,7 @@ Route::get('/ventas/paginadas', [VentaController::class, 'indexPaginado']); // O
 Route::get('/ventas/search', [VentaController::class, 'search']); // Buscar ventas
 Route::get('/ventas/total', [VentaController::class, 'totalVentas']); // Obtener total de ventas
 Route::post('/venta', [VentaController::class, 'store']); // Crear una nueva venta
-Route::get('/venta/{id}', [VentaController::class, 'show']); // Obtener una venta por ID
+Route::get('/venta/{id}', [VentaController::class, 'showVentaDetalleProducto']); // Obtener una venta por ID
 Route::put('/venta/{id}', [VentaController::class, 'update']); // Actualizar una venta
 Route::delete('/venta/{id}', [VentaController::class, 'destroy']); // Eliminar una venta
 //venta con detalle
@@ -169,6 +169,7 @@ Route::get('/detalle-venta-producto/{id}', [DetalleVentaProductoController::clas
 Route::post('/detalle-venta-producto', [DetalleVentaProductoController::class, 'store']); // Crear uno nuevo
 Route::put('/detalle-venta-producto/{id}', [DetalleVentaProductoController::class, 'update']); // Actualizar
 Route::delete('/detalle-venta-producto/{id}', [DetalleVentaProductoController::class, 'destroy']); // Eliminar
+
 
 
 

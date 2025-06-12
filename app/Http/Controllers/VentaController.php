@@ -112,6 +112,30 @@ class VentaController extends Controller
 
         return response()->json($venta);
     }
+    // Mostrar los detalles de venta-producto de una venta específica
+public function showVentaDetalleProducto($idVenta)
+{
+    $detalles = DetalleVentaProducto::with('stockProducto')
+        ->where('idVenta', $idVenta)
+        ->get()
+        ->map(function ($detalle) {
+            return [
+                'id' => $detalle->id,
+                'idVenta' => $detalle->idVenta,
+                'idProducto' => $detalle->idProducto, // solo el ID, no la relación completa
+                'id_stock_producto' => $detalle->id_stock_producto,
+                'cantidad' => $detalle->cantidad,
+                'precio' => $detalle->precio,
+                'created_at' => $detalle->created_at,
+                'updated_at' => $detalle->updated_at,
+                'stock_producto' => $detalle->stockProducto, // mantenemos toda la info del lote
+            ];
+        });
+
+    return response()->json($detalles);
+}
+
+
 
     // Actualizar una venta existente
     public function update(Request $request, $id)
@@ -166,7 +190,7 @@ class VentaController extends Controller
 
 
 
-    public function storeConDetalle(Request $request)
+public function storeConDetalle(Request $request)
 {
     $validated = $request->validate([
         'saldo' => 'required|numeric|min:0',
@@ -189,12 +213,11 @@ class VentaController extends Controller
         ]);
 
         $total = 0;
-        $detalles = [];
 
         foreach ($validated['detalles'] as $item) {
             $producto = Producto::find($item['idProducto']);
 
-            // Validar stock suficiente
+            // Validar stock total suficiente
             if ($producto->stock_global_actual < $item['cantidad']) {
                 DB::rollBack();
                 return response()->json([
@@ -202,18 +225,48 @@ class VentaController extends Controller
                 ], 422);
             }
 
-            $subtotal = $item['cantidad'] * $producto->precioVenta;
-            $total += $subtotal;
+            $cantidadRestante = $item['cantidad'];
 
-            $detalles[] = DetalleVentaProducto::create([
-                'idVenta' => $venta->id,
-                'idProducto' => $producto->id,
-                'cantidad' => $item['cantidad'],
-                'precio' => $producto->precioVenta,
-            ]);
+            // Obtener lotes disponibles ordenados por ID (FIFO)
+            $lotes = DB::table('stock_productos')
+                ->where('id_producto', $producto->id)
+                ->where('contable', 1)
+                ->where('stock', '>', 0)
+                ->orderBy('id')
+                ->get();
+
+            foreach ($lotes as $lote) {
+                if ($cantidadRestante <= 0) break;
+
+                $usar = min($cantidadRestante, $lote->stock);
+
+                // Descontar del lote
+                DB::table('stock_productos')
+                    ->where('id', $lote->id)
+                    ->decrement('stock', $usar);
+
+                // Crear detalle de venta por este lote
+                DetalleVentaProducto::create([
+                    'idVenta' => $venta->id,
+                    'idProducto' => $producto->id,
+                    'id_stock_producto' => $lote->id,
+                    'cantidad' => $usar,
+                    'precio' => $lote->precio,
+                ]);
+
+                $total += $usar * $lote->precio;
+                $cantidadRestante -= $usar;
+            }
+
+            if ($cantidadRestante > 0) {
+                DB::rollBack();
+                return response()->json([
+                    'error' => "No se pudo descontar todo el stock necesario para el producto ID {$producto->id}"
+                ], 500);
+            }
         }
 
-        // Actualiza los precios finales de la venta
+        // Actualizar la venta con los totales
         $venta->update([
             'precioProducto' => $total,
             'precioTotal' => $total,
@@ -221,7 +274,6 @@ class VentaController extends Controller
 
         DB::commit();
 
-        // Cargar relaciones para la respuesta
         $venta->load(['cliente', 'sucursal', 'detalleVentaProductos']);
 
         return response()->json([
@@ -233,5 +285,7 @@ class VentaController extends Controller
         return response()->json(['error' => $e->getMessage()], 500);
     }
 }
+
+
 
 }
