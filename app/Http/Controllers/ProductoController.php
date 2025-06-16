@@ -52,6 +52,7 @@ class ProductoController extends Controller
 
         // Validar los datos del request
         $validator = Validator::make($request->all(), [
+            'codigo' => 'string|nullable',
             'descripcion' => 'required|string',
             'precioCompra' => 'required|integer',
             'precioVenta' => 'required|integer',
@@ -188,6 +189,7 @@ class ProductoController extends Controller
     }
 
     $validator = Validator::make($request->all(), [
+        'codigo' => 'string|nullable',
         'descripcion' => 'required|string',
         'precioCompra' => 'required|integer',
         'precioVenta' => 'required|integer',

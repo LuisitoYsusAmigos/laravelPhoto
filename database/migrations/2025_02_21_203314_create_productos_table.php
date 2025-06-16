@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('productos', function (Blueprint $table) {
             $table->id();
+            $table->string('codigo')->nullable();
             $table->string('descripcion');
             $table->integer('precioCompra');
             $table->integer('precioVenta');
@@ -29,6 +30,7 @@ return new class extends Migration
         });
         DB::table('productos')->insert([
             [
+                'codigo'=> 'P001',
                 'descripcion'=> 'Producto de ejemplo',
                 'precioCompra'=> 100,
                 'precioVenta'=> 150,

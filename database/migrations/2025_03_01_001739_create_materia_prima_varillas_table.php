@@ -14,6 +14,7 @@ return new class extends Migration
     {
         Schema::create('materia_prima_varillas', function (Blueprint $table) {
             $table->id(); // ID autoincremental
+            $table->string('codigo')->nullable();
             $table->string('descripcion'); // Descripción de la varilla
             $table->integer('precioCompra');
             $table->integer('precioVenta');
@@ -33,6 +34,7 @@ return new class extends Migration
         // Insertar 5 registros de ejemplo
         DB::table('materia_prima_varillas')->insert([
             [
+                'codigo' => 'MV001',
                 'descripcion' => 'Varilla 1/2"',
                 'precioCompra' => 100,
                 'precioVenta' => 150,
@@ -49,6 +51,7 @@ return new class extends Migration
                 'updated_at' => now(),
             ],
             [
+                'codigo' => 'MV002',
                 'descripcion' => 'Varilla 3/8"',
                 'precioCompra' => 100,
                 'precioVenta' => 150,

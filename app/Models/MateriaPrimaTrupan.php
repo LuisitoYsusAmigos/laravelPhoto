@@ -11,6 +11,7 @@ class MateriaPrimaTrupan extends Model
     use HasFactory;
 
     protected $fillable = [
+        'codigo',
         'descripcion',
         'precioCompra',
         'precioVenta',

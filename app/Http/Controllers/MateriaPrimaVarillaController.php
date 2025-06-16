@@ -16,6 +16,7 @@ class MateriaPrimaVarillaController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'codigo' => 'string|nullable',
             'descripcion' => 'required|string',
             'precioCompra' => 'required|numeric|min:0',
             'precioVenta' => 'required|numeric|min:0',
@@ -89,6 +90,7 @@ class MateriaPrimaVarillaController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
+            'codigo' => 'string|nullable',
             'descripcion' => 'sometimes|string',
             'grosor' => 'sometimes|integer',
             'ancho' => 'sometimes|integer',

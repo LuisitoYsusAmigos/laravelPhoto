@@ -14,6 +14,7 @@ return new class extends Migration
     {
         Schema::create('materia_prima_trupans', function (Blueprint $table) {
             $table->id();
+            $table->string('codigo')->nullable();
             $table->string('descripcion');
             $table->integer('precioCompra');
             $table->integer('precioVenta');
@@ -33,6 +34,7 @@ return new class extends Migration
         // Datos de ejemplo
         DB::table('materia_prima_trupans')->insert([
             [
+                'codigo' => 'MPT001',
                 'descripcion' => 'Trupán blanco 18mm',
                 'precioCompra' => 200,
                 'precioVenta' => 300,
@@ -50,6 +52,7 @@ return new class extends Migration
                 'updated_at' => now(),
             ],
             [
+                'codigo' => 'MPT002',
                 'descripcion' => 'Trupán MDF 15mm',
                 'precioCompra' => 180,
                 'precioVenta' => 280,
@@ -67,6 +70,7 @@ return new class extends Migration
                 'updated_at' => now(),
             ],
             [
+                'codigo' => 'MPT003',
                 'descripcion' => 'Trupán crudo 12mm',
                 'precioCompra' => 160,
                 'precioVenta' => 240,
@@ -82,41 +86,7 @@ return new class extends Migration
                 'imagen' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ],
-            [
-                'descripcion' => 'Trupán laminado 10mm',
-                'precioCompra' => 140,
-                'precioVenta' => 210,
-                'alto' => 120,
-                'largo' => 240,
-                'grosor' => 10,
-                'factor_desperdicio' => 1.04,
-                'categoria_id' => 1,
-                'sub_categoria_id' => 1,
-                'stock_global_actual' => 140,
-                'stock_global_minimo' => 25,
-                'id_sucursal' => 1,
-                'imagen' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'descripcion' => 'Trupán impermeable 20mm',
-                'precioCompra' => 100,
-                'precioVenta' => 150,
-                'alto' => 120,
-                'largo' => 240,
-                'grosor' => 20,
-                'factor_desperdicio' => 1.06,
-                'categoria_id' => 1,
-                'sub_categoria_id' => 1,
-                'stock_global_actual' => 100,
-                'stock_global_minimo' => 20,
-                'id_sucursal' => 1,
-                'imagen' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+            ]
         ]);
     }
 

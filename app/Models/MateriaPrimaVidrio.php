@@ -10,6 +10,7 @@ class MateriaPrimaVidrio extends Model
     protected $table = 'materia_prima_vidrios';
 
     protected $fillable = [
+        'codigo',
         'descripcion',
         'precioCompra',
         'precioVenta',

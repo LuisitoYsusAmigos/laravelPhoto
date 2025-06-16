@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('materia_prima_vidrios', function (Blueprint $table) {
             $table->id();
+            $table->string('codigo')->nullable(); // Código opcional$table->string('codigo')->nullable();
             $table->string('descripcion');
             $table->integer('precioCompra');
             $table->integer('precioVenta');
@@ -28,6 +29,7 @@ return new class extends Migration
 
         DB::table('materia_prima_vidrios')->insert([
             [
+                'codigo' => 'MPV001',
                 'descripcion' => 'Vidrio templado 6mm',
                 'precioCompra' => 300,
                 'precioVenta' => 450,

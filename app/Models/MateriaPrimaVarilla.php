@@ -10,6 +10,7 @@ class MateriaPrimaVarilla extends Model
     protected $table = 'materia_prima_varillas';
 
     protected $fillable = [
+        'codigo',
         'descripcion',
         'precioCompra',
         'precioVenta',
