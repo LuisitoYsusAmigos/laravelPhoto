@@ -23,7 +23,7 @@ return new class extends Migration
             $table->integer('grosor');
             $table->decimal('factor_desperdicio', 5, 2);
             $table->foreignId('categoria_id')->constrained('categorias')->onDelete('cascade');
-            $table->foreignId('sub_categoria_id')->constrained('sub_categorias')->onDelete('cascade')->nullable();
+            $table->foreignId('sub_categoria_id')->nullable()->constrained('sub_categorias')->onDelete('cascade');
             $table->integer('stock_global_actual');
             $table->integer('stock_global_minimo');
             $table->foreignId('id_sucursal')->constrained('sucursal')->onDelete('cascade');

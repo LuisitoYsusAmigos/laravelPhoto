@@ -23,7 +23,8 @@ return new class extends Migration
             $table->integer('alto'); // alto en unidades (ejemplo: mm)
             $table->decimal('factor_desperdicio', 5, 2); // Factor de desperdicio con 2 decimales
             $table->foreignId('categoria_id')->constrained('categorias')->onDelete('cascade');
-            $table->foreignId('sub_categoria_id')->constrained('sub_categorias')->onDelete('cascade')->nullable(); // Relación con la tabla subcategorías, puede ser nulo
+            $table->foreignId('sub_categoria_id')->nullable()->constrained('sub_categorias')->onDelete('cascade'); // ✅
+ // Relación con la tabla subcategorías, puede ser nulo
             $table->integer('stock_global_actual'); // Stock actual
             $table->integer('stock_global_minimo'); // Stock mínimo
             $table->foreignId('id_sucursal')->constrained('sucursal')->onDelete('cascade'); // Relación con la tabla sucursales

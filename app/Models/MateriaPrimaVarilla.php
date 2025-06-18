@@ -16,7 +16,7 @@ class MateriaPrimaVarilla extends Model
         'precioVenta',
         'largo',
         'grosor',
-        'ancho',
+        'alto',
         'factor_desperdicio',
         'categoria_id',
         'sub_categoria_id',
