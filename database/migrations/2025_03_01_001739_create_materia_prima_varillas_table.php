@@ -18,9 +18,9 @@ return new class extends Migration
             $table->string('descripcion'); // Descripción de la varilla
             $table->integer('precioCompra');
             $table->integer('precioVenta');
-            $table->integer('largo'); // Alto en unidades (ejemplo: mm)
+            $table->integer('largo'); // largo en unidades (ejemplo: mm)
             $table->integer('grosor'); // Grosor en unidades (ejemplo: mm)
-            $table->integer('ancho'); // Ancho en unidades (ejemplo: mm)
+            $table->integer('alto'); // alto en unidades (ejemplo: mm)
             $table->decimal('factor_desperdicio', 5, 2); // Factor de desperdicio con 2 decimales
             $table->foreignId('categoria_id')->constrained('categorias')->onDelete('cascade');
             $table->foreignId('sub_categoria_id')->constrained('sub_categorias')->onDelete('cascade')->nullable(); // Relación con la tabla subcategorías, puede ser nulo
@@ -40,7 +40,7 @@ return new class extends Migration
                 'precioVenta' => 150,
                 'largo' => 300,
                 'grosor' => 12,
-                'ancho' => 10,
+                'alto' => 10,
                 'factor_desperdicio' => 1.05,
                 'categoria_id' => 1,
                 'sub_categoria_id' => 1,
@@ -57,7 +57,7 @@ return new class extends Migration
                 'precioVenta' => 150,
                 'largo' => 250,
                 'grosor' => 10,
-                'ancho' => 8,
+                'alto' => 8,
                 'factor_desperdicio' => 1.03,
                 'categoria_id' => 1,
                 'sub_categoria_id' => 1,
