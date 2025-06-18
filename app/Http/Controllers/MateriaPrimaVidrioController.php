@@ -24,7 +24,7 @@ class MateriaPrimaVidrioController extends Controller
             'grosor' => 'required|integer|min:1',
             'factor_desperdicio' => 'required|numeric|min:0|max:100',
             'categoria_id' => 'required|exists:categorias,id',
-            'sub_categoria_id' => 'required|exists:sub_categorias,id',
+            'sub_categoria_id' => 'nullable|exists:sub_categorias,id',
             'stock_global_actual' => 'required|integer|min:0',
             'stock_global_minimo' => 'required|integer|min:0',
             'id_sucursal' => 'required|exists:sucursal,id',

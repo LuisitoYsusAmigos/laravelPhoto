@@ -198,7 +198,7 @@ class ProductoController extends Controller
         'actualizacion' => 'required|date',
         'id_sucursal' => 'required|exists:sucursal,id',
         'categoria_id' => 'required|exists:categorias,id',
-        'sub_categoria_id' => 'required|exists:sub_categorias,id',
+        'sub_categoria_id' => 'nullable|exists:sub_categorias,id',
         'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
     ]);
 

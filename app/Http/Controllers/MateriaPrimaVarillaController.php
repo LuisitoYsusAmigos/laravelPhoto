@@ -25,7 +25,7 @@ class MateriaPrimaVarillaController extends Controller
             'ancho' => 'required|integer',
             'factor_desperdicio' => 'required|numeric|between:0,100',
             'categoria_id' => 'required|exists:categorias,id',
-            'sub_categoria_id' => 'required|exists:sub_categorias,id',
+            'sub_categoria_id' => 'nullable|exists:sub_categorias,id',
             'stock_global_actual' => 'required|integer',
             'stock_global_minimo' => 'required|integer',
             'id_sucursal' => 'required|exists:sucursal,id',

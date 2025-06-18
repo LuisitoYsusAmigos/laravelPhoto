@@ -24,7 +24,7 @@ return new class extends Migration
             $table->date('actualizacion');
             $table->foreignId('id_sucursal')->constrained('sucursal')->onDelete('cascade');
             $table->foreignId('categoria_id')->constrained('categorias')->onDelete('cascade');
-            $table->foreignId('sub_categoria_id')->constrained('sub_categorias')->onDelete('cascade');      
+            $table->foreignId('sub_categoria_id')->constrained('sub_categorias')->onDelete('cascade')->nullable();      
             $table->string('imagen')->nullable();      
             $table->timestamps();
         });
