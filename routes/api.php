@@ -16,6 +16,8 @@ use App\Http\Controllers\StockVarillaController;
 use App\Http\Controllers\StockVidrioController;
 use App\Http\Controllers\StockTrupanController;
 use App\Http\Controllers\StockProductoController;
+use App\Http\Controllers\StockContornoController;
+
 use App\Http\Controllers\VentaController;
 
 use App\Http\Controllers\ClienteController;
@@ -142,12 +144,21 @@ Route::get('/stockTrupans/{id}', [StockTrupanController::class, 'show']); // Obt
 Route::put('/stockTrupans/{id}', [StockTrupanController::class, 'update']); // Actualizar un registro
 Route::delete('/stockTrupans/{id}', [StockTrupanController::class, 'destroy']); // Eliminar un registro
 
+
 // Stock de Productos
 Route::get  ('/stockProductos',           [StockProductoController::class, 'index']);   // Obtener todos los registros
 Route::post ('/stockProducto',           [StockProductoController::class, 'store']);   // Crear un nuevo registro
 Route::get  ('/stockProducto/{id}',      [StockProductoController::class, 'show']);    // Obtener un registro por ID
 Route::put  ('/stockProducto/{id}',      [StockProductoController::class, 'update']);  // Actualizar un registro
 Route::delete('/stockProducto/{id}',      [StockProductoController::class, 'destroy']); // Eliminar un registro
+//stock de contornos
+
+Route::get('/stockContornos', [StockContornoController::class, 'index']);
+Route::post('/stockContorno', [StockContornoController::class, 'store']);
+Route::get('/stockContorno/{id}', [StockContornoController::class, 'show']);
+Route::put('/stockContorno/{id}', [StockContornoController::class, 'update']);
+Route::delete('/stockContorno/{id}', [StockContornoController::class, 'destroy']);
+Route::get('/stockContorno/porContorno/{id}', [StockContornoController::class, 'indexPorContorno']);
 
 
 //cliente

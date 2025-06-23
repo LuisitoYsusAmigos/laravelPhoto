@@ -9,6 +9,8 @@ use App\Models\MateriaPrimaVarilla;
 use App\Models\MateriaPrimaVidrio;
 use App\Models\MateriaPrimaTrupan;
 use App\Models\Producto;
+use App\Models\MateriaPrimaContorno;
+
 class CotizadorController extends Controller
 {
     public function calcular(Request $request, CalculosSistema $calculos)
@@ -122,6 +124,7 @@ class CotizadorController extends Controller
     ]);
 }
 
+
 public function searchPaginadoGeneral(Request $request)
 {
     $search = $request->input('search', '');
@@ -136,7 +139,6 @@ public function searchPaginadoGeneral(Request $request)
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria,
             'sub_categoria' => $item->sub_categoria,
-            //'stock' => $item->stock_global_actual,
             'sucursal_id' => $item->id_sucursal,
             'imagen'=> $item->imagen,
             'grosor'=> $item->grosor,
@@ -146,7 +148,6 @@ public function searchPaginadoGeneral(Request $request)
             'factor_desperdicio'=> $item->factor_desperdicio,
             'precioCompra'=> $item->precioCompra,
             'precioVenta'=> $item->precioVenta,
-            //'alto'=> $item->alto,
             'largo'=> $item->largo,
         ];
     });
@@ -158,7 +159,6 @@ public function searchPaginadoGeneral(Request $request)
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria,
             'sub_categoria' => $item->sub_categoria,
-            //'stock' => $item->stock_global_actual,
             'sucursal_id' => $item->id_sucursal,
             'imagen'=> $item->imagen,
             'alto'=> $item->alto,
@@ -179,7 +179,6 @@ public function searchPaginadoGeneral(Request $request)
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria,
             'sub_categoria' => $item->sub_categoria,
-            //'stock' => $item->stock_global_actual,
             'sucursal_id' => $item->id_sucursal,
             'imagen'=> $item->imagen,
             'alto'=> $item->alto,
@@ -190,6 +189,25 @@ public function searchPaginadoGeneral(Request $request)
             'stock_global_actual'=> $item->stock_global_actual,
             'stock_global_minimo'=> $item->stock_global_minimo,
             'factor_desperdicio'=> $item->factor_desperdicio,
+        ];
+    });
+
+    $contornos = MateriaPrimaContorno::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
+        return [
+            'id' => $item->id,
+            'tipo' => 'contorno',
+            'descripcion' => $item->descripcion,
+            'categoria' => $item->categoria,
+            'sub_categoria' => $item->sub_categoria,
+            'sucursal_id' => $item->id_sucursal,
+            'imagen' => $item->imagen,
+            'alto' => $item->alto,
+            'largo' => $item->largo,
+            'precioCompra' => $item->precioCompra,
+            'precioVenta' => $item->precioVenta,
+            'stock_global_actual' => $item->stock_global_actual,
+            'stock_global_minimo' => $item->stock_global_minimo,
+            'factor_desperdicio' => $item->factor_desperdicio,
         ];
     });
 
@@ -209,9 +227,13 @@ public function searchPaginadoGeneral(Request $request)
         ];
     });
 
-    $resultados = $varillas->concat($vidrios)->concat($trupan)->concat($productos)->values();
+    $resultados = $varillas
+        ->concat($vidrios)
+        ->concat($trupan)
+        ->concat($contornos)
+        ->concat($productos)
+        ->values();
 
-    // Paginación manual
     $total = $resultados->count();
     $totalPages = ceil($total / $perPage);
     $pagina = $resultados->slice(($page - 1) * $perPage, $perPage)->values();
@@ -225,6 +247,8 @@ public function searchPaginadoGeneral(Request $request)
     ]);
 }
 
+
+
 public function indexPaginadoGeneralPorMasReciente(Request $request)
 {
     $page = (int) $request->input('page', 1);
@@ -237,7 +261,6 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria,
             'sub_categoria' => $item->sub_categoria,
-            //'stock' => $item->stock_global_actual,
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
@@ -248,9 +271,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'factor_desperdicio'=> $item->factor_desperdicio,
             'precioCompra'=> $item->precioCompra,
             'precioVenta'=> $item->precioVenta,
-            //'alto'=> $item->alto,
             'largo'=> $item->largo,
-            //'stock'=> $item->stock,
         ];
     });
 
@@ -261,7 +282,6 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria,
             'sub_categoria' => $item->sub_categoria,
-           // 'stock' => $item->stock_global_actual,
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
@@ -283,11 +303,30 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria,
             'sub_categoria' => $item->sub_categoria,
-            //'stock' => $item->stock_global_actual,
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
             'grosor'=> $item->grosor,
+            'alto'=> $item->alto,
+            'largo'=> $item->largo,
+            'precioCompra'=> $item->precioCompra,
+            'precioVenta'=> $item->precioVenta,
+            'stock_global_actual'=> $item->stock_global_actual,
+            'stock_global_minimo'=> $item->stock_global_minimo,
+            'factor_desperdicio'=> $item->factor_desperdicio,
+        ];
+    });
+
+    $contornos = MateriaPrimaContorno::all()->map(function ($item) {
+        return [
+            'id' => $item->id,
+            'tipo' => 'contorno',
+            'descripcion' => $item->descripcion,
+            'categoria' => $item->categoria,
+            'sub_categoria' => $item->sub_categoria,
+            'sucursal_id' => $item->id_sucursal,
+            'created_at' => $item->created_at,
+            'imagen'=> $item->imagen,
             'alto'=> $item->alto,
             'largo'=> $item->largo,
             'precioCompra'=> $item->precioCompra,
@@ -315,11 +354,13 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
         ];
     });
 
-    $todos = $varillas->concat($vidrios)
-                      ->concat($trupan)
-                      ->concat($productos)
-                      ->sortByDesc('created_at') // 👈 Ordenar por fecha descendente
-                      ->values();
+    $todos = $varillas
+        ->concat($vidrios)
+        ->concat($trupan)
+        ->concat($contornos)
+        ->concat($productos)
+        ->sortByDesc('created_at')
+        ->values();
 
     $total = $todos->count();
     $totalPages = ceil($total / $perPage);
@@ -333,6 +374,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
         'data' => $resultados
     ]);
 }
+
 
 
 
