@@ -19,6 +19,7 @@ class MateriaPrimaVarilla extends Model
         'alto',
         'factor_desperdicio',
         'categoria_id',
+        'id_lugar',
         'sub_categoria_id',
         'stock_global_actual',
         'stock_global_minimo',
@@ -31,6 +32,10 @@ class MateriaPrimaVarilla extends Model
     public function sucursal()
     {
         return $this->belongsTo(Sucursal::class, 'id_sucursal');
+    }
+        public function lugar()
+    {
+        return $this->belongsTo(Lugar::class);
     }
 
     public function categoria()

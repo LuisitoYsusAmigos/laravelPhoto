@@ -17,6 +17,7 @@ class Producto extends Model
         'stock_global_minimo',
         'actualizacion',
         'id_sucursal',
+        'id_lugar',
         'categoria_id',
         'sub_categoria_id',
         'imagen'
@@ -26,6 +27,10 @@ class Producto extends Model
     public function sucursal()
     {
         return $this->belongsTo(Sucursal::class);
+    }
+    public function lugar()
+    {
+        return $this->belongsTo(Lugar::class);
     }
 
     public function categoria()

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->integer('alto'); // alto en unidades (ejemplo: mm)
             $table->decimal('factor_desperdicio', 5, 2); // Factor de desperdicio con 2 decimales
             $table->foreignId('categoria_id')->constrained('categorias')->onDelete('cascade');
+            $table->foreignId('id_lugar')->constrained('lugars')->onDelete('cascade');
             $table->foreignId('sub_categoria_id')->nullable()->constrained('sub_categorias')->onDelete('cascade'); // ✅
  // Relación con la tabla subcategorías, puede ser nulo
             $table->integer('stock_global_actual'); // Stock actual
@@ -48,26 +49,10 @@ return new class extends Migration
                 'stock_global_actual' => 150,
                 'stock_global_minimo' => 50,
                 'id_sucursal' => 1,
+                'id_lugar' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ],
-            [
-                'codigo' => 'MV002',
-                'descripcion' => 'Varilla 3/8"',
-                'precioCompra' => 100,
-                'precioVenta' => 150,
-                'largo' => 250,
-                'grosor' => 10,
-                'alto' => 8,
-                'factor_desperdicio' => 1.03,
-                'categoria_id' => 1,
-                'sub_categoria_id' => 1,
-                'stock_global_actual' => 100,
-                'stock_global_minimo' => 40,
-                'id_sucursal' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+            ]
        
         ]);
     }

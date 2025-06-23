@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('grosor');
             $table->decimal('factor_desperdicio', 5, 2);
             $table->foreignId('categoria_id')->constrained('categorias')->onDelete('cascade');
+            $table->foreignId('id_lugar')->constrained('lugars')->onDelete('cascade');
             $table->foreignId('sub_categoria_id')->nullable()->constrained('sub_categorias')->onDelete('cascade');
             $table->integer('stock_global_actual');
             $table->integer('stock_global_minimo');
@@ -38,6 +39,7 @@ return new class extends Migration
                 'grosor' => 6,
                 'factor_desperdicio' => 1.07,
                 'categoria_id' => 1,
+                'id_lugar' => 1,
                 'sub_categoria_id' => 1,
                 'stock_global_actual' => 90,
                 'stock_global_minimo' => 30,

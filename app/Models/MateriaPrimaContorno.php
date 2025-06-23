@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
-class MateriaPrimaVidrio extends Model
+class MateriaPrimaContorno extends Model
 {
-    protected $table = 'materia_prima_vidrios';
+    protected $table = 'materia_prima_contornos';
 
     protected $fillable = [
         'codigo',
@@ -16,7 +16,6 @@ class MateriaPrimaVidrio extends Model
         'precioVenta',
         'largo',
         'alto',
-        'grosor',
         'factor_desperdicio',
         'categoria_id',
         'id_lugar',
@@ -36,9 +35,8 @@ class MateriaPrimaVidrio extends Model
 
     public function lugar()
     {
-        return $this->belongsTo(Lugar::class);
+        return $this->belongsTo(Lugar::class, 'id_lugar');
     }
-    
 
     public function subCategoria()
     {
@@ -52,10 +50,10 @@ class MateriaPrimaVidrio extends Model
 
     public function getImagenUrlAttribute()
     {
-        return $this->imagen ? asset('storage/materias_primas_vidrio/' . basename($this->imagen)) : null;
+        return $this->imagen ? asset('storage/materias_primas_contorno/' . basename($this->imagen)) : null;
     }
 
-    // Accessor ajustado: alto y largo en mm, precio en centavos, resultado en centavos por m²
+    // Accessor para calcular precio por m²
     protected function precioM2(): Attribute
     {
         return Attribute::get(function () {

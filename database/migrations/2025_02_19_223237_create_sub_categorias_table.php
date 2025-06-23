@@ -30,12 +30,8 @@ return new class extends Migration
             ],
             [
                 'nombre' => 'sub de trupan',
-                'id_categoria' => 3
-            ],
-            [
-                'nombre' => 'sub de vidrio',
-                'id_categoria' => 4
-            ],
+                'id_categoria' => 2
+            ]
         ]);
     }
 

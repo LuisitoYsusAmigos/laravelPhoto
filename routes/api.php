@@ -10,6 +10,8 @@ use App\Http\Controllers\SubCategoriaController;
 use App\Http\Controllers\MateriaPrimaVarillaController;
 use App\Http\Controllers\MateriaPrimaTrupanController;
 use App\Http\Controllers\MateriaPrimaVidrioController;
+use App\Http\Controllers\MateriaPrimaContornoController;
+
 use App\Http\Controllers\StockVarillaController;
 use App\Http\Controllers\StockVidrioController;
 use App\Http\Controllers\StockTrupanController;
@@ -21,7 +23,14 @@ use App\Http\Controllers\CotizadorController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FuncionesGeneralesController;
 use App\Http\Controllers\RolController;
+use App\Http\Controllers\LugarController;
 
+//Lugares
+Route::get('/lugares', [LugarController::class, 'index']);
+Route::post('/lugar', [LugarController::class, 'store']);
+Route::get('/lugar/{id}', [LugarController::class, 'show']);
+Route::put('/lugar/{id}', [LugarController::class, 'update']);
+Route::delete('/lugar/{id}', [LugarController::class, 'destroy']);  
 
 // Sucursales
 
@@ -42,6 +51,7 @@ Route::get('/categorias/tipo/{palabraX}', [CategoriaController::class, 'indexPor
 
 // subcategoria
 Route::get('/subCategorias', [SubCategoriaController::class, 'index']);
+Route::get('/subCategorias/categoria/{id_categoria}', [SubCategoriaController::class, 'porCategoria']);
 Route::post('/subCategoria', [SubCategoriaController::class, 'store']);
 Route::get('/subCategoria/{id}', [SubCategoriaController::class, 'show']);
 Route::put('/subCategoria/{id}', [SubCategoriaController::class, 'update']);
@@ -96,6 +106,18 @@ Route::delete('/materiaPrimaVidrio/{id}', [MateriaPrimaVidrioController::class, 
 Route::get('/materiaPrimaVidrios/paginados', [MateriaPrimaVidrioController::class, 'indexPaginado']); // Listado paginado
 Route::get('/materiaPrimaVidrios/search', [MateriaPrimaVidrioController::class, 'search']); // Búsqueda general
 Route::get('/materiaPrimaVidrios/search-categorias', [MateriaPrimaVidrioController::class, 'searchCategorias']); // Filtro por categoría y subcategoría
+
+
+// materia prima contorno
+Route::get('/materiaPrimaContornos', [MateriaPrimaContornoController::class, 'index']);
+Route::post('/materiaPrimaContorno', [MateriaPrimaContornoController::class, 'store']);
+Route::get('/materiaPrimaContorno/{id}', [MateriaPrimaContornoController::class, 'show']);
+Route::post('/materiaPrimaContorno/edit/{id}', [MateriaPrimaContornoController::class, 'update']);
+Route::delete('/materiaPrimaContorno/{id}', [MateriaPrimaContornoController::class, 'destroy']);
+
+Route::get('/materiaPrimaContornos/paginados', [MateriaPrimaContornoController::class, 'indexPaginado']); // Listado paginado
+Route::get('/materiaPrimaContornos/search', [MateriaPrimaContornoController::class, 'search']); // Búsqueda general
+Route::get('/materiaPrimaContornos/search-categorias', [MateriaPrimaContornoController::class, 'searchCategorias']); // Filtro por categoría y subcategoría
 
 
 // stock varila 

@@ -7,20 +7,16 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('materia_prima_trupans', function (Blueprint $table) {
+        Schema::create('materia_prima_contornos', function (Blueprint $table) {
             $table->id();
             $table->string('codigo')->nullable();
             $table->string('descripcion');
             $table->integer('precioCompra');
             $table->integer('precioVenta');
-            $table->integer('alto'); // Alto en cm
-            $table->integer('largo'); // Largo en cm
-            $table->integer('grosor');
+            $table->integer('alto');
+            $table->integer('largo');
             $table->decimal('factor_desperdicio', 5, 2);
             $table->foreignId('categoria_id')->constrained('categorias')->onDelete('cascade');
             $table->foreignId('id_lugar')->constrained('lugars')->onDelete('cascade');
@@ -32,35 +28,30 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Datos de ejemplo
-        DB::table('materia_prima_trupans')->insert([
+        DB::table('materia_prima_contornos')->insert([
             [
-                'codigo' => 'MPT001',
-                'descripcion' => 'Trupán blanco 18mm',
-                'precioCompra' => 200,
-                'precioVenta' => 300,
-                'alto' => 120,
-                'largo' => 240,
-                'grosor' => 18,
+                'codigo' => 'MPC001',
+                'descripcion' => 'Contorno decorativo blanco',
+                'precioCompra' => 80,
+                'precioVenta' => 120,
+                'alto' => 50,
+                'largo' => 200,
                 'factor_desperdicio' => 1.05,
                 'categoria_id' => 1,
                 'id_lugar' => 1,
                 'sub_categoria_id' => 1,
-                'stock_global_actual' => 200,
-                'stock_global_minimo' => 50,
+                'stock_global_actual' => 100,
+                'stock_global_minimo' => 20,
                 'id_sucursal' => 1,
                 'imagen' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ],
         ]);
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('materia_prima_trupans');
+        Schema::dropIfExists('materia_prima_contornos');
     }
 };

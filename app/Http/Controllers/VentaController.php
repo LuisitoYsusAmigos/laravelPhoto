@@ -216,6 +216,16 @@ public function storeConDetalle(Request $request)
 
         foreach ($validated['detalles'] as $item) {
             $producto = Producto::find($item['idProducto']);
+            if ($producto) {
+                DB::rollBack();
+                return response()->json([
+                    'error' => "Producto ID {$item['idProducto']} no encontrado"
+                ], 404);
+            }else{
+                return response()->json([
+                    'error' => "Producto ID {$item['idProducto']} encontrado: {$producto->descripcion}"
+                ], 200);
+            }
 
             // Validar stock total suficiente
             if ($producto->stock_global_actual < $item['cantidad']) {

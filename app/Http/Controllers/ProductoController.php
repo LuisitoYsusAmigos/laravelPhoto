@@ -60,6 +60,7 @@ class ProductoController extends Controller
             'stock_global_minimo' => 'required|integer',
             'actualizacion' => 'required|date',
             'id_sucursal' => 'required|exists:sucursal,id',
+            'id_lugar' => 'required|exists:lugars,id',
             'categoria_id' => 'required|exists:categorias,id',
             'sub_categoria_id' => 'required|exists:sub_categorias,id',
             'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
@@ -73,6 +74,8 @@ class ProductoController extends Controller
         $data['stock_global_actual'] = 0;
 
         // Crear el producto sin imagen para obtener el ID
+        Log::info('📦 Datos para crear producto:', $data);
+
         $producto = Producto::create($request->except('imagen'));
 
         // Verificar si se subió una imagen
@@ -197,6 +200,7 @@ class ProductoController extends Controller
         'stock_global_minimo' => 'required|integer',
         'actualizacion' => 'required|date',
         'id_sucursal' => 'required|exists:sucursal,id',
+        'id_lugar' => 'required|exists:lugars,id',
         'categoria_id' => 'required|exists:categorias,id',
         'sub_categoria_id' => 'nullable|exists:sub_categorias,id',
         'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'

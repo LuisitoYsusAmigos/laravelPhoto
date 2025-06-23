@@ -15,6 +15,14 @@ class SubCategoriaController extends Controller
         $subcategorias = SubCategoria::all();
         return response()->json($subcategorias);
     }
+    // Obtener subcategorías filtradas solo por id_categoria
+    public function porCategoria($id_categoria)
+    {
+        $subcategorias = SubCategoria::where('id_categoria', $id_categoria)->get();
+
+        return response()->json($subcategorias);
+    }
+
 
     // Crear una nueva subcategoría
     public function store(Request $request)

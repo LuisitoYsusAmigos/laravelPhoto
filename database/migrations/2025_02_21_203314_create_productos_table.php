@@ -24,6 +24,7 @@ return new class extends Migration
             $table->date('actualizacion');
             $table->foreignId('id_sucursal')->constrained('sucursal')->onDelete('cascade');
             $table->foreignId('categoria_id')->constrained('categorias')->onDelete('cascade');
+            $table->foreignId('id_lugar')->constrained('lugars')->onDelete('cascade');
             $table->foreignId('sub_categoria_id')->nullable()->constrained('sub_categorias')->onDelete('cascade');      
             $table->string('imagen')->nullable();      
             $table->timestamps();
@@ -39,7 +40,8 @@ return new class extends Migration
                 'actualizacion'=> '2024-03-13',
                 'id_sucursal'=> 1,
                 'categoria_id'=> 1,
-                'sub_categoria_id'=> 1
+                'sub_categoria_id'=> 1,
+                'id_lugar'=> 1,
             ],
         ]);
     }
