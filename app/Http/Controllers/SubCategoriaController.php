@@ -27,10 +27,10 @@ class SubCategoriaController extends Controller
     // Crear una nueva subcategoría
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|unique:sub_categorias,nombre',
-            'id_categoria' => 'required|exists:categorias,id' // Validar que exista la categoría
-        ]);
+            $validator = Validator::make($request->all(), [
+                'nombre' => 'required|string',
+                'id_categoria' => 'required|exists:categorias,id' // Validar que exista la categoría
+            ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
