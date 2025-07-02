@@ -135,6 +135,7 @@ public function searchPaginadoGeneral(Request $request)
     $varillas = MateriaPrimaVarilla::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
         return [
             'id' => $item->id,
+            'codigo' => $item->codigo,
             'tipo' => 'varilla',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria_id,
@@ -142,8 +143,8 @@ public function searchPaginadoGeneral(Request $request)
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
-            //'grosor'=> $item->grosor,
-            //'ancho'=> $item->ancho,
+            'grosor'=> $item->grosor,
+            'ancho'=> $item->ancho,
             'stock_global_actual'=> $item->stock_global_actual,
             'stock_global_minimo'=> $item->stock_global_minimo,
             'factor_desperdicio'=> $item->factor_desperdicio,
@@ -157,6 +158,7 @@ public function searchPaginadoGeneral(Request $request)
     $vidrios = MateriaPrimaVidrio::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
         return [
             'id' => $item->id,
+            'codigo' => $item->codigo,
             'tipo' => 'vidrio',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria_id,
@@ -164,9 +166,9 @@ public function searchPaginadoGeneral(Request $request)
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
-            //'grosor'=> $item->grosor,
+            'grosor'=> $item->grosor,
             'alto'=> $item->alto,
-            //'largo'=> $item->largo,
+            'largo'=> $item->largo,
             'stock_global_actual'=> $item->stock_global_actual,
             'stock_global_minimo'=> $item->stock_global_minimo,
             'factor_desperdicio'=> $item->factor_desperdicio,
@@ -179,6 +181,7 @@ public function searchPaginadoGeneral(Request $request)
     $trupan = MateriaPrimaTrupan::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
         return [
             'id' => $item->id,
+            'codigo' => $item->codigo,
             'tipo' => 'trupan',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria_id,
@@ -186,9 +189,9 @@ public function searchPaginadoGeneral(Request $request)
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
-            //'grosor'=> $item->grosor,
+            'grosor'=> $item->grosor,
             'alto'=> $item->alto,
-            //'largo'=> $item->largo,
+            'largo'=> $item->largo,
             'precioCompra'=> $item->precioCompra,
             'precioVenta'=> $item->precioVenta,
             'stock_global_actual'=> $item->stock_global_actual,
@@ -202,6 +205,7 @@ public function searchPaginadoGeneral(Request $request)
     $contornos = MateriaPrimaContorno::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
         return [
             'id' => $item->id,
+            'codigo' => $item->codigo,
             'tipo' => 'contorno',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria_id,
@@ -210,7 +214,7 @@ public function searchPaginadoGeneral(Request $request)
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
             'alto'=> $item->alto,
-            //'largo'=> $item->largo,
+            'largo'=> $item->largo,
             'precioCompra'=> $item->precioCompra,
             'precioVenta'=> $item->precioVenta,
             'stock_global_actual'=> $item->stock_global_actual,
@@ -223,6 +227,7 @@ public function searchPaginadoGeneral(Request $request)
     $productos = Producto::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
         return [
             'id' => $item->id,
+            'codigo' => $item->codigo,
             'tipo' => 'producto',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria_id,
@@ -267,6 +272,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
     $varillas = MateriaPrimaVarilla::all()->map(function ($item) {
         return [
             'id' => $item->id,
+            'codigo' => $item->codigo,
             'tipo' => 'varilla',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria_id,
@@ -274,8 +280,8 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
-            //'grosor'=> $item->grosor,
-            //'ancho'=> $item->ancho,
+            'grosor'=> $item->grosor,
+            'ancho'=> $item->ancho,
             'stock_global_actual'=> $item->stock_global_actual,
             'stock_global_minimo'=> $item->stock_global_minimo,
             'factor_desperdicio'=> $item->factor_desperdicio,
@@ -289,6 +295,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
     $vidrios = MateriaPrimaVidrio::all()->map(function ($item) {
         return [
             'id' => $item->id,
+            'codigo' => $item->codigo,
             'tipo' => 'vidrio',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria_id,
@@ -296,9 +303,9 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
-            //'grosor'=> $item->grosor,
+            'grosor'=> $item->grosor,
             'alto'=> $item->alto,
-            //'largo'=> $item->largo,
+            'largo'=> $item->largo,
             'stock_global_actual'=> $item->stock_global_actual,
             'stock_global_minimo'=> $item->stock_global_minimo,
             'factor_desperdicio'=> $item->factor_desperdicio,
@@ -311,6 +318,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
     $trupan = MateriaPrimaTrupan::all()->map(function ($item) {
         return [
             'id' => $item->id,
+            'codigo' => $item->codigo,
             'tipo' => 'trupan',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria_id,
@@ -318,9 +326,9 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
-            //'grosor'=> $item->grosor,
+            'grosor'=> $item->grosor,
             'alto'=> $item->alto,
-            //'largo'=> $item->largo,
+            'largo'=> $item->largo,
             'precioCompra'=> $item->precioCompra,
             'precioVenta'=> $item->precioVenta,
             'stock_global_actual'=> $item->stock_global_actual,
@@ -334,6 +342,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
     $contornos = MateriaPrimaContorno::all()->map(function ($item) {
         return [
             'id' => $item->id,
+            'codigo' => $item->codigo,
             'tipo' => 'contorno',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria_id,
@@ -342,7 +351,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
             'alto'=> $item->alto,
-            //'largo'=> $item->largo,
+            'largo'=> $item->largo,
             'precioCompra'=> $item->precioCompra,
             'precioVenta'=> $item->precioVenta,
             'stock_global_actual'=> $item->stock_global_actual,
@@ -355,6 +364,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
     $productos = Producto::all()->map(function ($item) {
         return [
             'id' => $item->id,
+            'codigo' => $item->codigo,
             'tipo' => 'producto',
             'descripcion' => $item->descripcion,
             'categoria' => $item->categoria_id,
