@@ -99,8 +99,8 @@ class MateriaPrimaVarillaController extends Controller
             'categoria_id' => 'sometimes|exists:categorias,id',
             'id_lugar' => 'sometimes|exists:lugars,id',
             'sub_categoria_id' => 'sometimes|exists:sub_categorias,id',
-            'stock_global_actual' => 'sometimes|integer',
-            'stock_global_minimo' => 'sometimes|integer',
+            //'stock_global_actual' => 'sometimes|integer',
+            //'stock_global_minimo' => 'sometimes|integer',
             'id_sucursal' => 'sometimes|exists:sucursal,id',
             'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
             //'imagen' => 'image|mimes:jpg,jpeg,png|max:2048'

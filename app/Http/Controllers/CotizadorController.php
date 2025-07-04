@@ -131,8 +131,11 @@ public function searchPaginadoGeneral(Request $request)
     $page = (int) $request->input('page', 1);
     $perPage = (int) $request->input('perPage', 10);
 
-    // Buscar en cada tabla
-    $varillas = MateriaPrimaVarilla::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
+    // Buscar en cada tabla por descripcion o codigo
+    $varillas = MateriaPrimaVarilla::where(function ($query) use ($search) {
+        $query->where('descripcion', 'LIKE', "%$search%")
+              ->orWhere('codigo', 'LIKE', "%$search%");
+    })->get()->map(function ($item) {
         return [
             'id' => $item->id,
             'codigo' => $item->codigo,
@@ -144,7 +147,6 @@ public function searchPaginadoGeneral(Request $request)
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
             'grosor'=> $item->grosor,
-            //'ancho'=> $item->ancho,
             'stock_global_actual'=> $item->stock_global_actual,
             'stock_global_minimo'=> $item->stock_global_minimo,
             'factor_desperdicio'=> $item->factor_desperdicio,
@@ -156,7 +158,10 @@ public function searchPaginadoGeneral(Request $request)
         ];
     });
 
-    $vidrios = MateriaPrimaVidrio::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
+    $vidrios = MateriaPrimaVidrio::where(function ($query) use ($search) {
+        $query->where('descripcion', 'LIKE', "%$search%")
+              ->orWhere('codigo', 'LIKE', "%$search%");
+    })->get()->map(function ($item) {
         return [
             'id' => $item->id,
             'codigo' => $item->codigo,
@@ -167,7 +172,6 @@ public function searchPaginadoGeneral(Request $request)
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
-            //'grosor'=> $item->grosor,
             'alto'=> $item->alto,
             'largo'=> $item->largo,
             'stock_global_actual'=> $item->stock_global_actual,
@@ -179,7 +183,10 @@ public function searchPaginadoGeneral(Request $request)
         ];
     });
 
-    $trupan = MateriaPrimaTrupan::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
+    $trupan = MateriaPrimaTrupan::where(function ($query) use ($search) {
+        $query->where('descripcion', 'LIKE', "%$search%")
+              ->orWhere('codigo', 'LIKE', "%$search%");
+    })->get()->map(function ($item) {
         return [
             'id' => $item->id,
             'codigo' => $item->codigo,
@@ -190,7 +197,6 @@ public function searchPaginadoGeneral(Request $request)
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
-            //'grosor'=> $item->grosor,
             'alto'=> $item->alto,
             'largo'=> $item->largo,
             'precioCompra'=> $item->precioCompra,
@@ -199,11 +205,13 @@ public function searchPaginadoGeneral(Request $request)
             'stock_global_minimo'=> $item->stock_global_minimo,
             'factor_desperdicio'=> $item->factor_desperdicio,
             'id_lugar' => $item->id_lugar,
-
         ];
     });
 
-    $contornos = MateriaPrimaContorno::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
+    $contornos = MateriaPrimaContorno::where(function ($query) use ($search) {
+        $query->where('descripcion', 'LIKE', "%$search%")
+              ->orWhere('codigo', 'LIKE', "%$search%");
+    })->get()->map(function ($item) {
         return [
             'id' => $item->id,
             'codigo' => $item->codigo,
@@ -225,7 +233,10 @@ public function searchPaginadoGeneral(Request $request)
         ];
     });
 
-    $productos = Producto::where('descripcion', 'LIKE', "%$search%")->get()->map(function ($item) {
+    $productos = Producto::where(function ($query) use ($search) {
+        $query->where('descripcion', 'LIKE', "%$search%")
+              ->orWhere('codigo', 'LIKE', "%$search%");
+    })->get()->map(function ($item) {
         return [
             'id' => $item->id,
             'codigo' => $item->codigo,
@@ -243,6 +254,7 @@ public function searchPaginadoGeneral(Request $request)
         ];
     });
 
+    // Combinar todos los resultados
     $resultados = $varillas
         ->concat($vidrios)
         ->concat($trupan)
@@ -262,6 +274,7 @@ public function searchPaginadoGeneral(Request $request)
         'data' => $pagina
     ]);
 }
+
 
 
 

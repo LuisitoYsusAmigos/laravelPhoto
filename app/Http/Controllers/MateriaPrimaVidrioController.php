@@ -96,8 +96,8 @@ class MateriaPrimaVidrioController extends Controller
             'categoria_id' => 'sometimes|exists:categorias,id',
             'id_lugar' => 'sometimes|exists:lugars,id',
             'sub_categoria_id' => 'sometimes|exists:sub_categorias,id',
-            'stock_global_actual' => 'sometimes|integer|min:0',
-            'stock_global_minimo' => 'sometimes|integer|min:0',
+            //'stock_global_actual' => 'sometimes|integer|min:0',
+            //'stock_global_minimo' => 'sometimes|integer|min:0',
             'id_sucursal' => 'sometimes|exists:sucursal,id',
             'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
