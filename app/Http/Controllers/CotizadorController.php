@@ -290,7 +290,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'tipo' => 'varilla',
             'descripcion' => $item->descripcion,
             'categoria_id' => $item->categoria_id,
-            'sub_categoria_id   ' => $item->sub_categoria_id,
+            'sub_categoria_id' => $item->sub_categoria_id,
             'sucursal_id' => $item->id_sucursal,
             'created_at' => $item->created_at,
             'imagen'=> $item->imagen,
