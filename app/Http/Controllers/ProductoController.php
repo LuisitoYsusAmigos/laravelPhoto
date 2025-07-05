@@ -197,7 +197,7 @@ class ProductoController extends Controller
         'precioCompra' => 'required|integer',
         'precioVenta' => 'required|integer',
         //'stock_global_actual' => 'required|integer',
-        //'stock_global_minimo' => 'required|integer',
+        'stock_global_minimo' => 'required|integer',
         'actualizacion' => 'required|date',
         'id_sucursal' => 'required|exists:sucursal,id',
         'id_lugar' => 'required|exists:lugars,id',
