@@ -93,6 +93,10 @@ class StockContornoController extends Controller
     public function indexPorContorno($id)
     {
         $stock = StockContorno::where('id_materia_prima_contorno', $id)->get();
+        
+        if ($stock->isEmpty()) {
+        return response()->json(['message' => 'No se encontraron registros para este contorno'], 404);
+    }
         return response()->json($stock);
     }
 }

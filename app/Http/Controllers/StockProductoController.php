@@ -45,6 +45,20 @@ class StockProductoController extends Controller
 
         return response()->json($stockProducto);
     }
+    // Obtener todos los registros de stock asociados a un producto
+    public function getByProducto($id_producto)
+    {
+        $stock = StockProducto::with('producto')
+                    ->where('id_producto', $id_producto)
+                    ->get();
+
+        if ($stock->isEmpty()) {
+            return response()->json(['message' => 'No se encontraron registros para este producto'], 404);
+        }
+
+        return response()->json($stock);
+    }
+
 
     // Actualizar un registro existente
     public function update(Request $request, $id)

@@ -127,6 +127,7 @@ Route::get('/materiaPrimaContornos/search-categorias', [MateriaPrimaContornoCont
 Route::get('/stockVarillas', [StockVarillaController::class, 'index']); // Obtener todos los registros
 Route::post('/stockVarillas', [StockVarillaController::class, 'store']); // Crear un nuevo registro
 Route::get('/stockVarilla/{id}', [StockVarillaController::class, 'show']); // Obtener un registro por ID
+Route::get('/stockVarillas/porVarilla/{id}', [StockVarillaController::class, 'indexPorVarilla']);
 Route::put('/stockVarilla/{id}', [StockVarillaController::class, 'update']); // Actualizar un registro
 Route::delete('/stockVarilla/{id}', [StockVarillaController::class, 'destroy']); // Eliminar un registro
 
@@ -134,13 +135,15 @@ Route::delete('/stockVarilla/{id}', [StockVarillaController::class, 'destroy']);
 Route::get('/stockVidrios', [StockVidrioController::class, 'index']); // Obtener todos los registros
 Route::post('/stockVidrio', [StockVidrioController::class, 'store']); // Crear un nuevo registro
 Route::get('/stockVidrio/{id}', [StockVidrioController::class, 'show']); // Obtener un registro por ID
+Route::get('/stockVidrios/porVidrio/{id}', [StockVidrioController::class, 'indexPorVidrio']);
 Route::put('/stockVidrio/{id}', [StockVidrioController::class, 'update']); // Actualizar un registro
 Route::delete('/stockVidrio/{id}', [StockVidrioController::class, 'destroy']); // Eliminar un registro
 
 //stock trupan
 Route::get('/stockTrupans', [StockTrupanController::class, 'index']); // Obtener todos los registros
-Route::post('/stockTrupans ', [StockTrupanController::class, 'store']); // Crear un nuevo registro
+Route::post('/stockTrupans', [StockTrupanController::class, 'store']); // Crear un nuevo registro
 Route::get('/stockTrupans/{id}', [StockTrupanController::class, 'show']); // Obtener un registro por ID
+Route::get('/stockTrupans/porTrupan/{id}', [StockTrupanController::class, 'indexPorTrupan']);
 Route::put('/stockTrupans/{id}', [StockTrupanController::class, 'update']); // Actualizar un registro
 Route::delete('/stockTrupans/{id}', [StockTrupanController::class, 'destroy']); // Eliminar un registro
 
@@ -149,6 +152,7 @@ Route::delete('/stockTrupans/{id}', [StockTrupanController::class, 'destroy']); 
 Route::get  ('/stockProductos',           [StockProductoController::class, 'index']);   // Obtener todos los registros
 Route::post ('/stockProducto',           [StockProductoController::class, 'store']);   // Crear un nuevo registro
 Route::get  ('/stockProducto/{id}',      [StockProductoController::class, 'show']);    // Obtener un registro por ID
+Route::get('/stockProductos/porProducto/{id_producto}', [StockProductoController::class, 'getByProducto']);
 Route::put  ('/stockProducto/{id}',      [StockProductoController::class, 'update']);  // Actualizar un registro
 Route::delete('/stockProducto/{id}',      [StockProductoController::class, 'destroy']); // Eliminar un registro
 //stock de contornos

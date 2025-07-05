@@ -47,6 +47,19 @@ class StockVarillaController extends Controller
         return response()->json($stockVarilla);
     }
 
+    // Obtener todos los registros de stock asociados a una materia prima varilla
+    public function indexPorVarilla($id)
+    {
+        $stock = StockVarilla::where('id_materia_prima_varilla', $id)->get();
+
+        if ($stock->isEmpty()) {
+            return response()->json(['message' => 'No se encontraron registros para esta varilla'], 404);
+        }
+
+        return response()->json($stock);
+    }
+
+
     // Actualizar un registro existente
     public function update(Request $request, $id)
     {

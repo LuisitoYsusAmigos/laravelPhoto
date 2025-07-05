@@ -47,6 +47,18 @@ class StockVidrioController extends Controller
 
         return response()->json($stockVidrio);
     }
+    // Obtener todos los registros de stock asociados a una materia prima vidrio
+    public function indexPorVidrio($id)
+    {
+        $stock = StockVidrio::where('id_materia_prima_vidrio', $id)->get();
+
+        if ($stock->isEmpty()) {
+            return response()->json(['message' => 'No se encontraron registros para este vidrio'], 404);
+        }
+
+        return response()->json($stock);
+    }
+
 
     // Actualizar un registro existente
     public function update(Request $request, $id)

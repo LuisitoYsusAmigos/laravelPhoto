@@ -45,6 +45,19 @@ public function show($id)
     return response()->json($stock);
 }
 
+// Obtener todos los registros de stock asociados a una materia prima trupan
+public function indexPorTrupan($id)
+{
+    $stock = StockTrupan::where('id_materia_prima_trupans', $id)->get();
+
+    if ($stock->isEmpty()) {
+        return response()->json(['message' => 'No se encontraron registros para este trupan'], 404);
+    }
+
+    return response()->json($stock);
+}
+
+
     public function update(Request $request, $id)
     {
         $stock = StockTrupan::find($id);
