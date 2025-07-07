@@ -21,7 +21,7 @@ class MateriaPrimaVidrioController extends Controller
             'precioVenta' => 'required|numeric|min:0',
             'alto' => 'required|integer|min:1',
             'largo' => 'required|integer|min:1',
-            'grosor' => 'required|integer|min:1',
+            'grosor' => 'nullable|integer|min:1',
             'factor_desperdicio' => 'required|numeric|min:0|max:100',
             'categoria_id' => 'required|exists:categorias,id',
             'id_lugar' => 'required|exists:lugars,id',
