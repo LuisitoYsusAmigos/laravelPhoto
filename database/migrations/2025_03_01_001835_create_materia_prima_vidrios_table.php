@@ -16,7 +16,7 @@ return new class extends Migration
             $table->integer('precioVenta');
             $table->integer('alto'); // Alto en cm
             $table->integer('largo'); // Largo en cm
-            $table->integer('grosor');
+            $table->integer('grosor')->nullable();
             $table->decimal('factor_desperdicio', 5, 2);
             $table->foreignId('categoria_id')->constrained('categorias')->onDelete('cascade');
             $table->foreignId('id_lugar')->constrained('lugars')->onDelete('cascade');

@@ -189,7 +189,6 @@ public function showVentaDetalleProducto($idVenta)
     }
 
 
-
 public function storeConDetalle(Request $request)
 {
     $validated = $request->validate([
@@ -212,22 +211,18 @@ public function storeConDetalle(Request $request)
             'fecha' => now(),
         ]);
 
-        $total = 0;
+        $totalVenta = 0;
 
         foreach ($validated['detalles'] as $item) {
             $producto = Producto::find($item['idProducto']);
-            if ($producto) {
+
+            if (!$producto) {
                 DB::rollBack();
                 return response()->json([
                     'error' => "Producto ID {$item['idProducto']} no encontrado"
                 ], 404);
-            }else{
-                return response()->json([
-                    'error' => "Producto ID {$item['idProducto']} encontrado: {$producto->descripcion}"
-                ], 200);
             }
 
-            // Validar stock total suficiente
             if ($producto->stock_global_actual < $item['cantidad']) {
                 DB::rollBack();
                 return response()->json([
@@ -236,8 +231,10 @@ public function storeConDetalle(Request $request)
             }
 
             $cantidadRestante = $item['cantidad'];
+            $precioUnitario = $producto->precioVenta;
+            $totalProducto = $precioUnitario * $cantidadRestante;
+            $totalVenta += $totalProducto;
 
-            // Obtener lotes disponibles ordenados por ID (FIFO)
             $lotes = DB::table('stock_productos')
                 ->where('id_producto', $producto->id)
                 ->where('contable', 1)
@@ -250,21 +247,18 @@ public function storeConDetalle(Request $request)
 
                 $usar = min($cantidadRestante, $lote->stock);
 
-                // Descontar del lote
                 DB::table('stock_productos')
                     ->where('id', $lote->id)
                     ->decrement('stock', $usar);
 
-                // Crear detalle de venta por este lote
                 DetalleVentaProducto::create([
                     'idVenta' => $venta->id,
                     'idProducto' => $producto->id,
                     'id_stock_producto' => $lote->id,
                     'cantidad' => $usar,
-                    'precio' => $lote->precio,
+                    'precio' => $lote->precio, // precio del lote
                 ]);
 
-                $total += $usar * $lote->precio;
                 $cantidadRestante -= $usar;
             }
 
@@ -276,25 +270,89 @@ public function storeConDetalle(Request $request)
             }
         }
 
-        // Actualizar la venta con los totales
+        // Guardar el total calculado
         $venta->update([
-            'precioProducto' => $total,
-            'precioTotal' => $total,
+            'precioProducto' => $totalVenta,
+            'precioTotal' => $totalVenta,
         ]);
 
         DB::commit();
 
+        // Cargar relaciones
         $venta->load(['cliente', 'sucursal', 'detalleVentaProductos']);
 
+        // Añadir campo "precioDetalle" a cada detalle
+        foreach ($venta->detalleVentaProductos as $detalle) {
+            $producto = Producto::find($detalle->idProducto);
+            $detalle->precioDetalle = $detalle->cantidad * $producto->precioVenta;
+        }
+
         return response()->json([
-            'venta' => $venta,
-        ], 201);
+    'venta' => [
+        'id' => $venta->id,
+        'saldo' => $venta->saldo,
+        'idCliente' => $venta->idCliente,
+        'idSucursal' => $venta->idSucursal,
+        'recogido' => $venta->recogido,
+        'fecha' => $venta->fecha,
+        'updated_at' => $venta->updated_at,
+        'created_at' => $venta->created_at,
+        'precioProducto' => $venta->precioProducto,
+        'precioTotal' => $venta->precioTotal,
+        'cliente' => $venta->cliente,
+        'sucursal' => $venta->sucursal,
+        'detalle_venta_productos' => $venta->detalleVentaProductos,
+    ],
+], 201);
+
 
     } catch (\Exception $e) {
         DB::rollBack();
         return response()->json(['error' => $e->getMessage()], 500);
     }
 }
+
+public function getVentaCompleta($id)
+{
+    try {
+        $venta = Venta::with(['cliente', 'sucursal', 'detalleVentaProductos'])->find($id);
+
+        if (!$venta) {
+            return response()->json(['error' => 'Venta no encontrada'], 404);
+        }
+
+        // Añadir precioDetalle a cada detalle
+        foreach ($venta->detalleVentaProductos as $detalle) {
+            $producto = Producto::find($detalle->idProducto);
+            $detalle->precioDetalle = $detalle->cantidad * $producto->precioVenta;
+        }
+
+        // Estructura de respuesta idéntica a storeConDetalle
+        return response()->json([
+            'venta' => [
+                'id' => $venta->id,
+                'saldo' => $venta->saldo,
+                'idCliente' => $venta->idCliente,
+                'idSucursal' => $venta->idSucursal,
+                'recogido' => $venta->recogido,
+                'fecha' => $venta->fecha,
+                'updated_at' => $venta->updated_at,
+                'created_at' => $venta->created_at,
+                'precioProducto' => $venta->precioProducto,
+                'precioTotal' => $venta->precioTotal,
+                'cliente' => $venta->cliente,
+                'sucursal' => $venta->sucursal,
+                'detalle_venta_productos' => $venta->detalleVentaProductos,
+            ],
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
+
+
+
 
 
 
