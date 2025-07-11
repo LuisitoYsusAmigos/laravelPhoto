@@ -137,13 +137,13 @@ class ClienteController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'ci' => 'required|string|unique:clientes,ci',
+            'ci' => 'nullable|string|unique:clientes,ci',
             'nombre' => 'required|string',
             'apellido' => 'required|string',
-            'fechaNacimiento' => 'required|date',
-            'telefono' => 'required|string',
-            'direccion' => 'required|string',
-            'email' => 'required|email|unique:clientes,email'
+            'fechaNacimiento' => 'nullable|date',
+            'telefono' => 'nullable|string',
+            'direccion' => 'nullable|string',
+            'email' => 'nullable|email|unique:clientes,email'
         ]);
 
         if ($validator->fails()) {
