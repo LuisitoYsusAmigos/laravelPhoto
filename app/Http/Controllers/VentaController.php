@@ -147,9 +147,9 @@ public function showVentaDetalleProducto($idVenta)
         }
 
         $validator = Validator::make($request->all(), [
-            'precioProducto' => 'required|numeric|min:0',
-            'precioPerzonalizado' => 'nullable|numeric|min:0',
-            'precioTotal' => 'required|numeric|min:0',
+            //'precioProducto' => 'required|numeric|min:0',
+            //'precioPerzonalizado' => 'nullable|numeric|min:0',
+            //'precioTotal' => 'required|numeric|min:0',
             'saldo' => 'required|numeric|min:0',
             'recogido' => 'required|boolean',
             'fecha' => 'required|date',
@@ -350,6 +350,26 @@ public function getVentaCompleta($id)
         return response()->json(['error' => $e->getMessage()], 500);
     }
 }
+
+
+public function completarVenta($id)
+{
+    $venta = Venta::find($id);
+
+    if (!$venta) {
+        return response()->json(['error' => 'Venta no encontrada'], 404);
+    }
+
+    $venta->saldo = $venta->precioTotal;
+    $venta->recogido = true;
+    $venta->save();
+
+    return response()->json([
+        'message' => 'Venta completada exitosamente',
+        'venta' => $venta
+    ], 200);
+}
+
 
 
 

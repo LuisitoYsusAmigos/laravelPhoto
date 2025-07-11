@@ -198,6 +198,8 @@ Route::delete('/venta/{id}', [VentaController::class, 'destroy']); // Eliminar u
 //venta con detalle
 Route::post('/venta/ventasConDetalle', [VentaController::class, 'storeConDetalle']); // Obtener todas las ventas con detalle
 Route::get('/venta/ventaCompleta/{id}', [VentaController::class, 'getVentaCompleta']);
+Route::get('/venta/ventaCompleta/{id}', [VentaController::class, 'getVentaCompleta']);
+Route::put('venta/completar/{id}', [VentaController::class, 'completarVenta']);
 
 
 //detalle venta producto
