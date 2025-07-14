@@ -198,7 +198,6 @@ Route::delete('/venta/{id}', [VentaController::class, 'destroy']); // Eliminar u
 //venta con detalle
 Route::post('/venta/ventasConDetalle', [VentaController::class, 'storeConDetalle']); // Obtener todas las ventas con detalle
 Route::get('/venta/ventaCompleta/{id}', [VentaController::class, 'getVentaCompleta']);
-Route::get('/venta/ventaCompleta/{id}', [VentaController::class, 'getVentaCompleta']);
 Route::put('venta/completar/{id}', [VentaController::class, 'completarVenta']);
 
 
@@ -218,7 +217,12 @@ Route::delete('/detalle-venta-producto/{id}', [DetalleVentaProductoController::c
 //todo de productos
 Route::get('/materias-primas-paginado', [CotizadorController::class, 'indexPaginadoGeneralPorMasReciente']);
 Route::get('/materias-primas-search', [CotizadorController::class, 'searchPaginadoGeneral']);
+//recibos
+use App\Http\Controllers\GestionRecibosController;
 
+Route::get('/recibo/html/{id}', [GestionRecibosController::class, 'getHtml'])->name('recibo.html');
+Route::get('/recibo/pdf/{id}', [GestionRecibosController::class, 'getPdf'])->name('recibo.pdf');
+Route::get('/recibo/{id}', [GestionRecibosController::class, 'show']);
 
 
 //auth

@@ -315,19 +315,28 @@ public function storeConDetalle(Request $request)
 public function getVentaCompleta($id)
 {
     try {
-        $venta = Venta::with(['cliente', 'sucursal', 'detalleVentaProductos'])->find($id);
+        // Carga las relaciones necesarias, incluyendo producto dentro de cada detalle
+        $venta = Venta::with([
+            'cliente',
+            'sucursal',
+            'detalleVentaProductos.producto'
+        ])->find($id);
 
         if (!$venta) {
             return response()->json(['error' => 'Venta no encontrada'], 404);
         }
 
-        // Añadir precioDetalle a cada detalle
+        // Añadir precioDetalle y nombreProducto a cada detalle, y eliminar el objeto producto
         foreach ($venta->detalleVentaProductos as $detalle) {
-            $producto = Producto::find($detalle->idProducto);
+            $producto = $detalle->producto;
             $detalle->precioDetalle = $detalle->cantidad * $producto->precioVenta;
+            $detalle->nombreProducto = $producto->descripcion;
+
+            // Eliminar la relación completa para no devolverla en el JSON
+            unset($detalle->producto);
         }
 
-        // Estructura de respuesta idéntica a storeConDetalle
+        // Estructura de respuesta
         return response()->json([
             'venta' => [
                 'id' => $venta->id,
@@ -350,6 +359,8 @@ public function getVentaCompleta($id)
         return response()->json(['error' => $e->getMessage()], 500);
     }
 }
+
+
 
 
 public function completarVenta($id)
