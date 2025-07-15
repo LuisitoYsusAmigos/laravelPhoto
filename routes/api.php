@@ -200,6 +200,11 @@ Route::post('/venta/ventasConDetalle', [VentaController::class, 'storeConDetalle
 Route::get('/venta/ventaCompleta/{id}', [VentaController::class, 'getVentaCompleta']);
 Route::put('venta/completar/{id}', [VentaController::class, 'completarVenta']);
 
+Route::get('/ventas/resumen-dashboard', [VentaController::class, 'resumenDashboard']);
+Route::get('/ventas/detallado', [VentaController::class, 'ventasPorFechaDetallado']);
+
+
+
 
 //detalle venta producto
 use App\Http\Controllers\DetalleVentaProductoController;

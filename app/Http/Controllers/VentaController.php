@@ -381,6 +381,86 @@ public function completarVenta($id)
     ], 200);
 }
 
+public function resumenDashboard(Request $request)
+{
+    // Obtener fecha desde query param, con fallback a hoy
+    $fechaParam = $request->query('fecha');
+    
+    try {
+        $fecha = $fechaParam 
+            ? \Carbon\Carbon::createFromFormat('d-m-y', $fechaParam)->format('Y-m-d')
+            : now()->format('Y-m-d');
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Formato de fecha inválido. Usa d-m-y, por ejemplo: 01-12-25'], 400);
+    }
+
+    // Obtener ventas del día especificado
+    $ventas = Venta::whereDate('fecha', $fecha)->get();
+
+    $totalVentas = $ventas->sum('precioTotal');
+    $ventasCompletadas = $ventas->where('recogido', true)->count();
+
+    $totalEfectivo = $ventas->sum('saldo');
+
+    $ventasPendientes = $ventas->where('recogido', false)->count();
+
+    return response()->json([
+        'fecha_consultada' => $fecha,
+        'ventas_dia' => [
+            'monto' => $totalVentas,
+            'cantidad' => $ventasCompletadas,
+        ],
+        'efectivo' => $totalEfectivo,
+        'pendientes' => $ventasPendientes,
+    ]);
+}
+
+public function ventasPorFechaDetallado(Request $request)
+{
+    $fechaParam = $request->query('fecha');
+
+    try {
+        $fecha = $fechaParam 
+            ? \Carbon\Carbon::createFromFormat('d-m-y', $fechaParam)->format('Y-m-d')
+            : now()->format('Y-m-d');
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Formato de fecha inválido. Usa d-m-y, por ejemplo: 06-12-01'], 400);
+    }
+
+    $ventas = \App\Models\Venta::with('cliente')
+        ->whereDate('fecha', $fecha)
+        ->orderBy('fecha', 'asc')
+        ->get();
+
+    $resultado = $ventas->map(function ($venta) {
+        $tipoProducto = [];
+
+        if ($venta->precioProducto > 0) {
+            $tipoProducto[] = 'Producto';
+        }
+
+        if ($venta->precioPerzonalizado > 0) {
+            $tipoProducto[] = 'Cuadro personalizado';
+        }
+
+        return [
+            'hora' => \Carbon\Carbon::parse($venta->fecha)->format('H:i'),
+            'cliente' => $venta->cliente ? $venta->cliente->nombre . ' ' . $venta->cliente->apellido : 'Cliente desconocido',
+            'productos' => implode(', ', $tipoProducto),
+            'total' => $venta->precioTotal,
+            'estado' => $venta->recogido ? 'Completado' : 'Pendiente',
+        ];
+    });
+
+    return response()->json([
+        'fecha_consultada' => $fecha,
+        'ventas' => $resultado
+    ]);
+}
+
+
+
+
 
 
 
