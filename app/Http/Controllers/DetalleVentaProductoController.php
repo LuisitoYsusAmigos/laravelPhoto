@@ -75,4 +75,8 @@ class DetalleVentaProductoController extends Controller
         $detalle->delete();
         return response()->json(['message' => 'Detalle eliminado correctamente']);
     }
+
+
+
+    
 }

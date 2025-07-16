@@ -6,7 +6,7 @@ use App\Models\Venta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-
+use Carbon\Carbon;
 //controlers
 
 use App\Models\Producto;
@@ -457,6 +457,39 @@ public function ventasPorFechaDetallado(Request $request)
         'ventas' => $resultado
     ]);
 }
+
+
+    public function resumenDelDia(Request $request)
+    {
+        $fechaParam = $request->query('fecha');
+
+        try {
+            $fecha = $fechaParam
+                ? Carbon::createFromFormat('d-m-y', $fechaParam)->format('Y-m-d')
+                : now()->format('Y-m-d');
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Formato de fecha inválido. Usa d-m-y'], 400);
+        }
+
+        $ventas = Venta::whereDate('fecha', $fecha)->get();
+
+        $totalVentas = $ventas->sum('precioTotal');
+        $numeroVentas = $ventas->count();
+        $totalEfectivo = $ventas->sum('saldo');
+
+        // Aquí podrías filtrar por tipo de pago si tuvieras un campo, por ahora simulado
+        $totalTarjeta = 0.00;
+        $totalTransferencia = 0.00;
+
+        return response()->json([
+            'fecha_consultada' => $fecha,
+            'total_ventas' => round($totalVentas, 2),
+            'numero_ventas' => $numeroVentas,
+            'efectivo' => round($totalEfectivo, 2),
+            'tarjeta' => $totalTarjeta,
+            'transferencia' => $totalTransferencia
+        ]);
+    }
 
 
 
