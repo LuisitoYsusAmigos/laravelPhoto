@@ -444,6 +444,7 @@ public function ventasPorFechaDetallado(Request $request)
         }
 
         return [
+            'id' => $venta->id,
             'hora' => \Carbon\Carbon::parse($venta->fecha)->format('H:i'),
             'cliente' => $venta->cliente ? $venta->cliente->nombre . ' ' . $venta->cliente->apellido : 'Cliente desconocido',
             'productos' => implode(', ', $tipoProducto),
