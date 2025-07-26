@@ -14,13 +14,15 @@ class CreateVentasTable extends Migration
             $table->integer('precioProducto')->default(0);
             $table->integer('precioPerzonalizado')->default(0);
             $table->integer('precioTotal')->default(0);
-            $table->integer('saldo');
+            $table->integer('saldo')->default(0);
 
             $table->boolean('recogido')->default(false);
             $table->dateTime('fecha');
 
             $table->foreignId('idCliente')->constrained('clientes')->onDelete('cascade');
             $table->foreignId('idSucursal')->constrained('sucursal')->onDelete('cascade');
+
+            
 
             $table->timestamps();
         });
@@ -33,7 +35,8 @@ class CreateVentasTable extends Migration
             'idCliente' => 1,
             'idSucursal' => 1,
             'created_at' => now(),
-            'updated_at' => now()
+            'updated_at' => now(),
+            'precioTotal' => 1000,
         ]);
     }
 

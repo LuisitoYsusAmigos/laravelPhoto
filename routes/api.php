@@ -205,6 +205,33 @@ Route::get('/ventas/detallado', [VentaController::class, 'ventasPorFechaDetallad
 
 Route::get('/ventas/cierrecaja', [VentaController::class, 'resumenDelDia']);
 
+//formas de pago
+use App\Http\Controllers\FormaDePagoController;
+
+Route::get('/formasPago', [FormaDePagoController::class, 'index']);
+Route::post('/formasPago', [FormaDePagoController::class, 'store']);
+Route::get('/formaPago/{id}', [FormaDePagoController::class, 'show']);
+Route::put('/formasPago/{id}', [FormaDePagoController::class, 'update']);
+Route::delete('/formaPago/{id}', [FormaDePagoController::class, 'destroy']);
+
+use App\Http\Controllers\PagoController;
+
+Route::get('/pagos', [PagoController::class, 'index']);
+Route::post('/pago', [PagoController::class, 'store']);
+Route::get('/pago/{id}', [PagoController::class, 'show']);
+Route::put('/pago/{id}', [PagoController::class, 'update']);
+Route::delete('/pago/{id}', [PagoController::class, 'destroy']);
+
+// Caja
+use App\Http\Controllers\CajaController;
+
+Route::get('/cajas', [CajaController::class, 'index']);
+Route::post('/caja', [CajaController::class, 'store']);
+Route::get('/caja/{id}', [CajaController::class, 'show']);
+//Route::put('/cajas/{id}', [CajaController::class, 'update']);
+Route::delete('/cajas/{id}', [CajaController::class, 'destroy']);
+Route::get('/caja/fecha/{fecha}', [CajaController::class, 'obtenerPorFecha']); 
+
 
 
 

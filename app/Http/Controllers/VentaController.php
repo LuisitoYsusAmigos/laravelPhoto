@@ -11,6 +11,8 @@ use Carbon\Carbon;
 
 use App\Models\Producto;
 use App\Models\DetalleVentaProducto;
+use App\Http\Controllers\PagoController;
+use App\Models\Pago;
 
 
 class VentaController extends Controller
@@ -198,11 +200,13 @@ public function storeConDetalle(Request $request)
         'detalles' => 'required|array|min:1',
         'detalles.*.idProducto' => 'required|exists:productos,id',
         'detalles.*.cantidad' => 'required|integer|min:1',
+        'idFormaPago' => 'required|exists:forma_de_pagos,id', // <- nuevo campo obligatorio
     ]);
 
     DB::beginTransaction();
 
     try {
+        // Crear venta base
         $venta = Venta::create([
             'saldo' => $validated['saldo'],
             'idCliente' => $validated['idCliente'],
@@ -256,7 +260,7 @@ public function storeConDetalle(Request $request)
                     'idProducto' => $producto->id,
                     'id_stock_producto' => $lote->id,
                     'cantidad' => $usar,
-                    'precio' => $lote->precio, // precio del lote
+                    'precio' => $lote->precio,
                 ]);
 
                 $cantidadRestante -= $usar;
@@ -270,47 +274,67 @@ public function storeConDetalle(Request $request)
             }
         }
 
-        // Guardar el total calculado
+        // Guardar total
         $venta->update([
             'precioProducto' => $totalVenta,
             'precioTotal' => $totalVenta,
         ]);
 
-        DB::commit();
+        // Validar e insertar pago asociado
+        $saldo = $validated['saldo'];
+        $precioTotal = $totalVenta;
+        if ($saldo > $precioTotal) {
+            DB::rollBack();
+            $exceso = $saldo - $precioTotal;
+            return response()->json([
+                'error' => "Hay un excedente de $exceso unidades en el saldo/pago"
+            ], 400);
+        }
+
+        // Insertar pago si el saldo > 0
+        if ($saldo > 0) {
+            Pago::create([
+                'idVenta' => $venta->id,
+                'idFormaPago' => $validated['idFormaPago'],
+                'monto' => $saldo,
+                'fecha' => now()->toDateString(),
+            ]);
+        }
 
         // Cargar relaciones
         $venta->load(['cliente', 'sucursal', 'detalleVentaProductos']);
 
-        // Añadir campo "precioDetalle" a cada detalle
         foreach ($venta->detalleVentaProductos as $detalle) {
             $producto = Producto::find($detalle->idProducto);
             $detalle->precioDetalle = $detalle->cantidad * $producto->precioVenta;
         }
 
-        return response()->json([
-    'venta' => [
-        'id' => $venta->id,
-        'saldo' => $venta->saldo,
-        'idCliente' => $venta->idCliente,
-        'idSucursal' => $venta->idSucursal,
-        'recogido' => $venta->recogido,
-        'fecha' => $venta->fecha,
-        'updated_at' => $venta->updated_at,
-        'created_at' => $venta->created_at,
-        'precioProducto' => $venta->precioProducto,
-        'precioTotal' => $venta->precioTotal,
-        'cliente' => $venta->cliente,
-        'sucursal' => $venta->sucursal,
-        'detalle_venta_productos' => $venta->detalleVentaProductos,
-    ],
-], 201);
+        DB::commit();
 
+        return response()->json([
+            'venta' => [
+                'id' => $venta->id,
+                'saldo' => $venta->saldo,
+                'idCliente' => $venta->idCliente,
+                'idSucursal' => $venta->idSucursal,
+                'recogido' => $venta->recogido,
+                'fecha' => $venta->fecha,
+                'updated_at' => $venta->updated_at,
+                'created_at' => $venta->created_at,
+                'precioProducto' => $venta->precioProducto,
+                'precioTotal' => $venta->precioTotal,
+                'cliente' => $venta->cliente,
+                'sucursal' => $venta->sucursal,
+                'detalle_venta_productos' => $venta->detalleVentaProductos,
+            ],
+        ], 201);
 
     } catch (\Exception $e) {
         DB::rollBack();
         return response()->json(['error' => $e->getMessage()], 500);
     }
 }
+
 
 public function getVentaCompleta($id)
 {
