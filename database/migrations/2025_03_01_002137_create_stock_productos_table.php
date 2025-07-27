@@ -22,16 +22,7 @@ return new class extends Migration
         });
 
         // Datos de prueba
-        DB::table('stock_productos')->insert([
-            [
-                'stock' => 10,
-                'precio' => 100,
-                'contable' => true,
-                'id_producto' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+
 
         // Trigger AFTER INSERT
         DB::unprepared('

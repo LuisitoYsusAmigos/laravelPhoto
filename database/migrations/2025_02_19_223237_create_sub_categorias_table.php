@@ -19,20 +19,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        DB::table('sub_categorias')->insert([
-            [
-                'nombre' => 'fotografia',
-                'id_categoria' => 1
-            ],
-            [
-                'nombre' => 'sub de varilla',
-                'id_categoria' => 2
-            ],
-            [
-                'nombre' => 'sub de trupan',
-                'id_categoria' => 2
-            ]
-        ]);
+
     }
 
     /**

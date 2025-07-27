@@ -19,11 +19,7 @@ return new class extends Migration
         });
 
         // Insertar datos iniciales
-        DB::table('roles')->insert([
-            ['nombre' => 'administrador', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'vendendor', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'generico', 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        
     }
 
     /**

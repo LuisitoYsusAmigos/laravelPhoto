@@ -27,17 +27,7 @@ class CreateVentasTable extends Migration
             $table->timestamps();
         });
 
-        // Inserción automática de una venta con cliente 1 y sucursal 1
-        DB::table('ventas')->insert([
-            'saldo' => 0,
-            'recogido' => false,
-            'fecha' => now(),
-            'idCliente' => 1,
-            'idSucursal' => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
-            'precioTotal' => 1000,
-        ]);
+
     }
 
     public function down()

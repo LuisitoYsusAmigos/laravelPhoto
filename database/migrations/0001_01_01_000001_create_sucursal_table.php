@@ -19,11 +19,7 @@ return new class extends Migration
         });
 
         // Insertar datos iniciales
-        DB::table('sucursal')->insert([
-            ['lugar' => 'Tarija', 'created_at' => now(), 'updated_at' => now()],
-            ['lugar' => 'Sucursal Norte', 'created_at' => now(), 'updated_at' => now()],
-            ['lugar' => 'Sucursal Sur', 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        
     }
 
     /**

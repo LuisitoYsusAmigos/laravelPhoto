@@ -32,28 +32,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Datos de ejemplo
-        DB::table('materia_prima_trupans')->insert([
-            [
-                'codigo' => 'MPT001',
-                'descripcion' => 'Trupán blanco 18mm',
-                'precioCompra' => 200,
-                'precioVenta' => 300,
-                'alto' => 120,
-                'largo' => 240,
-                'grosor' => 18,
-                'factor_desperdicio' => 1.05,
-                'categoria_id' => 1,
-                'id_lugar' => 1,
-                'sub_categoria_id' => 1,
-                'stock_global_actual' => 200,
-                'stock_global_minimo' => 50,
-                'id_sucursal' => 1,
-                'imagen' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]
-        ]);
+
     }
 
     /**

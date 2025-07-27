@@ -19,17 +19,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-                DB::table('forma_de_pagos')->insert([
-            [
-                'nombre' => 'Efectivo',
-            ],
-            [
-                'nombre' => 'Tarjeta de Crédito',
-            ],
-            [
-                'nombre' => 'Qr',
-            ],
-        ]);
+
     }
     
 

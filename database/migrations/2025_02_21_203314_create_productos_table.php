@@ -29,21 +29,7 @@ return new class extends Migration
             $table->string('imagen')->nullable();      
             $table->timestamps();
         });
-        DB::table('productos')->insert([
-            [
-                'codigo'=> 'P001',
-                'descripcion'=> 'Producto de ejemplo',
-                'precioCompra'=> 100,
-                'precioVenta'=> 150,
-                'stock_global_actual'=> 50,
-                'stock_global_minimo'=> 10,
-                'actualizacion'=> '2024-03-13',
-                'id_sucursal'=> 1,
-                'categoria_id'=> 1,
-                'sub_categoria_id'=> 1,
-                'id_lugar'=> 1,
-            ],
-        ]);
+
     }
 
     /**

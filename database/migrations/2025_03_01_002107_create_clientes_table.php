@@ -24,31 +24,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Insertar datos de ejemplo
-        DB::table('clientes')->insert([
-            [
-                'ci' => '1234567',
-                'nombre' => 'Juan',
-                'apellido' => 'Pérez',
-                'fechaNacimiento' => '1990-01-01',
-                'telefono' => '12345678',
-                'direccion' => 'Calle Principal #123',
-                'email' => 'juan.perez@example.com',
-                'created_at' => now(),
-                'updated_at' => now()
-            ],
-            [
-                'ci' => '7654321',
-                'nombre' => 'María',
-                'apellido' => 'González',
-                'fechaNacimiento' => '1985-05-15',
-                'telefono' => '87654321',
-                'direccion' => 'Avenida Central #456',
-                'email' => 'maria.gonzalez@example.com',
-                'created_at' => now(),
-                'updated_at' => now()
-            ]
-        ]);
+
     }
 
     /**

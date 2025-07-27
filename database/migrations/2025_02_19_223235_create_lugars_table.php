@@ -17,12 +17,7 @@ return new class extends Migration
             $table->string('nombre');
             $table->timestamps();
         });
-        DB::table('lugars')->insert([
-            [
-                'nombre'=> 'exhibición',
-                
-            ],
-        ]);
+       
     }
 
     /**

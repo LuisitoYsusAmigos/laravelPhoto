@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('idVenta');
             $table->unsignedBigInteger('idFormaPago');
-            $table->integer('monto'); // en centavos
+            $table->integer('monto'); 
             $table->date('fecha');
             $table->timestamps();
 
@@ -25,24 +25,7 @@ return new class extends Migration
             $table->foreign('idFormaPago')->references('id')->on('forma_de_pagos')->onDelete('restrict');
         });
 
-        DB::table('pagos')->insert([
-    [
-        'idVenta' => 1,
-        'idFormaPago' => 1,
-        'monto' => 100,
-        'fecha' => '2025-07-23',
-        'created_at' => now(),
-        'updated_at' => now(),
-    ],
-    [
-        'idVenta' => 1,
-        'idFormaPago' => 2,
-        'monto' => 200,
-        'fecha' => '2025-07-23',
-        'created_at' => now(),
-        'updated_at' => now(),
-    ],
-]);
+
 
     }
 

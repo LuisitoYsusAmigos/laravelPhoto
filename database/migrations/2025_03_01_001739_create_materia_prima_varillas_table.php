@@ -34,27 +34,7 @@ return new class extends Migration
         });
 
         // Insertar 5 registros de ejemplo
-        DB::table('materia_prima_varillas')->insert([
-            [
-                'codigo' => 'MV001',
-                'descripcion' => 'Varilla 1/2"',
-                'precioCompra' => 100,
-                'precioVenta' => 150,
-                'largo' => 300,
-                'grosor' => 12,
-                'alto' => 10,
-                'factor_desperdicio' => 1.05,
-                'categoria_id' => 1,
-                'sub_categoria_id' => 1,
-                'stock_global_actual' => 150,
-                'stock_global_minimo' => 50,
-                'id_sucursal' => 1,
-                'id_lugar' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]
-       
-        ]);
+
     }
 
     /**

@@ -28,28 +28,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        DB::table('materia_prima_vidrios')->insert([
-            [
-                'codigo' => 'MPV001',
-                'descripcion' => 'Vidrio templado 6mm',
-                'precioCompra' => 300,
-                'precioVenta' => 450,
-                'alto' => 120,
-                'largo' => 240,
-                'grosor' => 6,
-                'factor_desperdicio' => 1.07,
-                'categoria_id' => 1,
-                'id_lugar' => 1,
-                'sub_categoria_id' => 1,
-                'stock_global_actual' => 90,
-                'stock_global_minimo' => 30,
-                'id_sucursal' => 1,
-                'imagen' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            // ... repite con otros registros similares
-        ]);
+
     }
 
     public function down(): void

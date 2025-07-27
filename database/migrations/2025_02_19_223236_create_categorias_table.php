@@ -19,32 +19,6 @@ return new class extends Migration
             $table->timestamps();
         });
     
-        DB::table('categorias')->insert([
-            [
-                'nombre' => 'Servicio',
-                'tipo' => 'producto',
-                'created_at' => now(),
-                'updated_at' => now()
-            ],
-            [
-                'nombre' => 'sencillo',
-                'tipo' => 'varilla',
-                'created_at' => now(),
-                'updated_at' => now()
-            ],
-            [
-                'nombre' => 'premiun',
-                'tipo' => 'trupan',
-                'created_at' => now(),
-                'updated_at' => now()
-            ],
-            [
-                'nombre' => 'durable',
-                'tipo' => 'vidrio',
-                'created_at' => now(),
-                'updated_at' => now()
-            ],
-        ]);
     }
 
     /**
