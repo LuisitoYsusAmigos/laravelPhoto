@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Caja;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 class CajaController extends Controller
 {
@@ -145,8 +148,137 @@ public function obtenerPorFecha($fecha)
     if ($cajas->isEmpty()) {
         return response()->json(['message' => 'No se encontró ninguna caja con esa fecha'], 404);
     }
+    $cajas->transform(function ($caja) {
+        $caja->detalle = json_decode($caja->detalle);
+        unset($caja->usuario);
+        return $caja;
+    });
 
     return response()->json($cajas);
 }
+
+
+public function cajaPorMes($mes)
+{
+    // Validar formato de mes: YYYY-MM
+    if (!preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $mes)) {
+        return response()->json(['error' => 'Formato de mes inválido. Usa YYYY-MM.'], 400);
+    }
+
+    // Obtener todas las cajas del mes
+    $cajas = Caja::where('fecha', 'like', "$mes%")->get();
+
+    if ($cajas->isEmpty()) {
+        return response()->json(['message' => 'No se encontraron cajas para ese mes'], 404);
+    }
+
+    $sumaTotal = 0;
+    $sumaVentas = 0;
+    $detalleAcumulado = [];
+
+    foreach ($cajas as $caja) {
+        $sumaTotal += $caja->total;
+        $sumaVentas += $caja->ventas;
+
+        $detalle = json_decode($caja->detalle, true);
+
+        foreach ($detalle as $idFormaPago => $monto) {
+            if (!isset($detalleAcumulado[$idFormaPago])) {
+                $detalleAcumulado[$idFormaPago] = 0;
+            }
+            $detalleAcumulado[$idFormaPago] += $monto;
+        }
+    }
+
+    return response()->json([
+        'mes' => $mes,
+        'total_cajas' => $cajas->count(),
+        'total_ingresos' => $sumaTotal,
+        'total_ventas' => $sumaVentas,
+        'detalle_acumulado' => $detalleAcumulado,
+    ]);
+}
+
+
+
+
+public function htmlPorDia($fecha)
+{
+    // Suponiendo que trabajas con Eloquent
+    $caja = Caja::where('fecha', $fecha)->first();
+
+    if (!$caja) {
+        abort(404, 'No se encontró un cierre para la fecha indicada');
+    }
+
+    return view('caja/cierre-caja', compact('caja'));
+}
+
+public function htmlPorMes($mes)
+{
+    // $mes debe venir en formato YYYY-MM, ejemplo: 2025-07
+    $cajas = Caja::whereYear('fecha', Carbon::parse($mes)->year)
+                ->whereMonth('fecha', Carbon::parse($mes)->month)
+                ->orderBy('fecha', 'desc')
+                ->get();
+
+    if ($cajas->isEmpty()) {
+        abort(404, 'No se encontraron cierres para el mes indicado');
+    }
+
+    return view('caja/cierre-caja-lista', compact('cajas'));
+}
+
+
+    public function pdfPorDia($fecha)
+    {
+        $caja = Caja::where('fecha', $fecha)->first();
+
+        if (!$caja) {
+            abort(404, 'No se encontró un cierre para la fecha indicada');
+        }
+
+        $pdf = Pdf::loadView('caja.cierre-caja', compact('caja'));
+        return $pdf->stream("cierre_diario_{$fecha}.pdf");
+    }
+
+    public function pdfPorMes($mes)
+    {
+        // $mes en formato YYYY-MM
+        $cajas = Caja::whereYear('fecha', Carbon::parse($mes)->year)
+                    ->whereMonth('fecha', Carbon::parse($mes)->month)
+                    ->orderBy('fecha', 'desc')
+                    ->get();
+
+        if ($cajas->isEmpty()) {
+            abort(404, 'No se encontraron cierres para el mes indicado');
+        }
+
+        // Armar estructura acumulada para el mes
+        $detalleAcumulado = [];
+
+        foreach ($cajas as $caja) {
+            foreach ($caja->detalle as $forma => $monto) {
+                if (!isset($detalleAcumulado[$forma])) {
+                    $detalleAcumulado[$forma] = 0;
+                }
+                $detalleAcumulado[$forma] += $monto;
+            }
+        }
+
+        $caja = [
+            'mes' => $mes,
+            'total_cajas' => $cajas->count(),
+            'total_ingresos' => $cajas->sum('total'),
+            'total_ventas' => $cajas->sum('ventas'),
+            'detalle_acumulado' => $detalleAcumulado,
+        ];
+
+        $pdf = Pdf::loadView('caja.cierre-caja-lista', compact('caja'));
+        return $pdf->stream("cierre_mensual_{$mes}.pdf");
+    }
+
+
+
 
 }

@@ -231,7 +231,13 @@ Route::get('/caja/{id}', [CajaController::class, 'show']);
 //Route::put('/cajas/{id}', [CajaController::class, 'update']);
 Route::delete('/cajas/{id}', [CajaController::class, 'destroy']);
 Route::get('/caja/fecha/{fecha}', [CajaController::class, 'obtenerPorFecha']); 
+Route::get('/caja/mes/{mes}', [CajaController::class, 'cajaPorMes']);
+//pdfss
+Route::get('/caja/html/{fecha}', [CajaController::class, 'htmlPorDia'])->name('html.caja.dia');
+Route::get('/cajas/html/mes/{mes}', [CajaController::class, 'htmlPorMes'])->name('html.cajas.mes');
 
+Route::get('/caja/pdf/{fecha}', [CajaController::class, 'pdfPorDia'])->name('pdf.caja.dia');
+Route::get('/cajas/pdf/{mes}', [CajaController::class, 'pdfPorMes'])->name('pdf.cajas.mes');
 
 
 
