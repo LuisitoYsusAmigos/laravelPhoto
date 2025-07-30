@@ -156,7 +156,8 @@ public function showVentaDetalleProducto($idVenta)
             'recogido' => 'required|boolean',
             'fecha' => 'required|date',
             'idCliente' => 'required|exists:clientes,id',
-            'idSucursal' => 'required|exists:sucursal,id'
+            'idSucursal' => 'required|exists:sucursal,id',
+            'idUsuario' => 'required|exists:users,id'
         ]);
 
         if ($validator->fails()) {
@@ -201,6 +202,7 @@ public function storeConDetalle(Request $request)
         'detalles.*.idProducto' => 'required|exists:productos,id',
         'detalles.*.cantidad' => 'required|integer|min:1',
         'idFormaPago' => 'required|exists:forma_de_pagos,id', // <- nuevo campo obligatorio
+        'idUsuario' => 'required|exists:users,id',
     ]);
 
     DB::beginTransaction();
@@ -326,6 +328,7 @@ public function storeConDetalle(Request $request)
                 'cliente' => $venta->cliente,
                 'sucursal' => $venta->sucursal,
                 'detalle_venta_productos' => $venta->detalleVentaProductos,
+                'idUsuario' => $venta->idUsuario, // Aseguramos que el idUsuario se incluya
             ],
         ], 201);
 
@@ -376,6 +379,7 @@ public function getVentaCompleta($id)
                 'cliente' => $venta->cliente,
                 'sucursal' => $venta->sucursal,
                 'detalle_venta_productos' => $venta->detalleVentaProductos,
+                'idUsuario' => $venta->idUsuario, // Aseguramos que el idUsuario se incluya
             ],
         ], 200);
 

@@ -180,6 +180,7 @@ public function searchPaginadoGeneral(Request $request)
             'precioCompra'=> $item->precioCompra,
             'precioVenta'=> $item->precioVenta,
             'id_lugar' => $item->id_lugar,
+            'grosor'=> $item->grosor
         ];
     });
 
@@ -205,6 +206,7 @@ public function searchPaginadoGeneral(Request $request)
             'stock_global_minimo'=> $item->stock_global_minimo,
             'factor_desperdicio'=> $item->factor_desperdicio,
             'id_lugar' => $item->id_lugar,
+            'grosor'=> $item->grosor
         ];
     });
 
@@ -230,6 +232,7 @@ public function searchPaginadoGeneral(Request $request)
             'stock_global_minimo'=> $item->stock_global_minimo,
             'factor_desperdicio'=> $item->factor_desperdicio,
             'id_lugar' => $item->id_lugar,
+            'grosor'=> $item->grosor
         ];
     });
 
@@ -302,6 +305,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'largo'=> $item->largo,
             'alto'=> $item->alto,
             'id_lugar' => $item->id_lugar,
+            'grosor'=> $item->grosor
         ];
     });
 
@@ -325,6 +329,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'precioCompra'=> $item->precioCompra,
             'precioVenta'=> $item->precioVenta,
             'id_lugar' => $item->id_lugar,
+            'grosor'=> $item->grosor
         ];
     });
 
@@ -348,6 +353,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'stock_global_minimo'=> $item->stock_global_minimo,
             'factor_desperdicio'=> $item->factor_desperdicio,
             'id_lugar' => $item->id_lugar,
+            'grosor'=> $item->grosor
 
         ];
     });
@@ -371,6 +377,7 @@ public function indexPaginadoGeneralPorMasReciente(Request $request)
             'stock_global_minimo'=> $item->stock_global_minimo,
             'factor_desperdicio'=> $item->factor_desperdicio,
             'id_lugar' => $item->id_lugar,
+            'grosor'=> $item->grosor
         ];
     });
 

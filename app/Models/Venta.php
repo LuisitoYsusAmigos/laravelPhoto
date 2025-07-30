@@ -20,6 +20,7 @@ class Venta extends Model
         'fecha',
         'idCliente',
         'idSucursal',
+        'idUsuario',
     ];
 
     protected $casts = [
@@ -37,6 +38,11 @@ class Venta extends Model
     public function sucursal()
     {
         return $this->belongsTo(Sucursal::class, 'idSucursal');
+    }
+    // Relación con Usuario
+    public function usuario()
+    {
+        return $this->belongsTo(User::class, 'idUsuario');
     }
 
     // Si luego agregas detalles de venta:
