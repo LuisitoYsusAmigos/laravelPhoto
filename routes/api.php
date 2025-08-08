@@ -253,7 +253,24 @@ Route::delete('/detalle-venta-producto/{id}', [DetalleVentaProductoController::c
 
 
 
+use App\Http\Controllers\DetalleVentaPersonalizadaController;
+// Detalle Venta Personalizada
+Route::get('/detalle-venta-personalizadas', [DetalleVentaPersonalizadaController::class, 'index']);
+Route::get('/detalle-venta-personalizada/{id}', [DetalleVentaPersonalizadaController::class, 'show']);
+Route::post('/detalle-venta-personalizada', [DetalleVentaPersonalizadaController::class, 'store']);
+Route::put('/detalle-venta-personalizada/{id}', [DetalleVentaPersonalizadaController::class, 'update']);
+Route::delete('/detalle-venta-personalizada/{id}', [DetalleVentaPersonalizadaController::class, 'destroy']);
+Route::get('/detalle-venta-personalizadas/venta/{id_venta}', [DetalleVentaPersonalizadaController::class, 'getByVenta']);
+Route::get('/detalle-venta-personalizadas/varilla', [DetalleVentaPersonalizadaController::class, 'varilla']); // Listar con paginación
+Route::get('/detalle-venta-personalizadas/lamina', [DetalleVentaPersonalizadaController::class, 'lamina']); // Listar con paginación
 
+use App\Http\Controllers\MaterialesVentaPersonalizadaController;
+
+Route::get('/materiales-venta-personalizadas', [MaterialesVentaPersonalizadaController::class, 'index']); // Listar todos con paginación opcional
+Route::get('/materiales-venta-personalizada/{materialesVentaPersonalizada}', [MaterialesVentaPersonalizadaController::class, 'show']); // Ver uno por ID
+Route::post('/materiales-venta-personalizada', [MaterialesVentaPersonalizadaController::class, 'store']); // Crear uno nuevo
+Route::put('/materiales-venta-personalizada/{materialesVentaPersonalizada}', [MaterialesVentaPersonalizadaController::class, 'update']); // Actualizar
+Route::delete('/materiales-venta-personalizada/{materialesVentaPersonalizada}', [MaterialesVentaPersonalizadaController::class, 'destroy']); // Eliminar
 
 //todo de productos
 Route::get('/materias-primas-paginado', [CotizadorController::class, 'indexPaginadoGeneralPorMasReciente']);
