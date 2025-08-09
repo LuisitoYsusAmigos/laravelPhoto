@@ -191,6 +191,13 @@ public function showVentaDetalleProducto($idVenta)
         ]);
     }
 
+public function store1(Request $request)
+{
+    return response()->json([
+        'message' => 'Función store1 llamada correctamente',
+        'datos_recibidos' => $request->all()
+    ], 200);
+}
 
 public function storeConDetalle(Request $request)
 {
@@ -213,6 +220,7 @@ public function storeConDetalle(Request $request)
             'saldo' => $validated['saldo'],
             'idCliente' => $validated['idCliente'],
             'idSucursal' => $validated['idSucursal'],
+            'idUsuario' => $validated['idUsuario'],
             'recogido' => false,
             'fecha' => now(),
         ]);
