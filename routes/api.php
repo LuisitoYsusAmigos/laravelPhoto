@@ -196,7 +196,7 @@ Route::get('/venta/{id}', [VentaController::class, 'showVentaDetalleProducto']);
 Route::put('/venta/{id}', [VentaController::class, 'update']); // Actualizar una venta
 Route::delete('/venta/{id}', [VentaController::class, 'destroy']); // Eliminar una venta
 //venta con detalle
-Route::post('/venta/completa', [VentaController::class, 'storeConDetalle']); // Obtener todas las ventas con detalle
+Route::post('/venta/ventasConDetalle', [VentaController::class, 'storeConDetalle']); // Obtener todas las ventas con detalle
 
 Route::post('/venta/ventaDetalles', [VentaController::class, 'store1']);
 Route::get('/venta/ventaCompleta/{id}', [VentaController::class, 'getVentaCompleta']);
@@ -273,6 +273,14 @@ Route::get('/materiales-venta-personalizada/{materialesVentaPersonalizada}', [Ma
 Route::post('/materiales-venta-personalizada', [MaterialesVentaPersonalizadaController::class, 'store']); // Crear uno nuevo
 Route::put('/materiales-venta-personalizada/{materialesVentaPersonalizada}', [MaterialesVentaPersonalizadaController::class, 'update']); // Actualizar
 Route::delete('/materiales-venta-personalizada/{materialesVentaPersonalizada}', [MaterialesVentaPersonalizadaController::class, 'destroy']); // Eliminar
+
+// materiales de venta perzonalizda
+Route::get('/materiales-venta-personalizadas', [MaterialesVentaPersonalizadaController::class, 'index']);
+Route::post('/material-venta-personalizada', [MaterialesVentaPersonalizadaController::class, 'store']);
+Route::get('/material-venta-personalizada/{materialesVentaPersonalizada}', [MaterialesVentaPersonalizadaController::class, 'show']);
+Route::put('/material-venta-personalizada/{materialesVentaPersonalizada}', [MaterialesVentaPersonalizadaController::class, 'update']);
+Route::delete('/material-venta-personalizada/{materialesVentaPersonalizada}', [MaterialesVentaPersonalizadaController::class, 'destroy']);
+Route::get('/materiales-venta-personalizada/detalle/{detalleVP_id}', [MaterialesVentaPersonalizadaController::class, 'materialesPorVentaVp']);
 
 //todo de productos
 Route::get('/materias-primas-paginado', [CotizadorController::class, 'indexPaginadoGeneralPorMasReciente']);

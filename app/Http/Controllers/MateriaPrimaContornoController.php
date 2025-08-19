@@ -53,6 +53,16 @@ class MateriaPrimaContornoController extends Controller
 
             $contorno->save();
         }
+        $stock = [
+            'largo' => $request->largo,
+            'alto' => $request->alto,
+            'precio' => $request->precioCompra,
+            'stock' => $request->stock_global_actual, // 'stock' en lugar de 'cantidad'
+            'contable' => true, // Si es necesario
+            'id_materia_prima_contorno' => $contorno->id, // Relación con el contorno
+        ];
+        $stockController = new StockContornoController();
+        $stockController->store(new Request($stock));
 
         return response()->json($contorno, 201);
     }

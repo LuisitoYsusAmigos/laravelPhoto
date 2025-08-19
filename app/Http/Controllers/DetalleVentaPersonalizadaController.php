@@ -20,7 +20,7 @@ use App\Services\UsoLaminasCuadro;
 
 class DetalleVentaPersonalizadaController extends Controller
 {
-    public function index()
+    public function index1()
     {
         $detalles = DetalleVentaPersonalizada::all();
 
@@ -48,6 +48,37 @@ class DetalleVentaPersonalizadaController extends Controller
 
         return response()->json($detallesConCalculos, 200);
     }
+
+
+    public function index()
+{
+    try {
+        $materiales = MaterialesVentaPersonalizada::select([
+            'id',
+            'stock_contorno_id',
+            'stock_trupan_id',
+            'stock_vidrio_id',
+            'stock_varilla_id',
+            'cantidad',
+            'precio_unitario',
+            'detalleVP_id',
+            'created_at',
+            'updated_at'
+        ])->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $materiales
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener los materiales',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
     public function varilla()
     {
         $necesidadesCuadros = [
@@ -150,158 +181,140 @@ class DetalleVentaPersonalizadaController extends Controller
             //return response()->json($jsonRespuesta, 200);
         }
 
-// SECCIÓN TRUPAN
-if (!$request->id_materia_prima_trupans == null) {
-    $trupan = MateriaPrimaTrupan::find($request->id_materia_prima_trupans);
-    $trupansDisponibles = StockTrupan::where('id_materia_prima_trupans', $request->id_materia_prima_trupans)
-        ->where('stock', '>', 0)
-        ->get()
-        ->map(function ($item, $index) {
-            return [$item->id, $item->alto, $item->largo, $item->stock];
-        })
-        ->values()
-        ->toArray();
+        // SECCIÓN TRUPAN
+        if (!$request->id_materia_prima_trupans == null) {
+            $trupan = MateriaPrimaTrupan::find($request->id_materia_prima_trupans);
+            $trupansDisponibles = StockTrupan::where('id_materia_prima_trupans', $request->id_materia_prima_trupans)
+                ->where('stock', '>', 0)
+                ->get()
+                ->map(function ($item, $index) {
+                    return [$item->id, $item->alto, $item->largo, $item->stock];
+                })
+                ->values()
+                ->toArray();
 
-    $usoLaminasCuadro = new UsoLaminasCuadro();
-    $necesidadCuadro = ['largo' => $request->lado_a, 'ancho' => $request->lado_b, 'cantidad' => $request->cantidad, 'nombre' => 'Cuadro'];
-    $respuesta = $usoLaminasCuadro->optimizarCuadro($necesidadCuadro, $trupansDisponibles);
-    
- if ($respuesta['terminado']) {
-        // Para láminas solo se usa una pieza, el ID viene en 'material'
-        $materialId = $respuesta['material'];
-        
-        // Calcular el área utilizada en mm² (lado_a * lado_b para una lámina)
-        $areaUtilizada = $request->lado_a * $request->lado_b;
-        
-        // Obtener el precio de venta de la materia prima trupan
-        $precioVentaDb = DB::table('stock_trupans as st')
-            ->join('materia_prima_trupans as mpt', 'st.id_materia_prima_trupans', '=', 'mpt.id')
-            ->where('st.id', $materialId)
-            ->value('mpt.precioVenta');
-        
-        $precio = $areaUtilizada * $precioVentaDb;
-        
-        MaterialesVentaPersonalizada::create([
-            'stock_contorno_id' => null,
-            'stock_trupan_id' => $materialId,
-            'stock_vidrio_id' => null,
-            'stock_varilla_id' => null,
-            'cantidad' => 1, // Siempre es 1 lámina
-            'precio_unitario' => $precio,
-            'detalleVP_id' => $detalle->id
-        ]);
-        //return response()->json(['message' => 'si se pudo con los trupans'], 200);
-    }else {
+            $usoLaminasCuadro = new UsoLaminasCuadro();
+            $necesidadCuadro = ['largo' => $request->lado_a, 'ancho' => $request->lado_b, 'cantidad' => $request->cantidad, 'nombre' => 'Cuadro'];
+            $respuesta = $usoLaminasCuadro->optimizarCuadro($necesidadCuadro, $trupansDisponibles);
 
-        //return response()->json(['message' => 'Ocurrióss un error con los trupans'], 404);
-        return response()->json($respuesta, 404);
-    }
-}
+            if ($respuesta['terminado']) {
+                // Para láminas solo se usa una pieza, el ID viene en 'material'
+                $materialId = $respuesta['material'];
 
-// SECCIÓN VIDRIO
-if (!$request->id_materia_prima_vidrios == null) {
-    $vidrio = MateriaPrimaVidrio::find($request->id_materia_prima_vidrios);
-    $vidriosDisponibles = StockVidrio::where('id_materia_prima_vidrio', $request->id_materia_prima_vidrios)
-        ->where('stock', '>', 0)
-        ->get()
-        ->map(function ($item, $index) {
-            return [$item->id, $item->alto, $item->largo, $item->stock];
-        })
-        ->values()
-        ->toArray();
-    
-    $usoLaminasCuadro = new UsoLaminasCuadro();
-    $necesidadCuadro = ['largo' => $request->lado_a, 'ancho' => $request->lado_b, 'cantidad' => $request->cantidad, 'nombre' => 'Cuadro'];
-    $respuesta = $usoLaminasCuadro->optimizarCuadro($necesidadCuadro, $vidriosDisponibles);
-    
-    if ($respuesta['terminado']) {
-              // Para láminas solo se usa una pieza, el ID viene en 'material'
-        $materialId = $respuesta['material'];
-        
-        // Calcular el área utilizada en mm² (lado_a * lado_b para una lámina)
-        $areaUtilizada = $request->lado_a * $request->lado_b;
-        
-        $precioVentaDb = DB::table('stock_vidrios as sv')
-            ->join('materia_prima_vidrios as mpv', 'sv.id_materia_prima_vidrio', '=', 'mpv.id')
-            ->where('sv.id', $materialId)
-            ->value('mpv.precioVenta');
-        
-        $precio = $areaUtilizada * $precioVentaDb;
-        
-        MaterialesVentaPersonalizada::create([
-            'stock_contorno_id' => null,
-            'stock_trupan_id' => null,
-            'stock_vidrio_id' => $materialId,
-            'stock_varilla_id' => null,
-            'cantidad' => 1, // Siempre es 1 lámina
-            'precio_unitario' => $precio,
-            'detalleVP_id' => $detalle->id
-        ]);
-   
-    } else {
-        return response()->json(['message' => 'Ocurrió un error con los vidrios'], 404);
-    }
-}
+                // Calcular el área utilizada en mm² (lado_a * lado_b para una lámina)
+                $areaUtilizada = $request->lado_a * $request->lado_b;
 
-// SECCIÓN CONTORNO
-if (!$request->id_materia_prima_contornos == null) {
-    $contorno = MateriaPrimaContorno::find($request->id_materia_prima_contornos);
-    $contornosDisponibles = StockContorno::where('id_materia_prima_contorno', $request->id_materia_prima_contornos)
-        ->where('stock', '>', 0)
-        ->get()
-        ->map(function ($item, $index) {
-            return [$item->id, $item->alto, $item->largo, $item->stock];
-        })
-        ->values()
-        ->toArray();
-    
-    $usoLaminasCuadro = new UsoLaminasCuadro();
-    $necesidadCuadro = ['largo' => $request->lado_a, 'ancho' => $request->lado_b, 'cantidad' => $request->cantidad, 'nombre' => 'Cuadro'];
-    $respuesta = $usoLaminasCuadro->optimizarCuadro($necesidadCuadro, $contornosDisponibles);
-    //return response()->json($respuesta, 200);
-    if ($respuesta['terminado']) {
-        // Para láminas solo se usa una pieza, el ID viene en 'material'
-        $materialId = $respuesta['material'];
-        
-        // Calcular el área utilizada en mm² (lado_a * lado_b para una lámina)
-        $areaUtilizada = $request->lado_a * $request->lado_b;
-        
-        $precioVentaDb = DB::table('stock_contornos as sc')
-            ->join('materia_prima_contornos as mpc', 'sc.id_materia_prima_contorno', '=', 'mpc.id')
-            ->where('sc.id', $materialId)
-            ->value('mpc.precioVenta');
-        
-        $precio = $areaUtilizada * $precioVentaDb;
-        
-        MaterialesVentaPersonalizada::create([
-            'stock_contorno_id' => $materialId,
-            'stock_trupan_id' => null,
-            'stock_vidrio_id' => null,
-            'stock_varilla_id' => null,
-            'cantidad' => 1, // Siempre es 1 lámina
-            'precio_unitario' => $precio,
-            'detalleVP_id' => $detalle->id
-        ]);
-    } else {
-        return response()->json(['message' => 'Ocurrió un error con los contornos'], 404);
-    }
-}
+                // Obtener el precio de venta de la materia prima trupan
+                $precioVentaDb = DB::table('stock_trupans as st')
+                    ->join('materia_prima_trupans as mpt', 'st.id_materia_prima_trupans', '=', 'mpt.id')
+                    ->where('st.id', $materialId)
+                    ->value('mpt.precioVenta');
 
-        //return response()->json(['respuesta' => 'llego'], 200);
+                $precio = $areaUtilizada * $precioVentaDb;
 
+                MaterialesVentaPersonalizada::create([
+                    'stock_contorno_id' => null,
+                    'stock_trupan_id' => $materialId,
+                    'stock_vidrio_id' => null,
+                    'stock_varilla_id' => null,
+                    'cantidad' => 1, // Siempre es 1 lámina
+                    'precio_unitario' => $precio,
+                    'detalleVP_id' => $detalle->id
+                ]);
+                //return response()->json(['message' => 'si se pudo con los trupans'], 200);
+            } else {
 
+                return response()->json(['message' => 'Ocurrióss un error con los trupans'], 404);
+                //return response()->json($respuesta, 404);
+            }
+        }
 
-        //validar disponibilidad de trupans
+        // SECCIÓN VIDRIO
+        if (!$request->id_materia_prima_vidrios == null) {
+            $vidrio = MateriaPrimaVidrio::find($request->id_materia_prima_vidrios);
+            $vidriosDisponibles = StockVidrio::where('id_materia_prima_vidrio', $request->id_materia_prima_vidrios)
+                ->where('stock', '>', 0)
+                ->get()
+                ->map(function ($item, $index) {
+                    return [$item->id, $item->alto, $item->largo, $item->stock];
+                })
+                ->values()
+                ->toArray();
 
-        //validar disponibilidad de vidrios
+            $usoLaminasCuadro = new UsoLaminasCuadro();
+            $necesidadCuadro = ['largo' => $request->lado_a, 'ancho' => $request->lado_b, 'cantidad' => $request->cantidad, 'nombre' => 'Cuadro'];
+            $respuesta = $usoLaminasCuadro->optimizarCuadro($necesidadCuadro, $vidriosDisponibles);
 
-        //validar disponibilidad de contornos
+            if ($respuesta['terminado']) {
+                // Para láminas solo se usa una pieza, el ID viene en 'material'
+                $materialId = $respuesta['material'];
 
-        // Crear detalle de venta personalizada
+                // Calcular el área utilizada en mm² (lado_a * lado_b para una lámina)
+                $areaUtilizada = $request->lado_a * $request->lado_b;
 
-        //$detalle = DetalleVentaPersonalizada::create($request->all());
+                $precioVentaDb = DB::table('stock_vidrios as sv')
+                    ->join('materia_prima_vidrios as mpv', 'sv.id_materia_prima_vidrio', '=', 'mpv.id')
+                    ->where('sv.id', $materialId)
+                    ->value('mpv.precioVenta');
 
-        // Cargar las relaciones para la respuesta
+                $precio = $areaUtilizada * $precioVentaDb;
+
+                MaterialesVentaPersonalizada::create([
+                    'stock_contorno_id' => null,
+                    'stock_trupan_id' => null,
+                    'stock_vidrio_id' => $materialId,
+                    'stock_varilla_id' => null,
+                    'cantidad' => 1, // Siempre es 1 lámina
+                    'precio_unitario' => $precio,
+                    'detalleVP_id' => $detalle->id
+                ]);
+            } else {
+                return response()->json(['message' => 'Ocurrió un error con los vidrios'], 404);
+            }
+        }
+
+        // SECCIÓN CONTORNO
+        if (!$request->id_materia_prima_contornos == null) {
+            $contorno = MateriaPrimaContorno::find($request->id_materia_prima_contornos);
+            $contornosDisponibles = StockContorno::where('id_materia_prima_contorno', $request->id_materia_prima_contornos)
+                ->where('stock', '>', 0)
+                ->get()
+                ->map(function ($item, $index) {
+                    return [$item->id, $item->alto, $item->largo, $item->stock];
+                })
+                ->values()
+                ->toArray();
+
+            $usoLaminasCuadro = new UsoLaminasCuadro();
+            $necesidadCuadro = ['largo' => $request->lado_a, 'ancho' => $request->lado_b, 'cantidad' => $request->cantidad, 'nombre' => 'Cuadro'];
+            $respuesta = $usoLaminasCuadro->optimizarCuadro($necesidadCuadro, $contornosDisponibles);
+            //return response()->json($respuesta, 200);
+            if ($respuesta['terminado']) {
+
+                $materialId = $respuesta['material'];
+
+                $areaUtilizada = $request->lado_a * $request->lado_b;
+
+                $precioVentaDb = DB::table('stock_contornos as sc')
+                    ->join('materia_prima_contornos as mpc', 'sc.id_materia_prima_contorno', '=', 'mpc.id')
+                    ->where('sc.id', $materialId)
+                    ->value('mpc.precioVenta');
+
+                $precio = $areaUtilizada * $precioVentaDb;
+
+                MaterialesVentaPersonalizada::create([
+                    'stock_contorno_id' => $materialId,
+                    'stock_trupan_id' => null,
+                    'stock_vidrio_id' => null,
+                    'stock_varilla_id' => null,
+                    'cantidad' => 1, // Siempre es 1 lámina
+                    'precio_unitario' => $precio,
+                    'detalleVP_id' => $detalle->id
+                ]);
+            } else {
+                return response()->json(['message' => 'Ocurrió un error con los contornos'], 404);
+            }
+        }
         $detalle->load([
             'venta',
             'materiaPrimaVarilla',
@@ -313,6 +326,11 @@ if (!$request->id_materia_prima_contornos == null) {
 
         return response()->json(['message' => 'Detalle de venta personalizada creado', 'detalle' => $detalle], 201);
     }
+
+    /**
+ * Obtener materiales por ID de detalle de venta personalizada
+ */
+
 
     public function show($id)
     {

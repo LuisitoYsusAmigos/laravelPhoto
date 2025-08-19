@@ -117,6 +117,43 @@ class MaterialesVentaPersonalizadaController extends Controller
             ], 500);
         }
     }
+    public function materialesPorVentaVp($detalleVP_id)
+{
+    try {
+        $materiales = MaterialesVentaPersonalizada::select([
+            'id',
+            'stock_contorno_id',
+            'stock_trupan_id',
+            'stock_vidrio_id',
+            'stock_varilla_id',
+            'cantidad',
+            'precio_unitario',
+            'detalleVP_id',
+            'created_at',
+            'updated_at'
+        ])->where('detalleVP_id', $detalleVP_id)->get();
+
+        if ($materiales->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontraron materiales para este detalle de venta personalizada'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $materiales,
+            'total_materiales' => $materiales->count()
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener los materiales',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 
     /**
      * Display the specified resource.
