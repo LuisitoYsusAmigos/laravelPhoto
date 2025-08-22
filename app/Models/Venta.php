@@ -39,21 +39,22 @@ class Venta extends Model
     {
         return $this->belongsTo(Sucursal::class, 'idSucursal');
     }
+    
     // Relación con Usuario
     public function usuario()
     {
         return $this->belongsTo(User::class, 'idUsuario');
     }
 
-    // Si luego agregas detalles de venta:
+    // Relación con DetalleVentaProducto
     public function detalleVentaProductos()
     {
         return $this->hasMany(DetalleVentaProducto::class, 'idVenta');
     }
-/*
-    public function detalleVentaPerzonalizadas()
+
+    // Relación con DetalleVentaPersonalizada (CORREGIDA)
+    public function detalleVentaPersonalizadas()
     {
-        return $this->hasMany(DetalleVentaPerzonalizada::class, 'idVenta');
+        return $this->hasMany(DetalleVentaPersonalizada::class, 'id_venta');
     }
-*/
 }

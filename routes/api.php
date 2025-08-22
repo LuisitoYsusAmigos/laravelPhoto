@@ -315,3 +315,9 @@ Route::delete('/user/{id}', [UserController::class, 'destroy']); // Eliminar un 
 Route::get('/estadisticas/clientesNuevos', [FuncionesGeneralesController::class, 'ClientesNuevos']);
 //4 del cuadro de estadisticas
 //Route::get('/clientes/total', [ClienteController::class, 'totalClientes']);
+//venta completa de prodcuto y marcos
+
+use App\Http\Controllers\GestorVentaController;
+
+// Ruta para crear venta completa (productos + cuadros personalizados)
+Route::post('/ventaProductoMarco', [GestorVentaController::class, 'crearVentaCompleta']);

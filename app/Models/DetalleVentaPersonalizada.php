@@ -9,15 +9,15 @@ class DetalleVentaPersonalizada extends Model
     protected $table = 'detalle_venta_personalizadas';
 
     protected $fillable = [
-        'lado_a',
-        'lado_b',
-        'id_materia_prima_varillas',
-        'id_materia_prima_trupans',
-        'id_materia_prima_vidrios',
-        'id_materia_prima_contornos',
-        'id_venta'
-    ];
-
+    'lado_a',
+    'lado_b',
+    //'cantidad',  // ← Agregar este campo
+    'id_materia_prima_varillas',
+    'id_materia_prima_trupans',
+    'id_materia_prima_vidrios',
+    'id_materia_prima_contornos',
+    'id_venta'
+];
     // Relación con Venta
     public function venta()
     {
