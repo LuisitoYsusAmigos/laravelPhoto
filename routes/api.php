@@ -317,7 +317,11 @@ Route::get('/estadisticas/clientesNuevos', [FuncionesGeneralesController::class,
 //Route::get('/clientes/total', [ClienteController::class, 'totalClientes']);
 //venta completa de prodcuto y marcos
 
-use App\Http\Controllers\GestorVentaController;
+// use App\Http\Controllers\GestiionVentas\GestionVenta;
 
 // Ruta para crear venta completa (productos + cuadros personalizados)
-Route::post('/ventaProductoMarco', [GestorVentaController::class, 'crearVentaCompleta']);
+use App\Http\Controllers\GestionVentas\GestionVentaController;
+Route::post('/ventaProductoMarco', [GestionVentaController::class, 'crearVentaCompleta']);
+// En routes/api.php
+Route::get('/ventaProductoMarco/{id}', [GestionVentaController::class, 'obtenerVentaCompleta']);
+Route::get('/ventaProductoMarco', [GestionVentaController::class, 'obtenerVentas']);
