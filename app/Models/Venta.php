@@ -18,6 +18,7 @@ class Venta extends Model
         'saldo',
         'recogido',
         'fecha',
+        'fechaEntrega',   // <-- nuevo campo
         'idCliente',
         'idSucursal',
         'idUsuario',
@@ -26,6 +27,7 @@ class Venta extends Model
     protected $casts = [
         'recogido' => 'boolean',
         'fecha' => 'datetime',
+        'fechaEntrega' => 'datetime', // <-- lo casteamos también
     ];
 
     // Relación con Cliente
@@ -52,7 +54,7 @@ class Venta extends Model
         return $this->hasMany(DetalleVentaProducto::class, 'idVenta');
     }
 
-    // Relación con DetalleVentaPersonalizada (CORREGIDA)
+    // Relación con DetalleVentaPersonalizada
     public function detalleVentaPersonalizadas()
     {
         return $this->hasMany(DetalleVentaPersonalizada::class, 'id_venta');

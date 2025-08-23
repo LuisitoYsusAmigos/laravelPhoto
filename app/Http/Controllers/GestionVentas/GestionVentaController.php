@@ -21,91 +21,105 @@ class GestionVentaController extends Controller
         $this->gestionMarcos = new GestionMarcosController();
     }
 
-public function crearVentaCompleta(Request $request)
-{
-    // Validación básica
-    $validator = Validator::make($request->all(), [
-        'saldo' => 'required|numeric|min:0',
-        'idCliente' => 'required|exists:clientes,id',
-        'idSucursal' => 'required|exists:sucursal,id',
-        'idFormaPago' => 'required|exists:forma_de_pagos,id',
-        'idUsuario' => 'required|exists:users,id',
+    public function crearVentaCompleta(Request $request)
+    {
+        // Validación básica
+        $validator = Validator::make($request->all(), [
+            'saldo' => 'required|numeric|min:0',
+            'idCliente' => 'required|exists:clientes,id',
+            'idSucursal' => 'required|exists:sucursal,id',
+            'idFormaPago' => 'required|exists:forma_de_pagos,id',
+            'idUsuario' => 'required|exists:users,id',
 
-        'detalles' => 'nullable|array',
-        'detalles.*.idProducto' => 'required_with:detalles|integer',
-        'detalles.*.cantidad' => 'required_with:detalles|integer|min:1',
+            'fechaEntrega' => 'nullable|date',
 
-        'cuadros' => 'nullable|array',
-        'cuadros.*.lado_a' => 'required_with:cuadros|integer|min:1',
-        'cuadros.*.lado_b' => 'required_with:cuadros|integer|min:1',
-        'cuadros.*.cantidad' => 'required_with:cuadros|integer|min:1',
-        'cuadros.*.id_materia_prima_varillas' => 'nullable|exists:materia_prima_varillas,id',
-        'cuadros.*.id_materia_prima_trupans' => 'nullable|exists:materia_prima_trupans,id',
-        'cuadros.*.id_materia_prima_vidrios' => 'nullable|exists:materia_prima_vidrios,id',
-        'cuadros.*.id_materia_prima_contornos' => 'nullable|exists:materia_prima_contornos,id',
-    ]);
+            'detalles' => 'nullable|array',
+            'detalles.*.idProducto' => 'required_with:detalles|integer',
+            'detalles.*.cantidad' => 'required_with:detalles|integer|min:1',
 
-    if ($validator->fails()) {
-        return response()->json([
-            'message' => 'Faltan datos o datos inválidos',
-            'errors' => $validator->errors()
-        ], 400);
-    }
+            'cuadros' => 'nullable|array',
+            'cuadros.*.lado_a' => 'required_with:cuadros|integer|min:1',
+            'cuadros.*.lado_b' => 'required_with:cuadros|integer|min:1',
+            'cuadros.*.cantidad' => 'required_with:cuadros|integer|min:1',
+            'cuadros.*.id_materia_prima_varillas' => 'nullable|integer',
+            'cuadros.*.id_materia_prima_trupans' => 'nullable|integer',
+            'cuadros.*.id_materia_prima_vidrios' => 'nullable|integer',
+            'cuadros.*.id_materia_prima_contornos' => 'nullable|integer',
+        ]);
 
-    if (empty($request->detalles) && empty($request->cuadros)) {
-        return response()->json([
-            'error' => 'Debe incluir al menos productos o cuadros personalizados'
-        ], 400);
-    }
-
-    // 🔎 Validar productos y stock ANTES de crear la venta
-    if (!empty($request->detalles)) {
-        $validacionProductos = $this->gestionProductos->verificarDisponibilidad($request->detalles);
-
-        $errores = array_filter($validacionProductos, fn($p) => $p['disponible'] === false);
-
-        if (!empty($errores)) {
+        if ($validator->fails()) {
             return response()->json([
-                'message' => 'Errores en los productos',
-                'detalles' => $errores
+                'message' => 'Faltan datos o datos inválidos',
+                'errors' => $validator->errors()
             ], 400);
         }
-    }
 
-    DB::beginTransaction();
+        if (empty($request->detalles) && empty($request->cuadros)) {
+            return response()->json([
+                'error' => 'Debe incluir al menos productos o cuadros personalizados'
+            ], 400);
+        }
 
-    try {
-        // Crear la venta
-        $venta = $this->crearVentaBase($request);
-        $totalVenta = 0;
-
+        // 🔎 Validar productos y stock ANTES de crear la venta
         if (!empty($request->detalles)) {
-            $totalProductos = $this->gestionProductos->procesarProductos($venta, $request->detalles);
-            $totalVenta += $totalProductos;
+            $validacionProductos = $this->gestionProductos->verificarDisponibilidad($request->detalles);
+
+            $errores = array_filter($validacionProductos, fn($p) => $p['disponible'] === false);
+
+            if (!empty($errores)) {
+                return response()->json([
+                    'message' => 'Errores en los productos',
+                    'detalles' => $errores
+                ], 400);
+            }
         }
 
+        // 🔎 Validar marcos y stock ANTES de crear la venta
         if (!empty($request->cuadros)) {
-            $totalCuadros = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros);
-            $totalVenta += $totalCuadros;
+            $validacionMarcos = $this->gestionMarcos->verificarDisponibilidadMarcos($request->cuadros);
+
+            $errores = array_filter($validacionMarcos, fn($c) => $c['valido'] === false);
+
+            if (!empty($errores)) {
+                return response()->json([
+                    'message' => 'Errores en los cuadros personalizados',
+                    'detalles' => $errores
+                ], 400);
+            }
         }
 
-        $this->actualizarTotalesVenta($venta, $totalVenta);
-        $this->procesarPago($venta, $request->saldo, $totalVenta, $request->idFormaPago);
-        $venta = $this->cargarRelacionesVenta($venta);
+        DB::beginTransaction();
 
-        DB::commit();
+        try {
+            // Crear la venta
+            $venta = $this->crearVentaBase($request);
+            $totalVenta = 0;
 
-        return response()->json([
-            'message' => 'Venta completa creada exitosamente',
-            'venta' => $this->formatearRespuestaVenta($venta),
-        ], 201);
+            if (!empty($request->detalles)) {
+                $totalProductos = $this->gestionProductos->procesarProductos($venta, $request->detalles);
+                $totalVenta += $totalProductos;
+            }
 
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return response()->json(['error' => $e->getMessage()], 500);
+            if (!empty($request->cuadros)) {
+                $totalCuadros = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros);
+                $totalVenta += $totalCuadros;
+            }
+
+            $this->actualizarTotalesVenta($venta, $totalVenta);
+            $this->procesarPago($venta, $request->saldo, $totalVenta, $request->idFormaPago);
+            $venta = $this->cargarRelacionesVenta($venta);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Venta completa creada exitosamente',
+                'venta' => $this->formatearRespuestaVenta($venta),
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
-}
-
 
     private function crearVentaBase(Request $request)
     {
@@ -116,6 +130,7 @@ public function crearVentaCompleta(Request $request)
             'idUsuario' => $request->idUsuario,
             'recogido' => false,
             'fecha' => now(),
+            'fechaEntrega' => $request->fechaEntrega ?? null, 
         ]);
     }
 
@@ -147,8 +162,8 @@ public function crearVentaCompleta(Request $request)
     private function cargarRelacionesVenta($venta)
     {
         return $venta->load([
-            'cliente', 
-            'sucursal', 
+            'cliente',
+            'sucursal',
             'detalleVentaProductos',
             'detalleVentaPersonalizadas.materiaPrimaVarilla',
             'detalleVentaPersonalizadas.materiaPrimaTrupan',
@@ -157,6 +172,10 @@ public function crearVentaCompleta(Request $request)
         ]);
     }
 
+    // ... resto de métodos (obtenerVentaCompleta, obtenerVentas, eliminarVenta, verificarEliminacionVenta, formatearRespuestaVenta)
+
+
+
     /**
      * Obtiene una venta completa por ID
      */
@@ -164,8 +183,8 @@ public function crearVentaCompleta(Request $request)
     {
         try {
             $venta = Venta::with([
-                'cliente', 
-                'sucursal', 
+                'cliente',
+                'sucursal',
                 'detalleVentaProductos',
                 'detalleVentaPersonalizadas.materiaPrimaVarilla',
                 'detalleVentaPersonalizadas.materiaPrimaTrupan',
@@ -183,7 +202,6 @@ public function crearVentaCompleta(Request $request)
                 'message' => 'Venta obtenida exitosamente',
                 'venta' => $this->formatearRespuestaVenta($venta)
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Error al obtener la venta: ' . $e->getMessage()
@@ -230,7 +248,7 @@ public function crearVentaCompleta(Request $request)
             // Parámetros de paginación
             $page = (int) $request->input('page', 1);
             $perPage = (int) $request->input('per_page', 15);
-            
+
             // Validar valores
             $perPage = max(1, min($perPage, 100));
             $page = max(1, $page);
@@ -241,7 +259,7 @@ public function crearVentaCompleta(Request $request)
             // Si no hay resultados, devolver 404 con descripción del filtro
             if ($totalItems === 0) {
                 $filtrosAplicados = [];
-                
+
                 if ($request->has('idCliente')) {
                     $filtrosAplicados[] = "Cliente ID: {$request->idCliente}";
                 }
@@ -259,8 +277,8 @@ public function crearVentaCompleta(Request $request)
                     $filtrosAplicados[] = "Estado: ventas {$estadoRecogido}";
                 }
 
-                $descripcionFiltros = empty($filtrosAplicados) 
-                    ? "todas las ventas" 
+                $descripcionFiltros = empty($filtrosAplicados)
+                    ? "todas las ventas"
                     : implode(', ', $filtrosAplicados);
 
                 return response()->json([
@@ -272,18 +290,18 @@ public function crearVentaCompleta(Request $request)
 
             // Obtener ventas con paginación manual
             $ventas = $query->orderBy('created_at', 'desc')
-                           ->skip(($page - 1) * $perPage)
-                           ->take($perPage)
-                           ->with([
-                               'cliente', 
-                               'sucursal', 
-                               'detalleVentaProductos',
-                               'detalleVentaPersonalizadas.materiaPrimaVarilla',
-                               'detalleVentaPersonalizadas.materiaPrimaTrupan',
-                               'detalleVentaPersonalizadas.materiaPrimaVidrio',
-                               'detalleVentaPersonalizadas.materiaPrimaContorno'
-                           ])
-                           ->get();
+                ->skip(($page - 1) * $perPage)
+                ->take($perPage)
+                ->with([
+                    'cliente',
+                    'sucursal',
+                    'detalleVentaProductos',
+                    'detalleVentaPersonalizadas.materiaPrimaVarilla',
+                    'detalleVentaPersonalizadas.materiaPrimaTrupan',
+                    'detalleVentaPersonalizadas.materiaPrimaVidrio',
+                    'detalleVentaPersonalizadas.materiaPrimaContorno'
+                ])
+                ->get();
 
             // Transformar elementos
             $ventasTransformadas = $ventas->map(function ($venta) {
@@ -302,7 +320,6 @@ public function crearVentaCompleta(Request $request)
                     'to' => $totalItems > 0 ? min($page * $perPage, $totalItems) : null,
                 ]
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Error al obtener las ventas: ' . $e->getMessage()
@@ -347,10 +364,10 @@ public function crearVentaCompleta(Request $request)
             if ($venta->detalleVentaProductos->count() > 0) {
                 // Obtener info antes de eliminar
                 $infoEliminacion['productos_info'] = $this->gestionProductos->obtenerInfoDevolucionProductos($idVenta);
-                
+
                 // Devolver stock de productos
                 $this->gestionProductos->devolverStockProductos($venta->detalleVentaProductos);
-                
+
                 // Eliminar detalles de productos
                 $this->gestionProductos->eliminarDetallesProductos($idVenta);
             }
@@ -387,10 +404,9 @@ public function crearVentaCompleta(Request $request)
                     'pagos_eliminados' => $pagosEliminados
                 ]
             ], 200);
-
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             Log::error("Error al eliminar venta", [
                 'venta_id' => $idVenta,
                 'error' => $e->getMessage(),
@@ -448,7 +464,6 @@ public function crearVentaCompleta(Request $request)
                     'recogido' => $venta->recogido
                 ]
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'puede_eliminar' => false,
@@ -467,6 +482,8 @@ public function crearVentaCompleta(Request $request)
             'idUsuario' => $venta->idUsuario,
             'recogido' => $venta->recogido,
             'fecha' => $venta->fecha,
+            'fechaEntrega' => $venta->fechaEntrega,
+            'saldoFalante'=> $venta->precioTotal - $venta->saldo,
             'precioProducto' => $venta->precioProducto,
             'precioTotal' => $venta->precioTotal,
             'created_at' => $venta->created_at,

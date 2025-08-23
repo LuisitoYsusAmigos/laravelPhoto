@@ -24,14 +24,87 @@ class GestionMarcosController extends Controller
         $this->usoLaminasCuadro = new UsoLaminasCuadro();
     }
 
-    /**
+/**
      * Procesa los cuadros personalizados de una venta
      * 
      * @param $venta Modelo de venta
      * @param array $cuadros Array de cuadros personalizados
-     * @return float Total de cuadros procesados
+     * @return array Resultados de la verificación de disponibilidad
      * @throws \Exception Si hay problemas con materiales o optimización
      */
+    public function verificarDisponibilidadMarcos(array $cuadros)
+{
+    $resultados = [];
+
+    foreach ($cuadros as $cuadro) {
+        $errores = [];
+
+        // Validar varillas
+        if (!empty($cuadro['id_materia_prima_varillas'])) {
+            $existe = DB::table('materia_prima_varillas')->where('id', $cuadro['id_materia_prima_varillas'])->exists();
+            if (!$existe) {
+                $errores[] = "Varilla ID {$cuadro['id_materia_prima_varillas']} no encontrada";
+            } else {
+                $stock = StockVarilla::where('id_materia_prima_varilla', $cuadro['id_materia_prima_varillas'])
+                    ->sum('stock');
+                if ($stock <= 0) {
+                    $errores[] = "Sin stock disponible para la varilla ID {$cuadro['id_materia_prima_varillas']}";
+                }
+            }
+        }
+
+        // Validar trupans
+        if (!empty($cuadro['id_materia_prima_trupans'])) {
+            $existe = DB::table('materia_prima_trupans')->where('id', $cuadro['id_materia_prima_trupans'])->exists();
+            if (!$existe) {
+                $errores[] = "Trupan ID {$cuadro['id_materia_prima_trupans']} no encontrado";
+            } else {
+                $stock = StockTrupan::where('id_materia_prima_trupans', $cuadro['id_materia_prima_trupans'])
+                    ->sum('stock');
+                if ($stock <= 0) {
+                    $errores[] = "Sin stock disponible para el trupan ID {$cuadro['id_materia_prima_trupans']}";
+                }
+            }
+        }
+
+        // Validar vidrios
+        if (!empty($cuadro['id_materia_prima_vidrios'])) {
+            $existe = DB::table('materia_prima_vidrios')->where('id', $cuadro['id_materia_prima_vidrios'])->exists();
+            if (!$existe) {
+                $errores[] = "Vidrio ID {$cuadro['id_materia_prima_vidrios']} no encontrado";
+            } else {
+                $stock = StockVidrio::where('id_materia_prima_vidrio', $cuadro['id_materia_prima_vidrios'])
+                    ->sum('stock');
+                if ($stock <= 0) {
+                    $errores[] = "Sin stock disponible para el vidrio ID {$cuadro['id_materia_prima_vidrios']}";
+                }
+            }
+        }
+
+        // Validar contornos
+        if (!empty($cuadro['id_materia_prima_contornos'])) {
+            $existe = DB::table('materia_prima_contornos')->where('id', $cuadro['id_materia_prima_contornos'])->exists();
+            if (!$existe) {
+                $errores[] = "Contorno ID {$cuadro['id_materia_prima_contornos']} no encontrado";
+            } else {
+                $stock = StockContorno::where('id_materia_prima_contorno', $cuadro['id_materia_prima_contornos'])
+                    ->sum('stock');
+                if ($stock <= 0) {
+                    $errores[] = "Sin stock disponible para el contorno ID {$cuadro['id_materia_prima_contornos']}";
+                }
+            }
+        }
+
+        $resultados[] = [
+            'cuadro' => $cuadro,
+            'valido' => empty($errores),
+            'errores' => $errores
+        ];
+    }
+
+    return $resultados;
+}
+
     public function procesarMarcos($venta, array $cuadros)
     {
         $totalCuadros = 0;

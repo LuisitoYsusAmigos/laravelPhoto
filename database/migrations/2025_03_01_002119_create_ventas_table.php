@@ -18,6 +18,7 @@ class CreateVentasTable extends Migration
 
             $table->boolean('recogido')->default(false);
             $table->dateTime('fecha');
+            $table->dateTime('fechaEntrega')->nullable(); // <-- Nuevo campo
 
             $table->foreignId('idCliente')->constrained('clientes')->onDelete('cascade');
             $table->foreignId('idSucursal')->constrained('sucursal')->onDelete('cascade');
