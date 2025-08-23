@@ -97,26 +97,32 @@ class GestionProductosController extends Controller
     /**
      * Procesa un lote específico de stock
      */
-    private function procesarLote($venta, $producto, $lote, $cantidadRestante)
-    {
-        $cantidadAUsar = min($cantidadRestante, $lote->stock);
+    /**
+ * Procesa un lote específico de stock
+ */
+private function procesarLote($venta, $producto, $lote, $cantidadRestante)
+{
+    $cantidadAUsar = min($cantidadRestante, $lote->stock);
+    
+    // Calcular el precio total para esta cantidad específica
+    $precioTotal = $lote->precio * $cantidadAUsar;
 
-        // Actualizar stock del lote
-        DB::table('stock_productos')
-            ->where('id', $lote->id)
-            ->decrement('stock', $cantidadAUsar);
+    // Actualizar stock del lote
+    DB::table('stock_productos')
+        ->where('id', $lote->id)
+        ->decrement('stock', $cantidadAUsar);
 
-        // Crear detalle de venta
-        DetalleVentaProducto::create([
-            'idVenta' => $venta->id,
-            'idProducto' => $producto->id,
-            'id_stock_producto' => $lote->id,
-            'cantidad' => $cantidadAUsar,
-            'precio' => $lote->precio,
-        ]);
+    // Crear detalle de venta CON EL PRECIO TOTAL
+    DetalleVentaProducto::create([
+        'idVenta' => $venta->id,
+        'idProducto' => $producto->id,
+        'id_stock_producto' => $lote->id,
+        'cantidad' => $cantidadAUsar,
+        'precio' => $precioTotal, // ← CAMBIO: precio total en lugar de precio unitario
+    ]);
 
-        return $cantidadAUsar;
-    }
+    return $cantidadAUsar;
+}
 
     /**
      * Obtiene información de stock de un producto

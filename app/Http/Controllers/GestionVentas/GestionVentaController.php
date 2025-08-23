@@ -213,7 +213,13 @@ class GestionVentaController extends Controller
             }
 
             if ($request->has('recogido')) {
-                $query->where('recogido', $request->recogido);
+                $recogidoValue = $request->recogido;
+                // Convertir string a booleano correctamente
+                if ($recogidoValue === 'true' || $recogidoValue === '1' || $recogidoValue === 1) {
+                    $query->where('recogido', true);
+                } elseif ($recogidoValue === 'false' || $recogidoValue === '0' || $recogidoValue === 0) {
+                    $query->where('recogido', false);
+                }
             }
 
             // Parámetros de paginación
@@ -226,6 +232,37 @@ class GestionVentaController extends Controller
 
             // Obtener total de elementos
             $totalItems = $query->count();
+
+            // Si no hay resultados, devolver 404 con descripción del filtro
+            if ($totalItems === 0) {
+                $filtrosAplicados = [];
+                
+                if ($request->has('idCliente')) {
+                    $filtrosAplicados[] = "Cliente ID: {$request->idCliente}";
+                }
+                if ($request->has('idSucursal')) {
+                    $filtrosAplicados[] = "Sucursal ID: {$request->idSucursal}";
+                }
+                if ($request->has('fecha_desde')) {
+                    $filtrosAplicados[] = "Desde: {$request->fecha_desde}";
+                }
+                if ($request->has('fecha_hasta')) {
+                    $filtrosAplicados[] = "Hasta: {$request->fecha_hasta}";
+                }
+                if ($request->has('recogido')) {
+                    $estadoRecogido = $request->recogido === 'true' ? 'recogidas' : 'no recogidas';
+                    $filtrosAplicados[] = "Estado: ventas {$estadoRecogido}";
+                }
+
+                $descripcionFiltros = empty($filtrosAplicados) 
+                    ? "todas las ventas" 
+                    : implode(', ', $filtrosAplicados);
+
+                return response()->json([
+                    'error' => "No se encontraron ventas con los filtros aplicados: {$descripcionFiltros}"
+                ], 404);
+            }
+
             $totalPages = $perPage > 0 ? ceil($totalItems / $perPage) : 1;
 
             // Obtener ventas con paginación manual
@@ -258,14 +295,6 @@ class GestionVentaController extends Controller
                     'total' => $totalItems,
                     'from' => $totalItems > 0 ? (($page - 1) * $perPage) + 1 : null,
                     'to' => $totalItems > 0 ? min($page * $perPage, $totalItems) : null,
-                ],
-                'debug_info' => [
-                    'requested_per_page' => $request->get('per_page'),
-                    'requested_page' => $request->get('page'),
-                    'applied_per_page' => $perPage,
-                    'applied_page' => $page,
-                    'items_count' => $ventas->count(),
-                    'total_items' => $totalItems,
                 ]
             ], 200);
 
