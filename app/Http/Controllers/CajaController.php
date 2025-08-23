@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Caja;
+use App\Models\FormaDePago;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -148,9 +149,31 @@ public function obtenerPorFecha($fecha)
     if ($cajas->isEmpty()) {
         return response()->json(['message' => 'No se encontró ninguna caja con esa fecha'], 404);
     }
+
     $cajas->transform(function ($caja) {
-        $caja->detalle = json_decode($caja->detalle);
+        // Decodificar el detalle JSON
+        $detalle = json_decode($caja->detalle, true);
+        
+        // Obtener los IDs de formas de pago del detalle
+        $formasPagoIds = array_keys($detalle);
+        
+        // Consultar los nombres de las formas de pago
+        $formasPago = FormaDePago::whereIn('id', $formasPagoIds)->get()->keyBy('id');
+        
+        // Transformar el detalle para incluir el nombre
+        $detalleConNombres = [];
+        foreach ($detalle as $formaPagoId => $monto) {
+            $formaPago = $formasPago->get($formaPagoId);
+            $detalleConNombres[] = [
+                'forma_pago_id' => $formaPagoId,
+                'nombre' => $formaPago ? $formaPago->nombre : 'Desconocido',
+                'monto' => $monto
+            ];
+        }
+        
+        $caja->detalle = $detalleConNombres;
         unset($caja->usuario);
+        
         return $caja;
     });
 
