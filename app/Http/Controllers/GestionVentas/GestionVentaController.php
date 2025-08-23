@@ -5,6 +5,7 @@ namespace App\Http\Controllers\GestionVentas;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Venta;
 use App\Models\Pago;
@@ -20,87 +21,91 @@ class GestionVentaController extends Controller
         $this->gestionMarcos = new GestionMarcosController();
     }
 
-    public function crearVentaCompleta(Request $request)
-    {
-        // Validación completa
-        $validator = Validator::make($request->all(), [
-            // Campos básicos de venta
-            'saldo' => 'required|numeric|min:0',
-            'idCliente' => 'required|exists:clientes,id',
-            'idSucursal' => 'required|exists:sucursal,id',
-            'idFormaPago' => 'required|exists:forma_de_pagos,id',
-            'idUsuario' => 'required|exists:users,id',
-            
-            // Detalles de productos (opcional)
-            'detalles' => 'nullable|array',
-            'detalles.*.idProducto' => 'required_with:detalles|exists:productos,id',
-            'detalles.*.cantidad' => 'required_with:detalles|integer|min:1',
-            
-            // Cuadros personalizados (opcional)
-            'cuadros' => 'nullable|array',
-            'cuadros.*.lado_a' => 'required_with:cuadros|integer|min:1',
-            'cuadros.*.lado_b' => 'required_with:cuadros|integer|min:1',
-            'cuadros.*.cantidad' => 'required_with:cuadros|integer|min:1',
-            'cuadros.*.id_materia_prima_varillas' => 'nullable|exists:materia_prima_varillas,id',
-            'cuadros.*.id_materia_prima_trupans' => 'nullable|exists:materia_prima_trupans,id',
-            'cuadros.*.id_materia_prima_vidrios' => 'nullable|exists:materia_prima_vidrios,id',
-            'cuadros.*.id_materia_prima_contornos' => 'nullable|exists:materia_prima_contornos,id',
-        ]);
+public function crearVentaCompleta(Request $request)
+{
+    // Validación básica
+    $validator = Validator::make($request->all(), [
+        'saldo' => 'required|numeric|min:0',
+        'idCliente' => 'required|exists:clientes,id',
+        'idSucursal' => 'required|exists:sucursal,id',
+        'idFormaPago' => 'required|exists:forma_de_pagos,id',
+        'idUsuario' => 'required|exists:users,id',
 
-        if ($validator->fails()) {
+        'detalles' => 'nullable|array',
+        'detalles.*.idProducto' => 'required_with:detalles|integer',
+        'detalles.*.cantidad' => 'required_with:detalles|integer|min:1',
+
+        'cuadros' => 'nullable|array',
+        'cuadros.*.lado_a' => 'required_with:cuadros|integer|min:1',
+        'cuadros.*.lado_b' => 'required_with:cuadros|integer|min:1',
+        'cuadros.*.cantidad' => 'required_with:cuadros|integer|min:1',
+        'cuadros.*.id_materia_prima_varillas' => 'nullable|exists:materia_prima_varillas,id',
+        'cuadros.*.id_materia_prima_trupans' => 'nullable|exists:materia_prima_trupans,id',
+        'cuadros.*.id_materia_prima_vidrios' => 'nullable|exists:materia_prima_vidrios,id',
+        'cuadros.*.id_materia_prima_contornos' => 'nullable|exists:materia_prima_contornos,id',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'message' => 'Faltan datos o datos inválidos',
+            'errors' => $validator->errors()
+        ], 400);
+    }
+
+    if (empty($request->detalles) && empty($request->cuadros)) {
+        return response()->json([
+            'error' => 'Debe incluir al menos productos o cuadros personalizados'
+        ], 400);
+    }
+
+    // 🔎 Validar productos y stock ANTES de crear la venta
+    if (!empty($request->detalles)) {
+        $validacionProductos = $this->gestionProductos->verificarDisponibilidad($request->detalles);
+
+        $errores = array_filter($validacionProductos, fn($p) => $p['disponible'] === false);
+
+        if (!empty($errores)) {
             return response()->json([
-                'message' => 'Faltan datos o datos inválidos', 
-                'errors' => $validator->errors()
+                'message' => 'Errores en los productos',
+                'detalles' => $errores
             ], 400);
-        }
-
-        // Validar que al menos uno de los arrays tenga contenido
-        if (empty($request->detalles) && empty($request->cuadros)) {
-            return response()->json([
-                'error' => 'Debe incluir al menos productos o cuadros personalizados'
-            ], 400);
-        }
-
-        DB::beginTransaction();
-
-        try {
-            // 1. Crear venta base
-            $venta = $this->crearVentaBase($request);
-            $totalVenta = 0;
-
-            // 2. Procesar productos regulares si existen
-            if (!empty($request->detalles)) {
-                $totalProductos = $this->gestionProductos->procesarProductos($venta, $request->detalles);
-                $totalVenta += $totalProductos;
-            }
-
-            // 3. Procesar cuadros personalizados si existen
-            if (!empty($request->cuadros)) {
-                $totalCuadros = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros);
-                $totalVenta += $totalCuadros;
-            }
-
-            // 4. Actualizar totales de la venta
-            $this->actualizarTotalesVenta($venta, $totalVenta);
-
-            // 5. Validar y procesar pago
-            $this->procesarPago($venta, $request->saldo, $totalVenta, $request->idFormaPago);
-
-            // 6. Cargar relaciones para respuesta
-            $venta = $this->cargarRelacionesVenta($venta);
-
-            DB::commit();
-
-            return response()->json([
-                'message' => 'Venta completa creada exitosamente',
-                'venta' => $this->formatearRespuestaVenta($venta),
-            ], 201);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    DB::beginTransaction();
+
+    try {
+        // Crear la venta
+        $venta = $this->crearVentaBase($request);
+        $totalVenta = 0;
+
+        if (!empty($request->detalles)) {
+            $totalProductos = $this->gestionProductos->procesarProductos($venta, $request->detalles);
+            $totalVenta += $totalProductos;
+        }
+
+        if (!empty($request->cuadros)) {
+            $totalCuadros = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros);
+            $totalVenta += $totalCuadros;
+        }
+
+        $this->actualizarTotalesVenta($venta, $totalVenta);
+        $this->procesarPago($venta, $request->saldo, $totalVenta, $request->idFormaPago);
+        $venta = $this->cargarRelacionesVenta($venta);
+
+        DB::commit();
+
+        return response()->json([
+            'message' => 'Venta completa creada exitosamente',
+            'venta' => $this->formatearRespuestaVenta($venta),
+        ], 201);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
+
 
     private function crearVentaBase(Request $request)
     {
@@ -301,6 +306,153 @@ class GestionVentaController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Error al obtener las ventas: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // ============== MÉTODO DE ELIMINACIÓN DE VENTA ==============
+
+    /**
+     * Elimina completamente una venta y devuelve todo el stock
+     * 
+     * @param int $idVenta ID de la venta a eliminar
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function eliminarVenta($idVenta)
+    {
+        DB::beginTransaction();
+
+        try {
+            // 1. Verificar que la venta existe
+            $venta = Venta::with([
+                'detalleVentaProductos',
+                'detalleVentaPersonalizadas.materialesVentaPersonalizada'
+            ])->find($idVenta);
+
+            if (!$venta) {
+                return response()->json([
+                    'error' => 'Venta no encontrada'
+                ], 404);
+            }
+
+            // 2. Obtener información para el log de respuesta
+            $infoEliminacion = [
+                'venta_id' => $venta->id,
+                'fecha_venta' => $venta->fecha,
+                'total_venta' => $venta->precioTotal,
+                'productos_info' => []
+            ];
+
+            // 3. Procesar productos regulares si existen
+            if ($venta->detalleVentaProductos->count() > 0) {
+                // Obtener info antes de eliminar
+                $infoEliminacion['productos_info'] = $this->gestionProductos->obtenerInfoDevolucionProductos($idVenta);
+                
+                // Devolver stock de productos
+                $this->gestionProductos->devolverStockProductos($venta->detalleVentaProductos);
+                
+                // Eliminar detalles de productos
+                $this->gestionProductos->eliminarDetallesProductos($idVenta);
+            }
+
+            // 4. Por ahora, si hay marcos personalizados, mostrar error
+            if ($venta->detalleVentaPersonalizadas->count() > 0) {
+                return response()->json([
+                    'error' => 'No se pueden eliminar ventas con marcos personalizados. Esta funcionalidad estará disponible próximamente.'
+                ], 400);
+            }
+
+            // 5. Eliminar pagos asociados
+            $pagosEliminados = Pago::where('idVenta', $idVenta)->delete();
+
+            // 6. Eliminar la venta principal
+            $venta->delete();
+
+            // 7. Log de auditoría
+            Log::info("Venta eliminada completamente", [
+                'venta_id' => $idVenta,
+                'pagos_eliminados' => $pagosEliminados,
+                'info_eliminacion' => $infoEliminacion
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Venta eliminada exitosamente',
+                'venta_eliminada' => [
+                    'id' => $idVenta,
+                    'fecha_original' => $infoEliminacion['fecha_venta'],
+                    'total_original' => $infoEliminacion['total_venta'],
+                    'productos_devueltos' => $infoEliminacion['productos_info']['total_productos_diferentes'] ?? 0,
+                    'pagos_eliminados' => $pagosEliminados
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error("Error al eliminar venta", [
+                'venta_id' => $idVenta,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Error al eliminar la venta: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Verifica si una venta puede ser eliminada
+     * 
+     * @param int $idVenta ID de la venta
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verificarEliminacionVenta($idVenta)
+    {
+        try {
+            $venta = Venta::with([
+                'detalleVentaProductos',
+                'detalleVentaPersonalizadas',
+                'pagos'
+            ])->find($idVenta);
+
+            if (!$venta) {
+                return response()->json([
+                    'puede_eliminar' => false,
+                    'motivo' => 'Venta no encontrada'
+                ], 404);
+            }
+
+            // Validar si tiene marcos personalizados
+            if ($venta->detalleVentaPersonalizadas->count() > 0) {
+                return response()->json([
+                    'puede_eliminar' => false,
+                    'motivo' => 'No se pueden eliminar ventas con marcos personalizados. Esta funcionalidad estará disponible próximamente.'
+                ], 400);
+            }
+
+            $productosCount = $venta->detalleVentaProductos->count();
+            $pagosCount = $venta->pagos->count();
+
+            return response()->json([
+                'puede_eliminar' => true,
+                'venta_info' => [
+                    'id' => $venta->id,
+                    'fecha' => $venta->fecha,
+                    'total' => $venta->precioTotal,
+                    'cliente_id' => $venta->idCliente,
+                    'productos_count' => $productosCount,
+                    'pagos_count' => $pagosCount,
+                    'recogido' => $venta->recogido
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'puede_eliminar' => false,
+                'motivo' => 'Error al verificar: ' . $e->getMessage()
             ], 500);
         }
     }

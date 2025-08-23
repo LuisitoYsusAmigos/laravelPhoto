@@ -325,3 +325,6 @@ Route::post('/ventaProductoMarco', [GestionVentaController::class, 'crearVentaCo
 // En routes/api.php
 Route::get('/ventaProductoMarco/{id}', [GestionVentaController::class, 'obtenerVentaCompleta']);
 Route::get('/ventaProductoMarco', [GestionVentaController::class, 'obtenerVentas']);
+
+Route::delete('/ventaProductoMarco/{id}', [GestionVentaController::class, 'eliminarVenta']);
+Route::get('/ventaProductoMarco/{id}/verificar-eliminacion', [GestionVentaController::class, 'verificarEliminacionVenta']);

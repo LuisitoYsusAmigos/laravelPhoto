@@ -4,6 +4,7 @@ namespace App\Http\Controllers\GestionVentas;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Models\Producto;
 use App\Models\DetalleVentaProducto;
 
@@ -97,32 +98,29 @@ class GestionProductosController extends Controller
     /**
      * Procesa un lote específico de stock
      */
-    /**
- * Procesa un lote específico de stock
- */
-private function procesarLote($venta, $producto, $lote, $cantidadRestante)
-{
-    $cantidadAUsar = min($cantidadRestante, $lote->stock);
-    
-    // Calcular el precio total para esta cantidad específica
-    $precioTotal = $lote->precio * $cantidadAUsar;
+    private function procesarLote($venta, $producto, $lote, $cantidadRestante)
+    {
+        $cantidadAUsar = min($cantidadRestante, $lote->stock);
+        
+        // Calcular el precio total para esta cantidad específica
+        $precioTotal = $lote->precio * $cantidadAUsar;
 
-    // Actualizar stock del lote
-    DB::table('stock_productos')
-        ->where('id', $lote->id)
-        ->decrement('stock', $cantidadAUsar);
+        // Actualizar stock del lote
+        DB::table('stock_productos')
+            ->where('id', $lote->id)
+            ->decrement('stock', $cantidadAUsar);
 
-    // Crear detalle de venta CON EL PRECIO TOTAL
-    DetalleVentaProducto::create([
-        'idVenta' => $venta->id,
-        'idProducto' => $producto->id,
-        'id_stock_producto' => $lote->id,
-        'cantidad' => $cantidadAUsar,
-        'precio' => $precioTotal, // ← CAMBIO: precio total en lugar de precio unitario
-    ]);
+        // Crear detalle de venta CON EL PRECIO TOTAL
+        DetalleVentaProducto::create([
+            'idVenta' => $venta->id,
+            'idProducto' => $producto->id,
+            'id_stock_producto' => $lote->id,
+            'cantidad' => $cantidadAUsar,
+            'precio' => $precioTotal, // Precio total en lugar de precio unitario
+        ]);
 
-    return $cantidadAUsar;
-}
+        return $cantidadAUsar;
+    }
 
     /**
      * Obtiene información de stock de un producto
@@ -169,5 +167,94 @@ private function procesarLote($venta, $producto, $lote, $cantidadRestante)
         }
 
         return $resultados;
+    }
+
+    // ============== MÉTODOS DE DEVOLUCIÓN ==============
+
+    /**
+     * Devuelve el stock de productos regulares de una venta
+     * 
+     * @param $detalleProductos Colección de detalles de productos
+     * @throws \Exception Si hay problemas al devolver stock
+     */
+    public function devolverStockProductos($detalleProductos)
+    {
+        foreach ($detalleProductos as $detalle) {
+            try {
+                // Verificar que el lote de stock existe
+                $stockExiste = DB::table('stock_productos')
+                    ->where('id', $detalle->id_stock_producto)
+                    ->exists();
+
+                if (!$stockExiste) {
+                    throw new \Exception("Lote de stock ID {$detalle->id_stock_producto} no encontrado para devolución");
+                }
+
+                // Devolver stock al lote específico usado
+                DB::table('stock_productos')
+                    ->where('id', $detalle->id_stock_producto)
+                    ->increment('stock', $detalle->cantidad);
+
+                // Log para auditoría
+                Log::info("Stock producto devuelto", [
+                    'producto_id' => $detalle->idProducto,
+                    'lote_id' => $detalle->id_stock_producto,
+                    'cantidad_devuelta' => $detalle->cantidad,
+                    'venta_id' => $detalle->idVenta
+                ]);
+
+            } catch (\Exception $e) {
+                throw new \Exception("Error al devolver stock del producto ID {$detalle->idProducto}: " . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Elimina los detalles de productos de una venta
+     * 
+     * @param int $idVenta ID de la venta
+     * @return int Cantidad de detalles eliminados
+     */
+    public function eliminarDetallesProductos($idVenta)
+    {
+        $detallesEliminados = DetalleVentaProducto::where('idVenta', $idVenta)->delete();
+        
+        Log::info("Detalles de productos eliminados", [
+            'venta_id' => $idVenta,
+            'cantidad_eliminados' => $detallesEliminados
+        ]);
+
+        return $detallesEliminados;
+    }
+
+    /**
+     * Obtiene información detallada de los productos de una venta para devolución
+     * 
+     * @param int $idVenta ID de la venta
+     * @return array Información de productos y stock a devolver
+     */
+    public function obtenerInfoDevolucionProductos($idVenta)
+    {
+        $detalles = DetalleVentaProducto::with('producto')
+            ->where('idVenta', $idVenta)
+            ->get();
+
+        $infoDevolucion = [];
+
+        foreach ($detalles as $detalle) {
+            $infoDevolucion[] = [
+                'producto_id' => $detalle->idProducto,
+                'producto_nombre' => $detalle->producto->descripcion ?? 'N/A',
+                'lote_id' => $detalle->id_stock_producto,
+                'cantidad_a_devolver' => $detalle->cantidad,
+                'precio_total' => $detalle->precio
+            ];
+        }
+
+        return [
+            'total_productos_diferentes' => $detalles->count(),
+            'productos_detalle' => $infoDevolucion,
+            'valor_total_productos' => $detalles->sum('precio')
+        ];
     }
 }
