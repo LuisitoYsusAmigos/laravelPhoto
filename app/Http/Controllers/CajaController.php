@@ -19,7 +19,11 @@ public function index()
 
     // Procesar cada caja
     $cajas->transform(function ($caja) {
-        $caja->detalle = json_decode($caja->detalle);
+        if (is_string($caja->detalle)) {
+            if (is_string($caja->detalle)) {
+                $caja->detalle = json_decode($caja->detalle);
+            }
+        }
         unset($caja->usuario); // por si acaso Laravel intenta incluirla
         return $caja;
     });
@@ -203,7 +207,10 @@ public function cajaPorMes($mes)
         $sumaTotal += $caja->total;
         $sumaVentas += $caja->ventas;
 
-        $detalle = json_decode($caja->detalle, true);
+        $detalle = $caja->detalle;
+        if (is_string($detalle)) {
+            $detalle = json_decode($detalle, true);
+        }
 
         foreach ($detalle as $idFormaPago => $monto) {
             if (!isset($detalleAcumulado[$idFormaPago])) {

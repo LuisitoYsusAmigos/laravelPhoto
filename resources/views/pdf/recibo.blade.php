@@ -85,18 +85,23 @@
     <table>
       <tr>
         <th>Fecha</th>
-        <th>Nombre del cliente</th>
+        <th>Entrega</th>
+        <th>Cliente</th>
         <th>Teléfono</th>
         <th>Sucursal</th>
       </tr>
       <tr>
         <td>{{ \Carbon\Carbon::parse($venta['fecha'])->format('Y-m-d') }}</td>
+        <td>{{ \Carbon\Carbon::parse($venta['fechaEntrega'])->format('Y-m-d') }}</td>
         <td>{{ $venta['cliente']['nombre'] }} {{ $venta['cliente']['apellido'] }}</td>
         <td>{{ $venta['cliente']['telefono'] }}</td>
         <td>{{ $venta['sucursal']['lugar'] }}</td>
       </tr>
     </table>
 
+    {{-- Productos normales --}}
+    @if(!empty($venta['detalle_venta_productos']))
+    <h3>Productos</h3>
     <table>
       <tr>
         <th>ID</th>
@@ -108,19 +113,53 @@
       @foreach ($venta['detalle_venta_productos'] as $producto)
       <tr>
         <td>{{ $producto['id'] }}</td>
-        <td>{{ $producto['nombreProducto'] }}</td>
+        <td>Producto ID {{ $producto['idProducto'] }}</td>
         <td>{{ $producto['cantidad'] }}</td>
         <td>{{ number_format($producto['precio'], 2) }}</td>
-        <td>{{ number_format($producto['precioDetalle'], 2) }}</td>
+        <td>{{ number_format($producto['precio'] * $producto['cantidad'], 2) }}</td>
       </tr>
       @endforeach
     </table>
+    @endif
+
+    {{-- Productos personalizados --}}
+    @if(!empty($venta['detalle_venta_personalizadas']))
+    <h3>Productos Personalizados</h3>
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Descripción</th>
+        <th>Dimensiones</th>
+        <th>Materiales</th>
+      </tr>
+      @foreach ($venta['detalle_venta_personalizadas'] as $personalizado)
+      <tr>
+        <td>{{ $personalizado['id'] }}</td>
+        <td>Marco personalizado</td>
+        <td>{{ $personalizado['lado_a'] }} x {{ $personalizado['lado_b'] }} mm</td>
+        <td>
+          @if($personalizado['materia_prima_varilla'])
+            Varilla: {{ $personalizado['materia_prima_varilla']['descripcion'] }}<br>
+          @endif
+          @if($personalizado['materia_prima_trupan'])
+            Trupan: {{ $personalizado['materia_prima_trupan']['descripcion'] }}<br>
+          @endif
+          @if($personalizado['materia_prima_vidrio'])
+            Vidrio: {{ $personalizado['materia_prima_vidrio']['descripcion'] }}<br>
+          @endif
+          @if($personalizado['materia_prima_contorno'])
+            Contorno: {{ $personalizado['materia_prima_contorno']['descripcion'] }}
+          @endif
+        </td>
+      </tr>
+      @endforeach
+    </table>
+    @endif
 
     @php
-      $subtotal = array_sum(array_column($venta['detalle_venta_productos'], 'precioDetalle'));
+      $subtotal = $venta['precioProducto'];
       $descuento = $venta['precioProducto'] - $venta['precioTotal'];
       $aCuenta = $venta['precioTotal'] - $venta['saldo'];
-      $entrega = $aCuenta - $venta['saldo'];
     @endphp
 
     <table class="detalle-pago">
@@ -137,8 +176,8 @@
         <td>{{ number_format($descuento, 2) }}</td>
       </tr>
       <tr>
-        <td><strong>Entrega</strong></td>
-        <td>{{ number_format($entrega, 2) }}</td>
+        <td class="no-border"></td>
+        <td class="no-border"></td>
         <td class="right"><strong>Total</strong></td>
         <td>{{ number_format($venta['precioTotal'], 2) }}</td>
       </tr>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\VentaController;
+use App\Http\Controllers\GestionVentas\GestionVentaController;
 use App\Models\Venta;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -16,7 +17,8 @@ class GestionRecibosController extends Controller
             return response()->json(['message' => 'Venta no encontrada'], 404);
         }
         // Usar VentaController para obtener la data
-        $ventaJson = (new VentaController)->getVentaCompleta($id);
+        //$ventaJson = (new VentaController)->getVentaCompleta($id);
+        $ventaJson = (new GestionVentaController)->obtenerVentaCompleta($id);
         $ventaArray = $ventaJson->getData(true)['venta'];
 
         return view('pdf.recibo', ['venta' => $ventaArray]);
@@ -28,7 +30,8 @@ class GestionRecibosController extends Controller
         if (!$venta) {
             return response()->json(['message' => 'Venta no encontrada'], 404);
         }
-        $ventaJson = (new VentaController)->getVentaCompleta($id);
+        //$ventaJson = (new VentaController)->getVentaCompleta($id);
+        $ventaJson = (new GestionVentaController)->obtenerVentaCompleta($id);
         $ventaArray = $ventaJson->getData(true)['venta'];
 
         $pdf = Pdf::loadView('pdf.recibo', ['venta' => $ventaArray]);

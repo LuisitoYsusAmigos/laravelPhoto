@@ -12,6 +12,7 @@ use App\Models\StockVidrio;
 use App\Models\StockContorno;
 use App\Services\UsoVarillasCuadro;
 use App\Services\UsoLaminasCuadro;
+use Illuminate\Support\Facades\Log;
 
 class GestionMarcosController extends Controller
 {
@@ -307,54 +308,132 @@ class GestionMarcosController extends Controller
     // Métodos para procesar resultados
 
     private function procesarResultadoVarillas($detalle, $retazosUsados)
-    {
-        $totalVarillas = 0;
+{
+    $totalVarillas = 0;
 
-        foreach ($retazosUsados as $retazo) {
-            $precioVentaDb = DB::table('stock_varillas as sv')
-                ->join('materia_prima_varillas as mpv', 'sv.id_materia_prima_varilla', '=', 'mpv.id')
-                ->where('sv.id', $retazo['id'])
-                ->value('mpv.precioVenta');
+    foreach ($retazosUsados as $retazo) {
+        // Obtener datos de la materia prima varilla
+        $datosVarilla = DB::table('stock_varillas as sv')
+            ->join('materia_prima_varillas as mpv', 'sv.id_materia_prima_varilla', '=', 'mpv.id')
+            ->where('sv.id', $retazo['id'])
+            ->first(['mpv.precioVenta', 'mpv.factor_desperdicio']);
 
-            $precio = $retazo['mmUsados'] * $precioVentaDb;
-            $totalVarillas += $precio;
-
-            MaterialesVentaPersonalizada::create([
-                'stock_contorno_id' => null,
-                'stock_trupan_id' => null,
-                'stock_vidrio_id' => null,
-                'stock_varilla_id' => $retazo['id'],
-                'cantidad' => $retazo['cantidad'],
-                'precio_unitario' => $precio,
-                'detalleVP_id' => $detalle->id
-            ]);
+        if (!$datosVarilla) {
+            throw new \Exception("Datos de varilla no encontrados para stock ID: {$retazo['id']}");
         }
 
-        return $totalVarillas;
-    }
+        // Convertir mm usados a metros
+        $metrosUsados = $retazo['mmUsados'] / 1000;
+        
+        // Calcular precio: metros_usados × precio_por_metro × factor_desperdicio × cantidad
+        $precio = $metrosUsados * $datosVarilla->precioVenta * $datosVarilla->factor_desperdicio * $retazo['cantidad'];
+        
+        // LOG DETALLADO DEL CÁLCULO PARA VARILLAS
+        $mensajeCalculo = "La multiplicación para el precio fue de VARILLA: {$metrosUsados} * {$datosVarilla->precioVenta} * {$datosVarilla->factor_desperdicio} * {$retazo['cantidad']} = {$precio}";
+        //Log::info($mensajeCalculo);
+        //echo $mensajeCalculo . "\n";
 
-    private function procesarResultadoLamina($detalle, $respuesta, $tipoMaterial, $cuadro)
-    {
-        $materialId = $respuesta['material'];
-        $areaUtilizada = $cuadro['lado_a'] * $cuadro['lado_b'];
+        $totalVarillas += $precio;
 
-        $precioVentaDb = $this->obtenerPrecioVentaMaterial($tipoMaterial, $materialId);
-        $precio = $areaUtilizada * $precioVentaDb;
-
-        $materialData = [
-            'stock_contorno_id' => $tipoMaterial === 'contorno' ? $materialId : null,
-            'stock_trupan_id' => $tipoMaterial === 'trupan' ? $materialId : null,
-            'stock_vidrio_id' => $tipoMaterial === 'vidrio' ? $materialId : null,
-            'stock_varilla_id' => null,
-            'cantidad' => 1,
+        MaterialesVentaPersonalizada::create([
+            'stock_contorno_id' => null,
+            'stock_trupan_id' => null,
+            'stock_vidrio_id' => null,
+            'stock_varilla_id' => $retazo['id'],
+            'cantidad' => $retazo['cantidad'],
             'precio_unitario' => $precio,
             'detalleVP_id' => $detalle->id
-        ];
-
-        MaterialesVentaPersonalizada::create($materialData);
-
-        return $precio;
+        ]);
     }
+
+    return $totalVarillas;
+}
+
+private function procesarResultadoLamina($detalle, $respuesta, $tipoMaterial, $cuadro)
+{
+    $materialId = $respuesta['material'];
+
+    // Área del cuadro en mm²
+    $areaMm2 = $cuadro['lado_a'] * $cuadro['lado_b'];
+    
+    // Convertir a m² para el cálculo
+    $areaM2 = $areaMm2 / 1_000_0;
+
+    // Obtener precio por m² y factor de desperdicio de la materia prima
+    $datosMateriaPrima = $this->obtenerDatosMateriaPrima($tipoMaterial, $cuadro);
+    $precioM2 = $datosMateriaPrima['precio_m2'];
+    $factorDesperdicio = $datosMateriaPrima['factor_desperdicio'];
+
+    // Aplicar fórmula correcta: área_m² × precio_m² × factor_desperdicio × cantidad
+    $precio = $areaM2 * $precioM2 * $factorDesperdicio * $cuadro['cantidad'];
+
+    // LOG DETALLADO DEL CÁLCULO
+    $tipoMaterialMayuscula = strtoupper($tipoMaterial);
+    //$mensajeCalculo = "La multiplicación para el precio fue de {$tipoMaterialMayuscula}: {$areaM2} * {$precioM2} * {$factorDesperdicio} * {$cuadro['cantidad']} = {$precio}";
+    
+    // Imprimir en logs y en consola
+    //Log::info($mensajeCalculo);
+    //echo $mensajeCalculo . "\n";
+
+    $materialData = [
+        'stock_contorno_id' => $tipoMaterial === 'contorno' ? $materialId : null,
+        'stock_trupan_id'   => $tipoMaterial === 'trupan' ? $materialId : null,
+        'stock_vidrio_id'   => $tipoMaterial === 'vidrio' ? $materialId : null,
+        'stock_varilla_id'  => null,
+        'cantidad'          => $cuadro['cantidad'],
+        'precio_unitario'   => $precio,
+        'detalleVP_id'      => $detalle->id
+    ];
+
+    MaterialesVentaPersonalizada::create($materialData);
+
+    return $precio;
+}
+
+/**
+ * Obtiene precio_m2 y factor_desperdicio de la materia prima específica
+ */
+private function obtenerDatosMateriaPrima($tipoMaterial, $cuadro)
+{
+    switch ($tipoMaterial) {
+        case 'trupan':
+            $materiaPrima = DB::table('materia_prima_trupans')
+                ->where('id', $cuadro['id_materia_prima_trupans'])
+                ->first(['precioVenta', 'largo', 'alto', 'factor_desperdicio']);
+            break;
+        
+        case 'vidrio':
+            $materiaPrima = DB::table('materia_prima_vidrios')
+                ->where('id', $cuadro['id_materia_prima_vidrios'])
+                ->first(['precioVenta', 'largo', 'alto', 'factor_desperdicio']);
+            break;
+        
+        case 'contorno':
+            $materiaPrima = DB::table('materia_prima_contornos')
+                ->where('id', $cuadro['id_materia_prima_contornos'])
+                ->first(['precioVenta', 'largo', 'alto', 'factor_desperdicio']);
+            break;
+        
+        default:
+            throw new \Exception("Tipo de material no válido: {$tipoMaterial}");
+    }
+
+    if (!$materiaPrima) {
+        throw new \Exception("Materia prima no encontrada para tipo: {$tipoMaterial}");
+    }
+
+    // Calcular precio_m2 como lo hacen los modelos
+    $area_mm2 = $materiaPrima->alto * $materiaPrima->largo;
+    $area_m2 = $area_mm2 / 1_000_000;
+    //$precio_m2 = round($materiaPrima->precioVenta / $area_m2);
+    $precio_m2= $materiaPrima->precioVenta;
+
+    return [
+        'precio_m2' => $precio_m2,
+        'factor_desperdicio' => $materiaPrima->factor_desperdicio
+    ];
+}
+
 
     private function obtenerPrecioVentaMaterial($tipoMaterial, $materialId)
     {
