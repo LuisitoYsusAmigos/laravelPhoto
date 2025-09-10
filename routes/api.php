@@ -220,6 +220,8 @@ use App\Http\Controllers\PagoController;
 
 Route::get('/pagos', [PagoController::class, 'index']);
 Route::post('/pago', [PagoController::class, 'store']);
+Route::post('/pago/completar', [PagoController::class, 'completarPago']);
+
 Route::get('/pago/{id}', [PagoController::class, 'show']);
 Route::put('/pago/{id}', [PagoController::class, 'update']);
 Route::delete('/pago/{id}', [PagoController::class, 'destroy']);

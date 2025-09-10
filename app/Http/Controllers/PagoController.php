@@ -125,4 +125,56 @@ class PagoController extends Controller
         $nuevoSaldo = Pago::where('idVenta', $idVenta)->sum('monto');
         Venta::where('id', $idVenta)->update(['saldo' => $nuevoSaldo]);
     }
+
+
+    // Completar el pago restante de una venta
+    // Completar el pago restante de una venta
+public function completarPago(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'idVenta' => 'required|exists:ventas,id',
+        'idFormaPago' => 'required|exists:forma_de_pagos,id',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json($validator->errors(), 400);
+    }
+
+    $venta = Venta::find($request->idVenta);
+    
+    // Validar que el precio total y saldo sean diferentes (venta incompleta)
+    if ($venta->precioTotal == $venta->saldo) {
+        return response()->json([
+            'error' => 'La venta ya está completamente pagada'
+        ], 400);
+    }
+    
+    // Calcular el monto faltante
+    $montoFaltante = $venta->precioTotal - $venta->saldo;
+    
+    // Validación adicional por si acaso el saldo fuera mayor al precio total
+    if ($montoFaltante <= 0) {
+        return response()->json([
+            'error' => 'Error en los datos de la venta: el saldo es mayor o igual al precio total'
+        ], 400);
+    }
+    
+    // Crear el pago con el monto faltante
+    $pago = Pago::create([
+        'idVenta' => $request->idVenta,
+        'idFormaPago' => $request->idFormaPago,
+        'monto' => $montoFaltante,
+        'fecha' => Carbon::now()->toDateString()
+    ]);
+    
+    // Actualizar el saldo de la venta
+    $this->actualizarSaldoVenta($request->idVenta);
+    
+    return response()->json([
+        'message' => 'Pago completado exitosamente',
+        'pago' => $pago,
+        'monto_pagado' => $montoFaltante,
+        'venta_completada' => true
+    ], 201);
+}
 }

@@ -180,34 +180,44 @@ class GestionVentaController extends Controller
      * Obtiene una venta completa por ID
      */
     public function obtenerVentaCompleta($id)
-    {
-        try {
-            $venta = Venta::with([
-                'cliente',
-                'sucursal',
-                'detalleVentaProductos',
-                'detalleVentaPersonalizadas.materiaPrimaVarilla',
-                'detalleVentaPersonalizadas.materiaPrimaTrupan',
-                'detalleVentaPersonalizadas.materiaPrimaVidrio',
-                'detalleVentaPersonalizadas.materiaPrimaContorno'
-            ])->find($id);
+{
+    try {
+        $venta = Venta::with([
+            'cliente',
+            'sucursal',
+            'detalleVentaProductos',
+            'detalleVentaPersonalizadas.materiaPrimaVarilla',
+            'detalleVentaPersonalizadas.materiaPrimaTrupan',
+            'detalleVentaPersonalizadas.materiaPrimaVidrio',
+            'detalleVentaPersonalizadas.materiaPrimaContorno'
+        ])->find($id);
 
-            if (!$venta) {
-                return response()->json([
-                    'error' => 'Venta no encontrada'
-                ], 404);
-            }
-
+        if (!$venta) {
             return response()->json([
-                'message' => 'Venta obtenida exitosamente',
-                'venta' => $this->formatearRespuestaVenta($venta)
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Error al obtener la venta: ' . $e->getMessage()
-            ], 500);
+                'error' => 'Venta no encontrada'
+            ], 404);
         }
+
+        // Obtener el idFormaPago del primer pago
+        $idFormaPago = DB::table('pagos')
+            ->where('idVenta', $id)
+            ->orderBy('id', 'ASC')
+            ->value('idFormaPago');
+
+        // Formatear la respuesta y agregar id_forma_pago
+        $ventaFormateada = $this->formatearRespuestaVenta($venta);
+        $ventaFormateada['id_forma_pago'] = $idFormaPago;
+
+        return response()->json([
+            'message' => 'Venta obtenida exitosamente',
+            'venta' => $ventaFormateada
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Error al obtener la venta: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Obtiene múltiples ventas con filtros opcionales

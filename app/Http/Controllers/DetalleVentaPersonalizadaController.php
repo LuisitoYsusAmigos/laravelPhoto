@@ -332,22 +332,48 @@ class DetalleVentaPersonalizadaController extends Controller
  */
 
 
-    public function show($id)
-    {
-        $detalle = DetalleVentaPersonalizada::with([
-            'venta',
-            'materiaPrimaVarilla',
-            'materiaPrimaTrupan',
-            'materiaPrimaVidrio',
-            'materiaPrimaContorno'
-        ])->find($id);
+public function show($id)
+{
+    $detalle = DetalleVentaPersonalizada::with([
+        'venta',
+        'materiaPrimaVarilla',
+        'materiaPrimaTrupan',
+        'materiaPrimaVidrio',
+        'materiaPrimaContorno'
+    ])->find($id);
 
-        if (!$detalle) {
-            return response()->json(['message' => 'No se encontró el detalle de venta personalizada'], 404);
-        }
-
-        return response()->json($detalle, 200);
+    if (!$detalle) {
+        return response()->json(['message' => 'No se encontró el detalle de venta personalizada'], 404);
     }
+
+    // Obtener el idFormaPago del primer pago
+    $idFormaPago = DB::table('pagos')
+        ->where('idVenta', $detalle->id_venta)
+        ->orderBy('id', 'ASC')
+        ->value('idFormaPago');
+
+    // Construir el array manualmente con el orden deseado
+    $detalleArray = [
+        'id' => $detalle->id,
+        'created_at' => $detalle->created_at,
+        'updated_at' => $detalle->updated_at,
+        'lado_a' => $detalle->lado_a,
+        'lado_b' => $detalle->lado_b,
+        'id_materia_prima_varillas' => $detalle->id_materia_prima_varillas,
+        'id_materia_prima_trupans' => $detalle->id_materia_prima_trupans,
+        'id_materia_prima_vidrios' => $detalle->id_materia_prima_vidrios,
+        'id_materia_prima_contornos' => $detalle->id_materia_prima_contornos,
+        'id_venta' => $detalle->id_venta,
+        'id_forma_pago' => $idFormaPago, // ← Aquí, antes de venta
+        'venta' => $detalle->venta,
+        'materia_prima_varilla' => $detalle->materiaPrimaVarilla,
+        'materia_prima_trupan' => $detalle->materiaPrimaTrupan,
+        'materia_prima_vidrio' => $detalle->materiaPrimaVidrio,
+        'materia_prima_contorno' => $detalle->materiaPrimaContorno,
+    ];
+
+    return response()->json($detalleArray, 200);
+}
 
     public function update(Request $request, $id)
     {
