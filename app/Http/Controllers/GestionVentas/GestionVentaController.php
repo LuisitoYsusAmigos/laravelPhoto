@@ -223,119 +223,130 @@ class GestionVentaController extends Controller
      * Obtiene múltiples ventas con filtros opcionales
      */
     public function obtenerVentas(Request $request)
-    {
-        try {
-            // Construir consulta base
-            $query = Venta::query();
+{
+    try {
+        // Construir consulta base
+        $query = Venta::query();
 
-            // Filtros opcionales
-            if ($request->has('idCliente')) {
-                $query->where('idCliente', $request->idCliente);
-            }
-
-            if ($request->has('idSucursal')) {
-                $query->where('idSucursal', $request->idSucursal);
-            }
-
-            if ($request->has('fecha_desde')) {
-                $query->whereDate('fecha', '>=', $request->fecha_desde);
-            }
-
-            if ($request->has('fecha_hasta')) {
-                $query->whereDate('fecha', '<=', $request->fecha_hasta);
-            }
-
-            if ($request->has('recogido')) {
-                $recogidoValue = $request->recogido;
-                // Convertir string a booleano correctamente
-                if ($recogidoValue === 'true' || $recogidoValue === '1' || $recogidoValue === 1) {
-                    $query->where('recogido', true);
-                } elseif ($recogidoValue === 'false' || $recogidoValue === '0' || $recogidoValue === 0) {
-                    $query->where('recogido', false);
-                }
-            }
-
-            // Parámetros de paginación
-            $page = (int) $request->input('page', 1);
-            $perPage = (int) $request->input('per_page', 15);
-
-            // Validar valores
-            $perPage = max(1, min($perPage, 100));
-            $page = max(1, $page);
-
-            // Obtener total de elementos
-            $totalItems = $query->count();
-
-            // Si no hay resultados, devolver 404 con descripción del filtro
-            if ($totalItems === 0) {
-                $filtrosAplicados = [];
-
-                if ($request->has('idCliente')) {
-                    $filtrosAplicados[] = "Cliente ID: {$request->idCliente}";
-                }
-                if ($request->has('idSucursal')) {
-                    $filtrosAplicados[] = "Sucursal ID: {$request->idSucursal}";
-                }
-                if ($request->has('fecha_desde')) {
-                    $filtrosAplicados[] = "Desde: {$request->fecha_desde}";
-                }
-                if ($request->has('fecha_hasta')) {
-                    $filtrosAplicados[] = "Hasta: {$request->fecha_hasta}";
-                }
-                if ($request->has('recogido')) {
-                    $estadoRecogido = $request->recogido === 'true' ? 'recogidas' : 'no recogidas';
-                    $filtrosAplicados[] = "Estado: ventas {$estadoRecogido}";
-                }
-
-                $descripcionFiltros = empty($filtrosAplicados)
-                    ? "todas las ventas"
-                    : implode(', ', $filtrosAplicados);
-
-                return response()->json([
-                    'error' => "No se encontraron ventas con los filtros aplicados: {$descripcionFiltros}"
-                ], 404);
-            }
-
-            $totalPages = $perPage > 0 ? ceil($totalItems / $perPage) : 1;
-
-            // Obtener ventas con paginación manual
-            $ventas = $query->orderBy('created_at', 'desc')
-                ->skip(($page - 1) * $perPage)
-                ->take($perPage)
-                ->with([
-                    'cliente',
-                    'sucursal',
-                    'detalleVentaProductos',
-                    'detalleVentaPersonalizadas.materiaPrimaVarilla',
-                    'detalleVentaPersonalizadas.materiaPrimaTrupan',
-                    'detalleVentaPersonalizadas.materiaPrimaVidrio',
-                    'detalleVentaPersonalizadas.materiaPrimaContorno'
-                ])
-                ->get();
-
-            // Transformar elementos
-            $ventasTransformadas = $ventas->map(function ($venta) {
-                return $this->formatearRespuestaVenta($venta);
-            });
-
-            return response()->json([
-                'message' => 'Ventas obtenidas exitosamente',
-                'ventas' => $ventasTransformadas,
-                'pagination' => [
-                    'current_page' => $page,
-                    'last_page' => $totalPages,
-                    'per_page' => $perPage,
-                    'total' => $totalItems,
-                    'from' => $totalItems > 0 ? (($page - 1) * $perPage) + 1 : null,
-                    'to' => $totalItems > 0 ? min($page * $perPage, $totalItems) : null,
-                ]
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Error al obtener las ventas: ' . $e->getMessage()
-            ], 500);
+        // Filtros opcionales
+        if ($request->has('idCliente')) {
+            $query->where('idCliente', $request->idCliente);
         }
+
+        if ($request->has('idSucursal')) {
+            $query->where('idSucursal', $request->idSucursal);
+        }
+
+        if ($request->has('fecha_desde')) {
+            $query->whereDate('fecha', '>=', $request->fecha_desde);
+        }
+
+        if ($request->has('fecha_hasta')) {
+            $query->whereDate('fecha', '<=', $request->fecha_hasta);
+        }
+
+        if ($request->has('recogido')) {
+            $recogidoValue = $request->recogido;
+            // Convertir string a booleano correctamente
+            if ($recogidoValue === 'true' || $recogidoValue === '1' || $recogidoValue === 1) {
+                $query->where('recogido', true);
+            } elseif ($recogidoValue === 'false' || $recogidoValue === '0' || $recogidoValue === 0) {
+                $query->where('recogido', false);
+            }
+        }
+
+        // Parámetros de paginación
+        $page = (int) $request->input('page', 1);
+        $perPage = (int) $request->input('per_page', 15);
+
+        // Validar valores
+        $perPage = max(1, min($perPage, 100));
+        $page = max(1, $page);
+
+        // Obtener total de elementos
+        $totalItems = $query->count();
+
+        // Si no hay resultados, devolver 404 con descripción del filtro
+        if ($totalItems === 0) {
+            $filtrosAplicados = [];
+
+            if ($request->has('idCliente')) {
+                $filtrosAplicados[] = "Cliente ID: {$request->idCliente}";
+            }
+            if ($request->has('idSucursal')) {
+                $filtrosAplicados[] = "Sucursal ID: {$request->idSucursal}";
+            }
+            if ($request->has('fecha_desde')) {
+                $filtrosAplicados[] = "Desde: {$request->fecha_desde}";
+            }
+            if ($request->has('fecha_hasta')) {
+                $filtrosAplicados[] = "Hasta: {$request->fecha_hasta}";
+            }
+            if ($request->has('recogido')) {
+                $estadoRecogido = $request->recogido === 'true' ? 'recogidas' : 'no recogidas';
+                $filtrosAplicados[] = "Estado: ventas {$estadoRecogido}";
+            }
+
+            $descripcionFiltros = empty($filtrosAplicados)
+                ? "todas las ventas"
+                : implode(', ', $filtrosAplicados);
+
+            return response()->json([
+                'error' => "No se encontraron ventas con los filtros aplicados: {$descripcionFiltros}"
+            ], 404);
+        }
+
+        $totalPages = $perPage > 0 ? ceil($totalItems / $perPage) : 1;
+
+        // Obtener ventas con paginación manual
+        $ventas = $query->orderBy('created_at', 'desc')
+            ->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->with([
+                'cliente',
+                'sucursal',
+                'detalleVentaProductos',
+                'detalleVentaPersonalizadas.materiaPrimaVarilla',
+                'detalleVentaPersonalizadas.materiaPrimaTrupan',
+                'detalleVentaPersonalizadas.materiaPrimaVidrio',
+                'detalleVentaPersonalizadas.materiaPrimaContorno'
+            ])
+            ->get();
+
+        // Transformar elementos
+        $ventasTransformadas = $ventas->map(function ($venta) {
+            // Obtener el idFormaPago del primer pago
+            $idFormaPago = DB::table('pagos')
+                ->where('idVenta', $venta->id)
+                ->orderBy('id', 'ASC')
+                ->value('idFormaPago');
+
+            // Armar la respuesta formateada
+            $ventaFormateada = $this->formatearRespuestaVenta($venta);
+            $ventaFormateada['id_forma_pago'] = $idFormaPago;
+
+            return $ventaFormateada;
+        });
+
+        return response()->json([
+            'message' => 'Ventas obtenidas exitosamente',
+            'ventas' => $ventasTransformadas,
+            'pagination' => [
+                'current_page' => $page,
+                'last_page' => $totalPages,
+                'per_page' => $perPage,
+                'total' => $totalItems,
+                'from' => $totalItems > 0 ? (($page - 1) * $perPage) + 1 : null,
+                'to' => $totalItems > 0 ? min($page * $perPage, $totalItems) : null,
+            ]
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Error al obtener las ventas: ' . $e->getMessage()
+        ], 500);
     }
+}
+
 
     // ============== MÉTODO DE ELIMINACIÓN DE VENTA ==============
 
