@@ -25,7 +25,7 @@ class GestionVentaController extends Controller
     {
         // Validación básica
         $validator = Validator::make($request->all(), [
-            'saldo' => 'required|numeric|min:0',
+            'saldo' => 'required|numeric|gt:0',
             'idCliente' => 'required|exists:clientes,id',
             'idSucursal' => 'required|exists:sucursal,id',
             'idFormaPago' => 'required|exists:forma_de_pagos,id',
