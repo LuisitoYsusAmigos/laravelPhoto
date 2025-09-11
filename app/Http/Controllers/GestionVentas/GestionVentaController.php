@@ -22,104 +22,108 @@ class GestionVentaController extends Controller
     }
 
     public function crearVentaCompleta(Request $request)
-    {
-        // Validación básica
-        $validator = Validator::make($request->all(), [
-            'saldo' => 'required|numeric|gt:0',
-            'idCliente' => 'required|exists:clientes,id',
-            'idSucursal' => 'required|exists:sucursal,id',
-            'idFormaPago' => 'required|exists:forma_de_pagos,id',
-            'idUsuario' => 'required|exists:users,id',
+{
+    // Validación básica
+    $validator = Validator::make($request->all(), [
+        'saldo' => 'required|numeric|min:0',
+        'idCliente' => 'required|exists:clientes,id',
+        'idSucursal' => 'required|exists:sucursal,id',
+        'idFormaPago' => 'required|exists:forma_de_pagos,id',
+        'idUsuario' => 'required|exists:users,id',
 
-            'fechaEntrega' => 'nullable|date',
+        'fechaEntrega' => 'nullable|date',
 
-            'detalles' => 'nullable|array',
-            'detalles.*.idProducto' => 'required_with:detalles|integer',
-            'detalles.*.cantidad' => 'required_with:detalles|integer|min:1',
+        'detalles' => 'nullable|array',
+        'detalles.*.idProducto' => 'required_with:detalles|integer',
+        'detalles.*.cantidad' => 'required_with:detalles|integer|min:1',
 
-            'cuadros' => 'nullable|array',
-            'cuadros.*.lado_a' => 'required_with:cuadros|integer|min:1',
-            'cuadros.*.lado_b' => 'required_with:cuadros|integer|min:1',
-            'cuadros.*.cantidad' => 'required_with:cuadros|integer|min:1',
-            'cuadros.*.id_materia_prima_varillas' => 'nullable|integer',
-            'cuadros.*.id_materia_prima_trupans' => 'nullable|integer',
-            'cuadros.*.id_materia_prima_vidrios' => 'nullable|integer',
-            'cuadros.*.id_materia_prima_contornos' => 'nullable|integer',
-        ]);
+        'cuadros' => 'nullable|array',
+        'cuadros.*.lado_a' => 'required_with:cuadros|integer|min:1',
+        'cuadros.*.lado_b' => 'required_with:cuadros|integer|min:1',
+        'cuadros.*.cantidad' => 'required_with:cuadros|integer|min:1',
+        'cuadros.*.id_materia_prima_varillas' => 'nullable|integer',
+        'cuadros.*.id_materia_prima_trupans' => 'nullable|integer',
+        'cuadros.*.id_materia_prima_vidrios' => 'nullable|integer',
+        'cuadros.*.id_materia_prima_contornos' => 'nullable|integer',
+    ]);
 
-        if ($validator->fails()) {
+    if ($validator->fails()) {
+        return response()->json([
+            'message' => 'Faltan datos o datos inválidos',
+            'errors' => $validator->errors()
+        ], 400);
+    }
+
+    if (empty($request->detalles) && empty($request->cuadros)) {
+        return response()->json([
+            'error' => 'Debe incluir al menos productos o cuadros personalizados'
+        ], 400);
+    }
+
+    // 🔎 Validar productos y stock ANTES de crear la venta
+    if (!empty($request->detalles)) {
+        $validacionProductos = $this->gestionProductos->verificarDisponibilidad($request->detalles);
+
+        $errores = array_filter($validacionProductos, fn($p) => $p['disponible'] === false);
+
+        if (!empty($errores)) {
             return response()->json([
-                'message' => 'Faltan datos o datos inválidos',
-                'errors' => $validator->errors()
+                'message' => 'Errores en los productos',
+                'detalles' => $errores
             ], 400);
-        }
-
-        if (empty($request->detalles) && empty($request->cuadros)) {
-            return response()->json([
-                'error' => 'Debe incluir al menos productos o cuadros personalizados'
-            ], 400);
-        }
-
-        // 🔎 Validar productos y stock ANTES de crear la venta
-        if (!empty($request->detalles)) {
-            $validacionProductos = $this->gestionProductos->verificarDisponibilidad($request->detalles);
-
-            $errores = array_filter($validacionProductos, fn($p) => $p['disponible'] === false);
-
-            if (!empty($errores)) {
-                return response()->json([
-                    'message' => 'Errores en los productos',
-                    'detalles' => $errores
-                ], 400);
-            }
-        }
-
-        // 🔎 Validar marcos y stock ANTES de crear la venta
-        if (!empty($request->cuadros)) {
-            $validacionMarcos = $this->gestionMarcos->verificarDisponibilidadMarcos($request->cuadros);
-
-            $errores = array_filter($validacionMarcos, fn($c) => $c['valido'] === false);
-
-            if (!empty($errores)) {
-                return response()->json([
-                    'message' => 'Errores en los cuadros personalizados',
-                    'detalles' => $errores
-                ], 400);
-            }
-        }
-
-        DB::beginTransaction();
-
-        try {
-            // Crear la venta
-            $venta = $this->crearVentaBase($request);
-            $totalVenta = 0;
-
-            if (!empty($request->detalles)) {
-                $totalProductos = $this->gestionProductos->procesarProductos($venta, $request->detalles);
-                $totalVenta += $totalProductos;
-            }
-
-            if (!empty($request->cuadros)) {
-                $totalCuadros = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros);
-                $totalVenta += $totalCuadros;
-            }
-
-            $this->actualizarTotalesVenta($venta, $totalVenta);
-            $this->procesarPago($venta, $request->saldo, $totalVenta, $request->idFormaPago);
-            $venta = $this->cargarRelacionesVenta($venta);
-
-            DB::commit();
-
-            return response()->json([
-                'message' => 'Venta completa creada exitosamente',
-                'venta' => $this->formatearRespuestaVenta($venta),
-            ], 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    // 🔎 Validar marcos y stock ANTES de crear la venta
+    if (!empty($request->cuadros)) {
+        $validacionMarcos = $this->gestionMarcos->verificarDisponibilidadMarcos($request->cuadros);
+
+        $errores = array_filter($validacionMarcos, fn($c) => $c['valido'] === false);
+
+        if (!empty($errores)) {
+            return response()->json([
+                'message' => 'Errores en los cuadros personalizados',
+                'detalles' => $errores
+            ], 400);
+        }
+    }
+
+    DB::beginTransaction();
+
+    try {
+        // Crear la venta
+        $venta = $this->crearVentaBase($request);
+        
+        // ✅ Inicializar totales separados
+        $totalProductos = 0;
+        $totalCuadros = 0;
+
+        if (!empty($request->detalles)) {
+            $totalProductos = $this->gestionProductos->procesarProductos($venta, $request->detalles);
+        }
+
+        if (!empty($request->cuadros)) {
+            $totalCuadros = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros);
+        }
+
+        $totalVenta = $totalProductos + $totalCuadros;
+
+        // ✅ Actualizar con totales separados
+        $this->actualizarTotalesVenta($venta, $totalProductos, $totalCuadros, $totalVenta);
+        $this->procesarPago($venta, $request->saldo, $totalVenta, $request->idFormaPago);
+        $venta = $this->cargarRelacionesVenta($venta);
+
+        DB::commit();
+
+        return response()->json([
+            'message' => 'Venta completa creada exitosamente',
+            'venta' => $this->formatearRespuestaVenta($venta),
+        ], 201);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
 
     private function crearVentaBase(Request $request)
     {
@@ -134,13 +138,14 @@ class GestionVentaController extends Controller
         ]);
     }
 
-    private function actualizarTotalesVenta($venta, $totalVenta)
-    {
-        $venta->update([
-            'precioProducto' => $totalVenta,
-            'precioTotal' => $totalVenta,
-        ]);
-    }
+    private function actualizarTotalesVenta($venta, $totalProductos, $totalCuadros, $totalVenta)
+{
+    $venta->update([
+        'precioProducto' => $totalProductos,
+        'precioPerzonalizado' => $totalCuadros,
+        'precioTotal' => $totalVenta,
+    ]);
+}
 
     private function procesarPago($venta, $saldo, $precioTotal, $idFormaPago)
     {
@@ -203,7 +208,9 @@ class GestionVentaController extends Controller
             ->where('idVenta', $id)
             ->orderBy('id', 'ASC')
             ->value('idFormaPago');
-
+        if($idFormaPago === null) {
+            $idFormaPago = 0; // o cualquier valor que indique "sin forma de pago"
+        }
         // Formatear la respuesta y agregar id_forma_pago
         $ventaFormateada = $this->formatearRespuestaVenta($venta);
         $ventaFormateada['id_forma_pago'] = $idFormaPago;
@@ -320,7 +327,9 @@ class GestionVentaController extends Controller
                 ->where('idVenta', $venta->id)
                 ->orderBy('id', 'ASC')
                 ->value('idFormaPago');
-
+            if($idFormaPago === null) {
+                $idFormaPago = 0; // o cualquier valor que indique "sin forma de pago"
+            }
             // Armar la respuesta formateada
             $ventaFormateada = $this->formatearRespuestaVenta($venta);
             $ventaFormateada['id_forma_pago'] = $idFormaPago;
@@ -494,25 +503,26 @@ class GestionVentaController extends Controller
     }
 
     private function formatearRespuestaVenta($venta)
-    {
-        return [
-            'id' => $venta->id,
-            'saldo' => $venta->saldo,
-            'idCliente' => $venta->idCliente,
-            'idSucursal' => $venta->idSucursal,
-            'idUsuario' => $venta->idUsuario,
-            'recogido' => $venta->recogido,
-            'fecha' => $venta->fecha,
-            'fechaEntrega' => $venta->fechaEntrega,
-            'saldoFalante'=> $venta->precioTotal - $venta->saldo,
-            'precioProducto' => $venta->precioProducto,
-            'precioTotal' => $venta->precioTotal,
-            'created_at' => $venta->created_at,
-            'updated_at' => $venta->updated_at,
-            'cliente' => $venta->cliente,
-            'sucursal' => $venta->sucursal,
-            'detalle_venta_productos' => $venta->detalleVentaProductos,
-            'detalle_venta_personalizadas' => $venta->detalleVentaPersonalizadas,
-        ];
-    }
+{
+    return [
+        'id' => $venta->id,
+        'saldo' => $venta->saldo,
+        'idCliente' => $venta->idCliente,
+        'idSucursal' => $venta->idSucursal,
+        'idUsuario' => $venta->idUsuario,
+        'recogido' => $venta->recogido,
+        'fecha' => $venta->fecha,
+        'fechaEntrega' => $venta->fechaEntrega,
+        'saldoFalante'=> $venta->precioTotal - $venta->saldo,
+        'precioProducto' => $venta->precioProducto,
+        'precioPerzonalizado' => $venta->precioPerzonalizado, // ← Agregado
+        'precioTotal' => $venta->precioTotal,
+        'created_at' => $venta->created_at,
+        'updated_at' => $venta->updated_at,
+        'cliente' => $venta->cliente,
+        'sucursal' => $venta->sucursal,
+        'detalle_venta_productos' => $venta->detalleVentaProductos,
+        'detalle_venta_personalizadas' => $venta->detalleVentaPersonalizadas,
+    ];
+}
 }
