@@ -32,6 +32,7 @@ class GestionVentaController extends Controller
             'idUsuario' => 'required|exists:users,id',
 
             'fechaEntrega' => 'nullable|date',
+            'entregado' => 'nullable|boolean',
 
             'detalles' => 'nullable|array',
             'detalles.*.idProducto' => 'required_with:detalles|integer',
@@ -56,8 +57,8 @@ class GestionVentaController extends Controller
 
 
         $request->merge([
-        'saldo' => $request->input('pago')
-    ]);
+            'saldo' => $request->input('pago')
+        ]);
 
 
 
@@ -117,7 +118,7 @@ class GestionVentaController extends Controller
 
             // ✅ Actualizar con totales separados
             $this->actualizarTotalesVenta($venta, $totalProductos, $totalCuadros, $totalVenta);
-            $this->procesarPago($venta, $request->saldo, $totalVenta, $request->idFormaPago);
+            $this->procesarPago($venta, $request->saldo, $totalVenta, $request->idFormaPago, $request->entregado);
             $venta = $this->cargarRelacionesVenta($venta);
 
             DB::commit();
@@ -154,7 +155,7 @@ class GestionVentaController extends Controller
         ]);
     }
 
-    private function procesarPago($venta, $saldo, $precioTotal, $idFormaPago)
+    private function procesarPago($venta, $saldo, $precioTotal, $idFormaPago, $entregado)
     {
         if ($saldo > $precioTotal) {
             $exceso = $saldo - $precioTotal;
@@ -169,8 +170,9 @@ class GestionVentaController extends Controller
                 'fecha' => now()->toDateString(),
             ]);
         }
-
-        if($saldo==0){
+        if ($saldo == 0 &&  $entregado == false) {
+            
+        } elseif ($saldo == 0) {
             $venta->update([
                 'recogido' => true,
                 'saldo' => $precioTotal
@@ -182,9 +184,6 @@ class GestionVentaController extends Controller
                 'monto' => $precioTotal,
                 'fecha' => now()->toDateString(),
             ]);
-
-
-
         }
     }
 
