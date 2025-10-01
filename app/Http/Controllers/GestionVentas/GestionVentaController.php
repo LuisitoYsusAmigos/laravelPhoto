@@ -169,10 +169,12 @@ class GestionVentaController extends Controller
                 'monto' => $saldo,
                 'fecha' => now()->toDateString(),
             ]);
-        }
-        if ($saldo == 0 &&  $entregado == false) {
-            
-        } elseif ($saldo == 0) {
+        }elseif ($saldo == 0 &&  $entregado == false) {
+              $venta->update([
+                'recogido' => false,
+                'saldo' => 0
+              ]);
+        }elseif ($saldo == 0) {
             $venta->update([
                 'recogido' => true,
                 'saldo' => $precioTotal
