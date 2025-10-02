@@ -406,10 +406,14 @@ public function completarVenta($id)
     if (!$venta) {
         return response()->json(['error' => 'Venta no encontrada'], 404);
     }
+    if ($venta->recogido==true) {
+        return response()->json(['error' => 'Venta ya completada'], 404);
+    }
 
-    $venta->saldo = $venta->precioTotal;
-    $venta->recogido = true;
-    $venta->save();
+    $venta->update([
+                'recogido' => true,
+                'saldo' => $venta->precioTotal
+              ]);
 
     return response()->json([
         'message' => 'Venta completada exitosamente',

@@ -7,7 +7,8 @@ use App\Models\Pago;
 use App\Models\Venta;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
-
+use App\Http\Controllers\VentaController;
+use Illuminate\Support\Facades\DB;
 class PagoController extends Controller
 {
     // Listar todos los pagos
@@ -144,9 +145,14 @@ public function completarPago(Request $request)
     
     // Validar que el precio total y saldo sean diferentes (venta incompleta)
     if ($venta->precioTotal == $venta->saldo) {
-        return response()->json([
+        //echo"venta completa";
+        DB::update('UPDATE ventas SET recogido = 1 WHERE id = ?', [$venta->id]);
+        if ($venta->precioTotal == $venta->saldo) {
+    $ventaController = new VentaController();
+    return response()->json([
             'error' => 'La venta ya está completamente pagada'
         ], 400);
+        }
     }
     
     // Calcular el monto faltante
@@ -169,6 +175,12 @@ public function completarPago(Request $request)
     
     // Actualizar el saldo de la venta
     $this->actualizarSaldoVenta($request->idVenta);
+
+    $venta->update([
+    'entregado' => true
+    ]);
+    DB::update('UPDATE ventas SET recogido = 1 WHERE id = ?', [$venta->id]);
+    
     
     return response()->json([
         'message' => 'Pago completado exitosamente',
