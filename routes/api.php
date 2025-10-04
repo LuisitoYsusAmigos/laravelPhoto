@@ -241,7 +241,12 @@ Route::get('/caja/html/{fecha}', [CajaController::class, 'htmlPorDia'])->name('h
 Route::get('/cajas/html/mes/{mes}', [CajaController::class, 'htmlPorMes'])->name('html.cajas.mes');
 
 Route::get('/caja/pdf/{fecha}', [CajaController::class, 'pdfPorDia'])->name('pdf.caja.dia');
-Route::get('/cajas/pdf/{mes}', [CajaController::class, 'pdfPorMes'])->name('pdf.cajas.mes');
+Route::get('/caja/mes/{fechaMes}', [CajaController::class, 'cajaPorMes']);
+
+
+//Route::get('/pruebaController', [CajaController::class, 'errotest']);
+Route::get('/pruebaController/{fechaMes}', [CajaController::class, 'cajaPorMes']);
+
 
 
 
