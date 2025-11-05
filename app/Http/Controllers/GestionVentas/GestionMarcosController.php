@@ -10,6 +10,7 @@ use App\Models\StockVarilla;
 use App\Models\StockTrupan;
 use App\Models\StockVidrio;
 use App\Models\StockContorno;
+use App\Models\MateriaPrimaVarilla;
 use App\Services\UsoVarillasCuadro;
 use App\Services\UsoLaminasCuadro;
 use Illuminate\Support\Facades\Log;
@@ -459,5 +460,18 @@ private function obtenerDatosMateriaPrima($tipoMaterial, $cuadro)
             default:
                 throw new \Exception("Tipo de material no válido: {$tipoMaterial}");
         }
+    }
+
+    public function obtenerMarcoExterno($cuadros){
+        $varilla = MateriaPrimaVarilla::find($cuadros[0]['id_materia_prima_varillas']);
+        // define una varible grosor con el grosor de este
+        $grosor = $varilla->grosor;
+        //dd($grosor);
+        return [
+            'lado_a' => $cuadros[0]['lado_a'] + 2 * $grosor,
+            'lado_b' => $cuadros[0]['lado_b'] + 2 * $grosor,
+        ];
+        
+        
     }
 }

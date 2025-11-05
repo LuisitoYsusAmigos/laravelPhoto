@@ -16,13 +16,13 @@ class CalculosSistema
     {
         $anchoExterno = $anchoInterno + 2 * $grosor;
         $altoExterno = $altoInterno + 2 * $grosor;
-        $largoTotal = ($anchoExterno + $altoExterno)*2+4; // Total length of the frame
+       // $largoTotal = ($anchoExterno + $altoExterno)*2+4; // Total length of the frame
 
         return [
             'ancho_externo' => $anchoExterno,
             'alto_externo' => $altoExterno,
            //'grosor' => $grosor,
-            'largo_total' => $largoTotal,
+           // 'largo_total' => $largoTotal,
         ];
     }
 }

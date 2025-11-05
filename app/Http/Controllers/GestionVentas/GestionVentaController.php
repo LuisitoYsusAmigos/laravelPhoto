@@ -68,6 +68,43 @@ class GestionVentaController extends Controller
             ], 400);
         }
 
+        if (!empty($request->cuadros)) {
+            foreach ($request->cuadros as $index => $cuadro) {
+                if (empty($cuadro['id_materia_prima_varillas'])) {
+                    return response()->json([
+                        'error' => "Debe proporcionar una varilla válida para hacer el cálculo correcto del material en el cuadro #" . ($index + 1)
+                    ], 400);
+                }
+                //calcular tamaño externo del marco
+                $medidasExternas = $this->gestionMarcos->obtenerMarcoExterno($request->cuadros);
+
+                $cuadros[$index]['lado_a'] = $medidasExternas['lado_a'];
+                $cuadros[$index]['lado_b'] = $medidasExternas['lado_b'];
+                $cuadros[$index]['id_materia_prima_varillas'] = $cuadro['id_materia_prima_varillas'];
+                
+                //quiero colocar un if si mandaron un id materia prima contorno hacer un dd si mando y si no mando un dd no mando
+                if(!empty($cuadros[$index]['id_materia_prima_contornos'])){
+                    $cuadros[$index]['id_materia_prima_contornos'] = $cuadro['id_materia_prima_contornos'];
+                }
+                if(!empty($cuadros[$index]['id_materia_prima_trupans'])){
+                    $cuadros[$index]['id_materia_prima_trupans'] = $cuadro['id_materia_prima_trupans'];
+                }     
+                if(!empty($cuadros[$index]['id_materia_prima_vidrios'])){
+                    $cuadros[$index]['id_materia_prima_vidrios'] = $cuadro['id_materia_prima_vidrios'];
+                }
+                if(!empty($cuadros[$index]['cantidad'])){
+                    $cuadros[$index]['cantidad'] = $cuadro['cantidad'];
+                }
+                // $request->cuadros[$index]['lado_b'] = $medidasExternas['alto_b'];
+            }
+            //$request->merge(['cuadros' => $cuadros]);
+
+            // Solo para verificar
+            //dd($request->cuadros);
+            //agregar correcion de tamañano externo del marco
+        }
+        //dd($request->cuadros);
+
         // 🔎 Validar productos y stock ANTES de crear la venta
         if (!empty($request->detalles)) {
             $validacionProductos = $this->gestionProductos->verificarDisponibilidad($request->detalles);
@@ -133,6 +170,101 @@ class GestionVentaController extends Controller
         }
     }
 
+    public function crearVentaMarco(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'pago' => 'required|numeric|min:0',
+            'idCliente' => 'required|exists:clientes,id',
+            'idSucursal' => 'required|exists:sucursal,id',
+            'idFormaPago' => 'required|exists:forma_de_pagos,id',
+            'idUsuario' => 'required|exists:users,id',
+
+            'fechaEntrega' => 'nullable|date',
+            'entregado' => 'nullable|boolean',
+
+            'detalles' => 'nullable|array',
+            'detalles.*.idProducto' => 'required_with:detalles|integer',
+            'detalles.*.cantidad' => 'required_with:detalles|integer|min:1',
+
+            'cuadros' => 'nullable|array',
+            'cuadros.*.lado_a' => 'required_with:cuadros|integer|min:1',
+            'cuadros.*.lado_b' => 'required_with:cuadros|integer|min:1',
+            'cuadros.*.cantidad' => 'required_with:cuadros|integer|min:1',
+            'cuadros.*.id_materia_prima_varillas' => 'nullable|integer',
+            'cuadros.*.id_materia_prima_trupans' => 'nullable|integer',
+            'cuadros.*.id_materia_prima_vidrios' => 'nullable|integer',
+            'cuadros.*.id_materia_prima_contornos' => 'nullable|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Faltan datos o datos inválidos',
+                'errors' => $validator->errors()
+            ], 400);
+        }
+
+
+        $request->merge([
+            'saldo' => $request->input('pago')
+        ]);
+
+
+
+        if (empty($request->detalles) && empty($request->cuadros)) {
+            return response()->json([
+                'error' => 'Debe incluir al menos productos o cuadros personalizados'
+            ], 400);
+        }
+
+
+
+        if (!empty($request->cuadros)) {
+            $validacionMarcos = $this->gestionMarcos->verificarDisponibilidadMarcos($request->cuadros);
+
+
+            $errores = array_filter($validacionMarcos, fn($c) => $c['valido'] === false);
+
+            if (!empty($errores)) {
+                return response()->json([
+                    'message' => 'Errores en los cuadros personalizados',
+                    'detalles' => $errores
+                ], 400);
+            }
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Crear la venta
+            $venta = $this->crearVentaBase($request);
+
+            // ✅ Inicializar totales separados
+            $totalProductos = 0;
+            $totalCuadros = 0;
+
+            if (!empty($request->cuadros)) {
+                $totalCuadros = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros);
+            }
+
+            $totalVenta = $totalProductos + $totalCuadros;
+
+            // ✅ Actualizar con totales separados
+            $this->actualizarTotalesVenta($venta, $totalProductos, $totalCuadros, $totalVenta);
+            $this->procesarPago($venta, $request->saldo, $totalVenta, $request->idFormaPago, $request->entregado);
+            $venta = $this->cargarRelacionesVenta($venta);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Venta completa creada exitosamente',
+                'venta' => $this->formatearRespuestaVenta($venta),
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     private function crearVentaBase(Request $request)
     {
         return Venta::create([
@@ -169,12 +301,12 @@ class GestionVentaController extends Controller
                 'monto' => $saldo,
                 'fecha' => now()->toDateString(),
             ]);
-        }elseif ($saldo == 0 &&  $entregado == false) {
-              $venta->update([
+        } elseif ($saldo == 0 &&  $entregado == false) {
+            $venta->update([
                 'recogido' => false,
                 'saldo' => 0
-              ]);
-        }elseif ($saldo == 0) {
+            ]);
+        } elseif ($saldo == 0) {
             $venta->update([
                 'recogido' => true,
                 'saldo' => $precioTotal
@@ -211,6 +343,7 @@ class GestionVentaController extends Controller
      */
     public function obtenerVentaCompleta($id)
     {
+
         try {
             $venta = Venta::with([
                 'cliente',

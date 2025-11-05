@@ -7,6 +7,7 @@ use App\Models\Producto;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 
 class ProductoController extends Controller
 {
@@ -25,9 +26,9 @@ class ProductoController extends Controller
 
         // Obtener los productos paginados
         $productos = Producto::latest()
-                            ->skip(($page - 1) * $perPage)
-                            ->take($perPage)
-                            ->get();
+            ->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
 
         // Devolver la respuesta con el formato solicitado
         return response()->json([
@@ -48,9 +49,7 @@ class ProductoController extends Controller
     // Crear un nuevo producto
     public function store(Request $request)
     {
-        Log::info('📥 Nueva solicitud para crear un producto.');
 
-        // Validar los datos del request
         $validator = Validator::make($request->all(), [
             'codigo' => 'string|nullable',
             'descripcion' => 'required|string',
@@ -111,6 +110,12 @@ class ProductoController extends Controller
             // Guardar la ruta relativa en la base de datos
             $producto->imagen = 'storage/productos/' . $filename;
             $producto->save();
+            // Guardar la ruta relativa en la base de datos y actualizar precioVenta
+
+            
+
+
+            //dd($productoNuevo);
         }
         //datos para el stock
         $stock = [
@@ -122,11 +127,8 @@ class ProductoController extends Controller
         // llamar al controller de stock
         $stockController = new StockProductoController();
         $stockController->store(new Request($stock));
-        Log::info('✅ Producto creado con éxito', ['producto_id' => $producto->id]);
-        Log::info('✅ Stock creado con éxito', ['stock_id' => $stock['id_producto']]); 
-        
 
-        //
+        Producto::where('id', $producto->id)->update(['precioVenta' => $producto->precioVenta]);
 
         return response()->json($producto, 201);
     }
@@ -182,71 +184,71 @@ class ProductoController extends Controller
         return response()->json($producto);
     }
     */
-    
+
     public function update(Request $request, $id)
-{
-    $producto = Producto::find($id);
-    
-    if (!$producto) {
-        return response()->json(['message' => 'Producto no encontrado'], 404);
-    }
+    {
+        $producto = Producto::find($id);
 
-    $validator = Validator::make($request->all(), [
-        'codigo' => 'string|nullable',
-        'descripcion' => 'required|string',
-        'precioCompra' => 'required|integer',
-        'precioVenta' => 'required|integer',
-        //'stock_global_actual' => 'required|integer',
-        'stock_global_minimo' => 'required|integer',
-        'actualizacion' => 'required|date',
-        'id_sucursal' => 'required|exists:sucursal,id',
-        'id_lugar' => 'required|exists:lugars,id',
-        'categoria_id' => 'required|exists:categorias,id',
-        'sub_categoria_id' => 'nullable|exists:sub_categorias,id',
-        'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json($validator->errors(), 400);
-    }
-
-    // Eliminar imagen anterior si existe
-    if ($producto->imagen && \File::exists(public_path($producto->imagen))) {
-        \File::delete(public_path($producto->imagen));
-        $producto->imagen = null;
-    }
-
-    // Actualizar campos excepto imagen
-    $producto->update($request->except('imagen'));
-
-    // Si viene una nueva imagen, subirla
-    if ($request->hasFile('imagen')) {
-        $file = $request->file('imagen');
-
-        if (!$file->isValid()) {
-            return response()->json(['error' => 'Archivo de imagen no válido'], 400);
+        if (!$producto) {
+            return response()->json(['message' => 'Producto no encontrado'], 404);
         }
 
-        $destinationPath = public_path('storage/productos');
+        $validator = Validator::make($request->all(), [
+            'codigo' => 'string|nullable',
+            'descripcion' => 'required|string',
+            'precioCompra' => 'required|integer',
+            'precioVenta' => 'required|integer',
+            //'stock_global_actual' => 'required|integer',
+            'stock_global_minimo' => 'required|integer',
+            'actualizacion' => 'required|date',
+            'id_sucursal' => 'required|exists:sucursal,id',
+            'id_lugar' => 'required|exists:lugars,id',
+            'categoria_id' => 'required|exists:categorias,id',
+            'sub_categoria_id' => 'nullable|exists:sub_categorias,id',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+        ]);
 
-        if (!file_exists($destinationPath)) {
-            mkdir($destinationPath, 0777, true);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
         }
 
-        $extension = $file->getClientOriginalExtension();
-        $filename = $producto->id . '.' . $extension;
+        // Eliminar imagen anterior si existe
+        if ($producto->imagen && \File::exists(public_path($producto->imagen))) {
+            \File::delete(public_path($producto->imagen));
+            $producto->imagen = null;
+        }
 
-        $file->move($destinationPath, $filename);
+        // Actualizar campos excepto imagen
+        $producto->update($request->except('imagen'));
 
-        $producto->imagen = 'storage/productos/' . $filename;
-        $producto->save();
+        // Si viene una nueva imagen, subirla
+        if ($request->hasFile('imagen')) {
+            $file = $request->file('imagen');
+
+            if (!$file->isValid()) {
+                return response()->json(['error' => 'Archivo de imagen no válido'], 400);
+            }
+
+            $destinationPath = public_path('storage/productos');
+
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0777, true);
+            }
+
+            $extension = $file->getClientOriginalExtension();
+            $filename = $producto->id . '.' . $extension;
+
+            $file->move($destinationPath, $filename);
+
+            $producto->imagen = 'storage/productos/' . $filename;
+            $producto->save();
+        }
+
+        return response()->json($producto);
     }
 
-    return response()->json($producto);
-}
 
-    
-    
+
 
     // Eliminar un producto (también borra la imagen del almacenamiento)
     public function destroy($id)
@@ -269,59 +271,56 @@ class ProductoController extends Controller
     public function search(Request $request)
     {
         $searchTerm = $request->input('search', '');
-    
+
         if (empty($searchTerm)) {
             return response()->json([
                 'message' => 'Debe ingresar un término de búsqueda.',
                 'data' => []
             ], 400);
         }
-    
+
         $productos = Producto::where('descripcion', 'LIKE', "%{$searchTerm}%")->get();
-    
+
         if ($productos->isEmpty()) {
             return response()->json([
                 'message' => 'No se encontraron coincidencias para: ' . $searchTerm,
                 'data' => []
             ]);
         }
-    
+
         return response()->json($productos);
     }
 
     public function searchCategorias(Request $request)
-{
-    $categoriaId = $request->input('categoria_id');
-    $subCategoriaId = $request->input('sub_categoria_id');
-    $page = $request->input('page', 1);
-    $perPage = $request->input('perPage', 10);
+    {
+        $categoriaId = $request->input('categoria_id');
+        $subCategoriaId = $request->input('sub_categoria_id');
+        $page = $request->input('page', 1);
+        $perPage = $request->input('perPage', 10);
 
-    $query = Producto::query();
+        $query = Producto::query();
 
-    if ($categoriaId) {
-        $query->where('categoria_id', $categoriaId);
+        if ($categoriaId) {
+            $query->where('categoria_id', $categoriaId);
+        }
+
+        if ($subCategoriaId) {
+            $query->where('sub_categoria_id', $subCategoriaId);
+        }
+
+        $totalItems = $query->count();
+        $totalPages = ceil($totalItems / $perPage);
+
+        $productos = $query->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
+
+        return response()->json([
+            'currentPage' => (int)$page,
+            'perPage' => (int)$perPage,
+            'totalItems' => $totalItems,
+            'totalPages' => $totalPages,
+            'data' => $productos
+        ]);
     }
-
-    if ($subCategoriaId) {
-        $query->where('sub_categoria_id', $subCategoriaId);
-    }
-
-    $totalItems = $query->count();
-    $totalPages = ceil($totalItems / $perPage);
-
-    $productos = $query->skip(($page - 1) * $perPage)
-                       ->take($perPage)
-                       ->get();
-
-    return response()->json([
-        'currentPage' => (int)$page,
-        'perPage' => (int)$perPage,
-        'totalItems' => $totalItems,
-        'totalPages' => $totalPages,
-        'data' => $productos
-    ]);
-}
-
-    
-
 }
