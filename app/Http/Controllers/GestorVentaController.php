@@ -51,6 +51,7 @@ class GestorVentaController extends Controller
             'cuadros.*.id_materia_prima_vidrios' => 'nullable|exists:materia_prima_vidrios,id',
             'cuadros.*.id_materia_prima_contornos' => 'nullable|exists:materia_prima_contornos,id',
         ]);
+        
 
         if ($validator->fails()) {
             return response()->json([
@@ -442,7 +443,7 @@ class GestorVentaController extends Controller
     {
         if ($saldo > $precioTotal) {
             $exceso = $saldo - $precioTotal;
-            throw new \Exception("Hay un excedente de $exceso unidades en el saldo/pago");
+            throw new \Exception("Hay un excedente de $exceso unidades en el pago");
         }
 
         if ($saldo > 0) {

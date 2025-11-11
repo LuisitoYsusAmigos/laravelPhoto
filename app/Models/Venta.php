@@ -19,6 +19,7 @@ class Venta extends Model
         'recogido',
         'fecha',
         'fechaEntrega',   // <-- nuevo campo
+        'descuento',
         'idCliente',
         'idSucursal',
         'idUsuario',

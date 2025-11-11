@@ -15,6 +15,7 @@ class CreateVentasTable extends Migration
             $table->integer('precioPerzonalizado')->default(0);
             $table->integer('precioTotal')->default(0);
             $table->integer('saldo')->default(0);
+            $table->integer('descuento')->default(0);
 
             $table->boolean('recogido')->default(false);
             $table->dateTime('fecha');

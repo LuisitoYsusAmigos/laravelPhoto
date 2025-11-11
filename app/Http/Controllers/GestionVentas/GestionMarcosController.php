@@ -175,7 +175,7 @@ class GestionMarcosController extends Controller
         $jsonRespuesta = $this->usoVarillasCuadro->generarJson($resultado);
 
         if (!$jsonRespuesta['terminado']) {
-            throw new \Exception('No se pudo optimizar el corte de varillas para el cuadro especificado');
+            throw new \Exception('No se pudo optimizar el corte de varillas para el cuadro especificado revisar la disponibilidad de esta varilla');
         }
 
         return $this->procesarResultadoVarillas($detalle, $jsonRespuesta['retazosUsados']);

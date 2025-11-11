@@ -32,6 +32,7 @@ class GestionVentaController extends Controller
             'idUsuario' => 'required|exists:users,id',
 
             'fechaEntrega' => 'nullable|date',
+            'descuento' => 'nullable|integer|min:0',
             'entregado' => 'nullable|boolean',
 
             'detalles' => 'nullable|array',
@@ -47,7 +48,7 @@ class GestionVentaController extends Controller
             'cuadros.*.id_materia_prima_vidrios' => 'nullable|integer',
             'cuadros.*.id_materia_prima_contornos' => 'nullable|integer',
         ]);
-
+        
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Faltan datos o datos inválidos',
@@ -95,17 +96,11 @@ class GestionVentaController extends Controller
                 if(!empty($cuadros[$index]['cantidad'])){
                     $cuadros[$index]['cantidad'] = $cuadro['cantidad'];
                 }
-                // $request->cuadros[$index]['lado_b'] = $medidasExternas['alto_b'];
+                
             }
-            //$request->merge(['cuadros' => $cuadros]);
-
-            // Solo para verificar
-            //dd($request->cuadros);
-            //agregar correcion de tamañano externo del marco
+            
         }
-        //dd($request->cuadros);
-
-        // 🔎 Validar productos y stock ANTES de crear la venta
+        
         if (!empty($request->detalles)) {
             $validacionProductos = $this->gestionProductos->verificarDisponibilidad($request->detalles);
 
@@ -155,7 +150,8 @@ class GestionVentaController extends Controller
 
             // ✅ Actualizar con totales separados
             $this->actualizarTotalesVenta($venta, $totalProductos, $totalCuadros, $totalVenta);
-            $this->procesarPago($venta, $request->saldo, $totalVenta, $request->idFormaPago, $request->entregado);
+            
+            $this->procesarPago($venta, $request->saldo, $totalVenta, $request->idFormaPago, $request->entregado,$request->descuento);
             $venta = $this->cargarRelacionesVenta($venta);
 
             DB::commit();
@@ -170,100 +166,7 @@ class GestionVentaController extends Controller
         }
     }
 
-    public function crearVentaMarco(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'pago' => 'required|numeric|min:0',
-            'idCliente' => 'required|exists:clientes,id',
-            'idSucursal' => 'required|exists:sucursal,id',
-            'idFormaPago' => 'required|exists:forma_de_pagos,id',
-            'idUsuario' => 'required|exists:users,id',
-
-            'fechaEntrega' => 'nullable|date',
-            'entregado' => 'nullable|boolean',
-
-            'detalles' => 'nullable|array',
-            'detalles.*.idProducto' => 'required_with:detalles|integer',
-            'detalles.*.cantidad' => 'required_with:detalles|integer|min:1',
-
-            'cuadros' => 'nullable|array',
-            'cuadros.*.lado_a' => 'required_with:cuadros|integer|min:1',
-            'cuadros.*.lado_b' => 'required_with:cuadros|integer|min:1',
-            'cuadros.*.cantidad' => 'required_with:cuadros|integer|min:1',
-            'cuadros.*.id_materia_prima_varillas' => 'nullable|integer',
-            'cuadros.*.id_materia_prima_trupans' => 'nullable|integer',
-            'cuadros.*.id_materia_prima_vidrios' => 'nullable|integer',
-            'cuadros.*.id_materia_prima_contornos' => 'nullable|integer',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Faltan datos o datos inválidos',
-                'errors' => $validator->errors()
-            ], 400);
-        }
-
-
-        $request->merge([
-            'saldo' => $request->input('pago')
-        ]);
-
-
-
-        if (empty($request->detalles) && empty($request->cuadros)) {
-            return response()->json([
-                'error' => 'Debe incluir al menos productos o cuadros personalizados'
-            ], 400);
-        }
-
-
-
-        if (!empty($request->cuadros)) {
-            $validacionMarcos = $this->gestionMarcos->verificarDisponibilidadMarcos($request->cuadros);
-
-
-            $errores = array_filter($validacionMarcos, fn($c) => $c['valido'] === false);
-
-            if (!empty($errores)) {
-                return response()->json([
-                    'message' => 'Errores en los cuadros personalizados',
-                    'detalles' => $errores
-                ], 400);
-            }
-        }
-
-        DB::beginTransaction();
-
-        try {
-            // Crear la venta
-            $venta = $this->crearVentaBase($request);
-
-            // ✅ Inicializar totales separados
-            $totalProductos = 0;
-            $totalCuadros = 0;
-
-            if (!empty($request->cuadros)) {
-                $totalCuadros = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros);
-            }
-
-            $totalVenta = $totalProductos + $totalCuadros;
-
-            // ✅ Actualizar con totales separados
-            $this->actualizarTotalesVenta($venta, $totalProductos, $totalCuadros, $totalVenta);
-            $this->procesarPago($venta, $request->saldo, $totalVenta, $request->idFormaPago, $request->entregado);
-            $venta = $this->cargarRelacionesVenta($venta);
-
-            DB::commit();
-
-            return response()->json([
-                'message' => 'Venta completa creada exitosamente',
-                'venta' => $this->formatearRespuestaVenta($venta),
-            ], 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
+    
 
     private function crearVentaBase(Request $request)
     {
@@ -275,6 +178,7 @@ class GestionVentaController extends Controller
             'recogido' => false,
             'fecha' => now(),
             'fechaEntrega' => $request->fechaEntrega ?? null,
+            'descuento' => $request->descuento ?? 0,
         ]);
     }
 
@@ -287,11 +191,20 @@ class GestionVentaController extends Controller
         ]);
     }
 
-    private function procesarPago($venta, $saldo, $precioTotal, $idFormaPago, $entregado)
+    private function procesarPago($venta, $saldo, $precioTotal, $idFormaPago, $entregado, $descuento)
     {
+        if($descuento!=null){
+            //dd("se envio descuento");
+            if($descuento>$precioTotal){
+                throw new \Exception("El descuento no puede ser mayor al precio total de la venta");
+            }else{
+                $precioTotal = $precioTotal - $descuento;
+                //dd("descuento aplicado");
+            }
+        }
         if ($saldo > $precioTotal) {
             $exceso = $saldo - $precioTotal;
-            throw new \Exception("Hay un excedente de $exceso unidades en el saldo/pago");
+            throw new \Exception("Hay un excedente de $exceso unidades en el saldo/pagoss");
         }
 
         if ($saldo > 0) {
