@@ -20,6 +20,7 @@ class GestionRecibosController extends Controller
         //$ventaJson = (new VentaController)->getVentaCompleta($id);
         $ventaJson = (new GestionVentaController)->obtenerVentaCompleta($id);
         $ventaArray = $ventaJson->getData(true)['venta'];
+        //dd($ventaArray);
 
         return view('pdf.recibo', ['venta' => $ventaArray]);
     }

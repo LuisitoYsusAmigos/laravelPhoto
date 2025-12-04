@@ -261,7 +261,7 @@ class GestionVentaController extends Controller
             $venta = Venta::with([
                 'cliente',
                 'sucursal',
-                'detalleVentaProductos',
+                'detalleVentaProductos.producto',
                 'detalleVentaPersonalizadas.materiaPrimaVarilla',
                 'detalleVentaPersonalizadas.materiaPrimaTrupan',
                 'detalleVentaPersonalizadas.materiaPrimaVidrio',
@@ -592,7 +592,18 @@ class GestionVentaController extends Controller
             'updated_at' => $venta->updated_at,
             'cliente' => $venta->cliente,
             'sucursal' => $venta->sucursal,
-            'detalle_venta_productos' => $venta->detalleVentaProductos,
+            'detalle_venta_productos' => $venta->detalleVentaProductos->map(function($detalle) {
+                return [
+                    'id' => $detalle->id,
+                    'cantidad' => $detalle->cantidad,
+                    'precio' => $detalle->precio,
+                    'idVenta' => $detalle->idVenta,
+                    'idProducto' => $detalle->idProducto,
+                    'producto' => $detalle->producto,
+                    'id_stock_producto' => $detalle->id_stock_producto,
+                    'nombreProducto' => optional($detalle->producto)->nombre,
+                ];
+            }),
             'detalle_venta_personalizadas' => $venta->detalleVentaPersonalizadas,
         ];
     }

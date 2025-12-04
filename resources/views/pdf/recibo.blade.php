@@ -113,7 +113,7 @@
       @foreach ($venta['detalle_venta_productos'] as $producto)
       <tr>
         <td>{{ $producto['id'] }}</td>
-        <td>Producto ID {{ $producto['idProducto'] }}</td>
+        <td>{{ $producto['producto']['descripcion'] }}</td>
         <td>{{ $producto['cantidad'] }}</td>
         <td>{{ number_format($producto['precio'], 2) }}</td>
         <td>{{ number_format($producto['precio'] * $producto['cantidad'], 2) }}</td>
