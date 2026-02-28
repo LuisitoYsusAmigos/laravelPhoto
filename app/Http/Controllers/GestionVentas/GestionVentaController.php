@@ -166,7 +166,153 @@ class GestionVentaController extends Controller
         }
     }
 
-    
+    public function validarVentaCompleta(Request $request)
+    {
+        // Validación básica
+        $validator = Validator::make($request->all(), [
+            'pago' => 'nullable|numeric|min:0',
+            'idCliente' => 'required|exists:clientes,id',
+            'idSucursal' => 'required|exists:sucursal,id',
+            'idFormaPago' => 'nullable|exists:forma_de_pagos,id',
+            'idUsuario' => 'required|exists:users,id',
+
+            'fechaEntrega' => 'nullable|date',
+            'descuento' => 'nullable|integer|min:0',
+            'entregado' => 'nullable|boolean',
+
+            'detalles' => 'nullable|array',
+            'detalles.*.idProducto' => 'required_with:detalles|integer',
+            'detalles.*.cantidad' => 'required_with:detalles|integer|min:1',
+
+            'cuadros' => 'nullable|array',
+            'cuadros.*.lado_a' => 'required_with:cuadros|integer|min:1',
+            'cuadros.*.lado_b' => 'required_with:cuadros|integer|min:1',
+            'cuadros.*.cantidad' => 'required_with:cuadros|integer|min:1',
+            'cuadros.*.id_materia_prima_varillas' => 'nullable|integer|exists:materia_prima_varillas,id',
+            'cuadros.*.id_materia_prima_trupans' => 'nullable|integer|exists:materia_prima_trupans,id',
+            'cuadros.*.id_materia_prima_vidrios' => 'nullable|integer|exists:materia_prima_vidrios,id',
+            'cuadros.*.id_materia_prima_contornos' => 'nullable|integer|exists:materia_prima_contornos,id',
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Faltan datos o datos inválidos',
+                'errors' => $validator->errors()
+            ], 400);
+        }
+
+        $request->merge([
+            'saldo' => $request->input('pago', 0)
+        ]);
+
+        if (empty($request->detalles) && empty($request->cuadros)) {
+            return response()->json([
+                'error' => 'Debe incluir al menos productos o cuadros personalizados'
+            ], 400);
+        }
+
+        if (!empty($request->cuadros)) {
+            foreach ($request->cuadros as $index => $cuadro) {
+                if (empty($cuadro['id_materia_prima_varillas'])) {
+                    return response()->json([
+                        'error' => "Debe proporcionar una varilla válida para hacer el cálculo correcto del material en el cuadro #" . ($index + 1)
+                    ], 400);
+                }
+                
+                //calcular tamaño externo del marco
+                $medidasExternas = $this->gestionMarcos->obtenerMarcoExterno($request->cuadros);
+
+                $cuadros[$index]['lado_a'] = $medidasExternas['lado_a'];
+                $cuadros[$index]['lado_b'] = $medidasExternas['lado_b'];
+                $cuadros[$index]['id_materia_prima_varillas'] = $cuadro['id_materia_prima_varillas'];
+                
+                if(!empty($cuadros[$index]['id_materia_prima_contornos'])){
+                    $cuadros[$index]['id_materia_prima_contornos'] = $cuadro['id_materia_prima_contornos'];
+                }
+                if(!empty($cuadros[$index]['id_materia_prima_trupans'])){
+                    $cuadros[$index]['id_materia_prima_trupans'] = $cuadro['id_materia_prima_trupans'];
+                }     
+                if(!empty($cuadros[$index]['id_materia_prima_vidrios'])){
+                    $cuadros[$index]['id_materia_prima_vidrios'] = $cuadro['id_materia_prima_vidrios'];
+                }
+                if(!empty($cuadros[$index]['cantidad'])){
+                    $cuadros[$index]['cantidad'] = $cuadro['cantidad'];
+                }
+            }
+        }
+        
+        if (!empty($request->detalles)) {
+            $validacionProductos = $this->gestionProductos->verificarDisponibilidad($request->detalles);
+
+            $errores = array_filter($validacionProductos, fn($p) => $p['disponible'] === false);
+
+            if (!empty($errores)) {
+                return response()->json([
+                    'message' => 'Errores de disponibilidad en los productos',
+                    'detalles' => $errores
+                ], 400);
+            }
+        }
+
+        if (!empty($request->cuadros)) {
+            $validacionMarcos = $this->gestionMarcos->verificarDisponibilidadMarcos($request->cuadros);
+
+            $errores = array_filter($validacionMarcos, fn($c) => $c['valido'] === false);
+
+            if (!empty($errores)) {
+                return response()->json([
+                    'message' => 'Falta stock en los materiales solicitados para los cuadros',
+                    'detalles' => $errores
+                ], 400);
+            }
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $venta = Venta::create([
+                'saldo' => $request->saldo,
+                'idCliente' => $request->idCliente,
+                'idSucursal' => $request->idSucursal,
+                'idUsuario' => $request->idUsuario,
+                'recogido' => false,
+                'fecha' => now(),
+                'fechaEntrega' => $request->fechaEntrega ?? null,
+                'descuento' => $request->descuento ?? 0,
+            ]);
+
+            $totalProductos = 0;
+            $totalCuadros = 0;
+
+            if (!empty($request->detalles)) {
+                $totalProductos = $this->gestionProductos->procesarProductos($venta, $request->detalles);
+            }
+
+            if (!empty($request->cuadros)) {
+                // El optimizador validará aquí si los cortes son posibles de forma física
+                $totalCuadros = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros);
+            }
+
+            $totalVenta = $totalProductos + $totalCuadros;
+
+            // Rollback SIEMPRE, ya que sólo queríamos probar que no arroje Exception al simular creación
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Validación exitosa, es posible realizar el trabajo',
+                'valido' => true,
+                'total_estimado' => $totalVenta
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'No es posible realizar el trabajo con el material disponible',
+                'valido' => false,
+                'error' => $e->getMessage()
+            ], 400);
+        }
+    }
 
     private function crearVentaBase(Request $request)
     {

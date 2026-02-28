@@ -436,31 +436,7 @@ private function obtenerDatosMateriaPrima($tipoMaterial, $cuadro)
 }
 
 
-    private function obtenerPrecioVentaMaterial($tipoMaterial, $materialId)
-    {
-        switch ($tipoMaterial) {
-            case 'trupan':
-                return DB::table('stock_trupans as st')
-                    ->join('materia_prima_trupans as mpt', 'st.id_materia_prima_trupans', '=', 'mpt.id')
-                    ->where('st.id', $materialId)
-                    ->value('mpt.precioVenta');
-            
-            case 'vidrio':
-                return DB::table('stock_vidrios as sv')
-                    ->join('materia_prima_vidrios as mpv', 'sv.id_materia_prima_vidrio', '=', 'mpv.id')
-                    ->where('sv.id', $materialId)
-                    ->value('mpv.precioVenta');
-            
-            case 'contorno':
-                return DB::table('stock_contornos as sc')
-                    ->join('materia_prima_contornos as mpc', 'sc.id_materia_prima_contorno', '=', 'mpc.id')
-                    ->where('sc.id', $materialId)
-                    ->value('mpc.precioVenta');
-            
-            default:
-                throw new \Exception("Tipo de material no válido: {$tipoMaterial}");
-        }
-    }
+
 
     public function obtenerMarcoExterno($cuadros){
         $varilla = MateriaPrimaVarilla::find($cuadros[0]['id_materia_prima_varillas']);
