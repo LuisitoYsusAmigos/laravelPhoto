@@ -25,7 +25,6 @@ class GestionProductosController extends Controller
         foreach ($detalles as $item) {
             $producto = $this->validarProducto($item['idProducto']);
             $this->validarStock($producto, $item['cantidad']);
-            
             $totalProducto = $this->procesarProductoIndividual($venta, $producto, $item['cantidad']);
             $totalProductos += $totalProducto;
         }
@@ -103,7 +102,7 @@ class GestionProductosController extends Controller
         $cantidadAUsar = min($cantidadRestante, $lote->stock);
         
         // Calcular el precio total para esta cantidad específica
-        $precioTotal = $lote->precio * $cantidadAUsar;
+        $precioTotal = $producto->precioVenta * $cantidadAUsar;
 
         // Actualizar stock del lote
         DB::table('stock_productos')

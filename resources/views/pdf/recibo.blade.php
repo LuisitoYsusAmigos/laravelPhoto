@@ -115,8 +115,8 @@
         <td>{{ $producto['id'] }}</td>
         <td>{{ $producto['producto']['descripcion'] }}</td>
         <td>{{ $producto['cantidad'] }}</td>
-        <td>{{ number_format($producto['precio'], 2) }}</td>
-        <td>{{ number_format($producto['precio'] * $producto['cantidad'], 2) }}</td>
+        <td>{{ number_format($producto['precio']/100, 2) }}</td>
+        <td>{{ number_format($producto['precio']/100 * $producto['cantidad'], 2) }}</td>
       </tr>
       @endforeach
     </table>
@@ -131,12 +131,13 @@
         <th>Descripción</th>
         <th>Dimensiones</th>
         <th>Materiales</th>
+        <th>Total</th>
       </tr>
       @foreach ($venta['detalle_venta_personalizadas'] as $personalizado)
       <tr>
         <td>{{ $personalizado['id'] }}</td>
         <td>Marco personalizado</td>
-        <td>{{ $personalizado['lado_a'] }} x {{ $personalizado['lado_b'] }} mm</td>
+        <td>{{ $personalizado['lado_a'] }} x {{ $personalizado['lado_b'] }} Cm</td>
         <td>
           @if($personalizado['materia_prima_varilla'])
             Varilla: {{ $personalizado['materia_prima_varilla']['descripcion'] }}<br>
@@ -151,6 +152,7 @@
             Contorno: {{ $personalizado['materia_prima_contorno']['descripcion'] }}
           @endif
         </td>
+        <td>{{ number_format(($personalizado['total'] ?? 0) / 100, 2) }}</td>
       </tr>
       @endforeach
     </table>
@@ -158,28 +160,32 @@
 
     @php
       $subtotal = $venta['precioProducto'];
+
       $descuento = $venta['precioProducto'] - $venta['precioTotal'];
+      if($descuento < 0){
+        $descuento = 0;
+      }
       $aCuenta = $venta['precioTotal'] - $venta['saldo'];
     @endphp
 
     <table class="detalle-pago">
       <tr>
         <td><strong>A cuenta</strong></td>
-        <td>{{ number_format($aCuenta, 2) }}</td>
-        <td class="right"><strong>Sub Total</strong></td>
-        <td>{{ number_format($subtotal, 2) }}</td>
+        <td>{{ number_format($aCuenta/100, 2) }}</td>
+        <td class="right"><strong>Descuento</strong></td>
+        <td>{{ number_format($descuento, 2) }}</td>
       </tr>
       <tr>
         <td><strong>Saldo</strong></td>
         <td>{{ number_format($venta['saldo'], 2) }}</td>
-        <td class="right"><strong>Descuento</strong></td>
-        <td>{{ number_format($descuento, 2) }}</td>
+        <td class="no-border"></td>
+        <td class="no-border"></td>
       </tr>
       <tr>
         <td class="no-border"></td>
         <td class="no-border"></td>
         <td class="right"><strong>Total</strong></td>
-        <td>{{ number_format($venta['precioTotal'], 2) }}</td>
+        <td>{{ number_format($venta['precioTotal']/100, 2) }}</td>
       </tr>
     </table>
 

@@ -47,4 +47,10 @@ class DetalleVentaPersonalizada extends Model
     {
         return $this->belongsTo(MateriaPrimaContorno::class, 'id_materia_prima_contornos');
     }
+
+    // Materiales utilizados (Varillas, Vidrios, etc asignados)
+    public function materialesVentaPersonalizadas()
+    {
+        return $this->hasMany(MaterialesVentaPersonalizada::class, 'detalleVP_id');
+    }
 }

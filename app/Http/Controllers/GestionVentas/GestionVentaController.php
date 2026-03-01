@@ -20,49 +20,7 @@ class GestionVentaController extends Controller
         $this->gestionProductos = new GestionProductosController();
         $this->gestionMarcos = new GestionMarcosController();
     }
-    public function crearVentaCompleta2026(Request $request)
-    {
-        //validacion de datos de entrada y existencia de materias primas
-            $validator = Validator::make($request->all(), [
-            'pago' => 'required|numeric|min:0',
-            'idCliente' => 'required|exists:clientes,id',
-            'idSucursal' => 'required|exists:sucursal,id',
-            'idFormaPago' => 'required|exists:forma_de_pagos,id',
-            'idUsuario' => 'required|exists:users,id',
-
-            'fechaEntrega' => 'nullable|date',
-            'descuento' => 'nullable|integer|min:0',
-            'entregado' => 'nullable|boolean',
-
-            'detalles' => 'nullable|array',
-            'detalles.*.idProducto' => 'required_with:detalles|integer',
-            'detalles.*.cantidad' => 'required_with:detalles|integer|min:1',
-
-            'cuadros' => 'nullable|array',
-            'cuadros.*.lado_a' => 'required_with:cuadros|integer|min:1',
-            'cuadros.*.lado_b' => 'required_with:cuadros|integer|min:1',
-            'cuadros.*.cantidad' => 'required_with:cuadros|integer|min:1',
-            'cuadros.*.id_materia_prima_varillas' => 'nullable|integer',
-            'cuadros.*.id_materia_prima_trupans' => 'nullable|integer',
-            'cuadros.*.id_materia_prima_vidrios' => 'nullable|integer',
-            'cuadros.*.id_materia_prima_contornos' => 'nullable|integer',
-        ]);
-
-        // genera un return que diga estado 201, y en los demas datos que diga 
-        
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Faltan datos o datos inválidos',
-                'errors' => $validator->errors()
-            ], 400);
-        }
-       //calculo de area y datos para el marco 
-        // retona un json con dodigo 200 tood bien
-        return response()->json([
-            'message' => 'Venta completa creada exitosamente',
-            'venta' => 'todo bien',
-        ], 201);
-    }
+    
 
     public function crearVentaCompleta(Request $request)
     {
@@ -177,7 +135,7 @@ class GestionVentaController extends Controller
             // Crear la venta
             $venta = $this->crearVentaBase($request);
 
-            // ✅ Inicializar totales separados
+            //  Inicializar totales separados
             $totalProductos = 0;
             $totalCuadros = 0;
 
@@ -471,7 +429,8 @@ return response()->json([
                 'detalleVentaPersonalizadas.materiaPrimaVarilla',
                 'detalleVentaPersonalizadas.materiaPrimaTrupan',
                 'detalleVentaPersonalizadas.materiaPrimaVidrio',
-                'detalleVentaPersonalizadas.materiaPrimaContorno'
+                'detalleVentaPersonalizadas.materiaPrimaContorno',
+                'detalleVentaPersonalizadas.materialesVentaPersonalizadas'
             ])->find($id);
 
             if (!$venta) {
@@ -810,7 +769,11 @@ return response()->json([
                     'nombreProducto' => optional($detalle->producto)->nombre,
                 ];
             }),
-            'detalle_venta_personalizadas' => $venta->detalleVentaPersonalizadas,
+            'detalle_venta_personalizadas' => $venta->detalleVentaPersonalizadas->map(function($detalle) {
+                $detalleArray = $detalle->toArray();
+                $detalleArray['total'] = $detalle->materialesVentaPersonalizadas->sum('precio_unitario');
+                return $detalleArray;
+            }),
         ];
     }
 }
