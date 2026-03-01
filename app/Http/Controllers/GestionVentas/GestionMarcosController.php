@@ -110,14 +110,26 @@ class GestionMarcosController extends Controller
     public function procesarMarcos($venta, array $cuadros)
     {
         $totalCuadros = 0;
-
-        foreach ($cuadros as $cuadro) {
+        
+        
+   
+        foreach ($cuadros as $index => $cuadro) {
+            
             $detalle = $this->crearDetalleVentaPersonalizada($venta, $cuadro);
-            $totalCuadro = $this->procesarMaterialesCuadro($detalle, $cuadro);
-            $totalCuadros += $totalCuadro;
+            $resultadoMateriales = $this->procesarMaterialesCuadro($detalle, $cuadro);
+            
+            $totalCuadros += $resultadoMateriales['total'];
+            
+            
         }
+        
 
-        return $totalCuadros;
+        
+
+        return [
+            'total' => $totalCuadros,
+            
+        ];
     }
 
     /**
@@ -142,25 +154,32 @@ class GestionMarcosController extends Controller
     private function procesarMaterialesCuadro($detalle, $cuadro)
     {
         $totalCuadro = 0;
+       
 
         // Procesar cada tipo de material si está especificado
         if (!empty($cuadro['id_materia_prima_varillas'])) {
+            
             $totalCuadro += $this->procesarVarillas($detalle, $cuadro);
         }
 
         if (!empty($cuadro['id_materia_prima_trupans'])) {
+            
             $totalCuadro += $this->procesarTrupans($detalle, $cuadro);
         }
 
         if (!empty($cuadro['id_materia_prima_vidrios'])) {
+            
             $totalCuadro += $this->procesarVidrios($detalle, $cuadro);
         }
 
         if (!empty($cuadro['id_materia_prima_contornos'])) {
+            
             $totalCuadro += $this->procesarContornos($detalle, $cuadro);
         }
 
-        return $totalCuadro;
+        return [
+            'total' => $totalCuadro,
+        ];
     }
 
     /**
@@ -207,6 +226,7 @@ class GestionMarcosController extends Controller
         $necesidadCuadro = $this->crearNecesidadCuadroLamina($cuadro);
 
         $respuesta = $this->usoLaminasCuadro->optimizarCuadro($necesidadCuadro, $vidriosDisponibles);
+        
 
         if (!$respuesta['terminado']) {
             throw new \Exception('No se pudo optimizar el corte de vidrios para el cuadro especificado');
@@ -327,12 +347,8 @@ class GestionMarcosController extends Controller
         $metrosUsados = $retazo['mmUsados'] / 1000;
         
         // Calcular precio: metros_usados × precio_por_metro × factor_desperdicio × cantidad
-        $precio = $metrosUsados * $datosVarilla->precioVenta * $datosVarilla->factor_desperdicio * $retazo['cantidad'];
+        $precio = intval($metrosUsados * $datosVarilla->precioVenta * $datosVarilla->factor_desperdicio * $retazo['cantidad']);
         
-        // LOG DETALLADO DEL CÁLCULO PARA VARILLAS
-        $mensajeCalculo = "La multiplicación para el precio fue de VARILLA: {$metrosUsados} * {$datosVarilla->precioVenta} * {$datosVarilla->factor_desperdicio} * {$retazo['cantidad']} = {$precio}";
-        //Log::info($mensajeCalculo);
-        //echo $mensajeCalculo . "\n";
 
         $totalVarillas += $precio;
 
@@ -355,10 +371,9 @@ private function procesarResultadoLamina($detalle, $respuesta, $tipoMaterial, $c
     $materialId = $respuesta['material'];
 
     // Área del cuadro en mm²
-    $areaMm2 = $cuadro['lado_a'] * $cuadro['lado_b'];
+    $areaMm2 = ($cuadro['lado_a']/100) * ($cuadro['lado_b']/100);
     
-    // Convertir a m² para el cálculo
-    $areaM2 = $areaMm2 / 1_000_0;
+    
 
     // Obtener precio por m² y factor de desperdicio de la materia prima
     $datosMateriaPrima = $this->obtenerDatosMateriaPrima($tipoMaterial, $cuadro);
@@ -366,16 +381,8 @@ private function procesarResultadoLamina($detalle, $respuesta, $tipoMaterial, $c
     $factorDesperdicio = $datosMateriaPrima['factor_desperdicio'];
 
     // Aplicar fórmula correcta: área_m² × precio_m² × factor_desperdicio × cantidad
-    $precio = $areaM2 * $precioM2 * $factorDesperdicio * $cuadro['cantidad'];
-
-    // LOG DETALLADO DEL CÁLCULO
-    $tipoMaterialMayuscula = strtoupper($tipoMaterial);
-    //$mensajeCalculo = "La multiplicación para el precio fue de {$tipoMaterialMayuscula}: {$areaM2} * {$precioM2} * {$factorDesperdicio} * {$cuadro['cantidad']} = {$precio}";
+    $precio = intval($areaMm2 * $precioM2 * $factorDesperdicio * $cuadro['cantidad']);
     
-    // Imprimir en logs y en consola
-    //Log::info($mensajeCalculo);
-    //echo $mensajeCalculo . "\n";
-
     $materialData = [
         'stock_contorno_id' => $tipoMaterial === 'contorno' ? $materialId : null,
         'stock_trupan_id'   => $tipoMaterial === 'trupan' ? $materialId : null,

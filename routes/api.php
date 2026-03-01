@@ -331,6 +331,9 @@ use App\Http\Controllers\GestionVentas\GestionVentaController;
 Route::post('/ventaProductoMarco', [GestionVentaController::class, 'crearVentaCompleta']);
 Route::post('/ventaProductoMarco/validar', [GestionVentaController::class, 'validarVentaCompleta']);
 
+// metodo nuevo de venta 2026
+Route::post('/ventaProductoMarco2026', [GestionVentaController::class, 'crearVentaCompleta2026']);
+
 
 // En routes/api.php
 Route::get('/ventaProductoMarco/{id}', [GestionVentaController::class, 'obtenerVentaCompleta']);

@@ -20,6 +20,49 @@ class GestionVentaController extends Controller
         $this->gestionProductos = new GestionProductosController();
         $this->gestionMarcos = new GestionMarcosController();
     }
+    public function crearVentaCompleta2026(Request $request)
+    {
+        //validacion de datos de entrada y existencia de materias primas
+            $validator = Validator::make($request->all(), [
+            'pago' => 'required|numeric|min:0',
+            'idCliente' => 'required|exists:clientes,id',
+            'idSucursal' => 'required|exists:sucursal,id',
+            'idFormaPago' => 'required|exists:forma_de_pagos,id',
+            'idUsuario' => 'required|exists:users,id',
+
+            'fechaEntrega' => 'nullable|date',
+            'descuento' => 'nullable|integer|min:0',
+            'entregado' => 'nullable|boolean',
+
+            'detalles' => 'nullable|array',
+            'detalles.*.idProducto' => 'required_with:detalles|integer',
+            'detalles.*.cantidad' => 'required_with:detalles|integer|min:1',
+
+            'cuadros' => 'nullable|array',
+            'cuadros.*.lado_a' => 'required_with:cuadros|integer|min:1',
+            'cuadros.*.lado_b' => 'required_with:cuadros|integer|min:1',
+            'cuadros.*.cantidad' => 'required_with:cuadros|integer|min:1',
+            'cuadros.*.id_materia_prima_varillas' => 'nullable|integer',
+            'cuadros.*.id_materia_prima_trupans' => 'nullable|integer',
+            'cuadros.*.id_materia_prima_vidrios' => 'nullable|integer',
+            'cuadros.*.id_materia_prima_contornos' => 'nullable|integer',
+        ]);
+
+        // genera un return que diga estado 201, y en los demas datos que diga 
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Faltan datos o datos inválidos',
+                'errors' => $validator->errors()
+            ], 400);
+        }
+       //calculo de area y datos para el marco 
+        // retona un json con dodigo 200 tood bien
+        return response()->json([
+            'message' => 'Venta completa creada exitosamente',
+            'venta' => 'todo bien',
+        ], 201);
+    }
 
     public function crearVentaCompleta(Request $request)
     {
@@ -143,8 +186,21 @@ class GestionVentaController extends Controller
             }
 
             if (!empty($request->cuadros)) {
-                $totalCuadros = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros);
+                $resultadoMarcos = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros);
+                $totalCuadros = $resultadoMarcos['total'];
             }
+            //quitar este bloque
+// haz un retun para veer que esta en totalProductos y totalCuadros
+/*
+return response()->json([
+    'totalProductos' => $totalProductos,
+    'totalCuadros' => $totalCuadros,
+    'suma de totales'=>  $totalProductos + $totalCuadros,
+    'resulado'=> 'lo esperado'
+], 200);
+*/
+
+            // fin de quitiar
 
             $totalVenta = $totalProductos + $totalCuadros;
 
@@ -168,7 +224,6 @@ class GestionVentaController extends Controller
 
     public function validarVentaCompleta(Request $request)
     {
-        // Validación básica
         $validator = Validator::make($request->all(), [
             'pago' => 'nullable|numeric|min:0',
             'idCliente' => 'required|exists:clientes,id',
@@ -210,7 +265,7 @@ class GestionVentaController extends Controller
                 'error' => 'Debe incluir al menos productos o cuadros personalizados'
             ], 400);
         }
-
+        
         if (!empty($request->cuadros)) {
             foreach ($request->cuadros as $index => $cuadro) {
                 if (empty($cuadro['id_materia_prima_varillas'])) {
@@ -253,7 +308,7 @@ class GestionVentaController extends Controller
                 ], 400);
             }
         }
-
+        
         if (!empty($request->cuadros)) {
             $validacionMarcos = $this->gestionMarcos->verificarDisponibilidadMarcos($request->cuadros);
 
@@ -266,7 +321,7 @@ class GestionVentaController extends Controller
                 ], 400);
             }
         }
-
+        
         DB::beginTransaction();
 
         try {
@@ -285,31 +340,36 @@ class GestionVentaController extends Controller
             $totalCuadros = 0;
 
             if (!empty($request->detalles)) {
+                
                 $totalProductos = $this->gestionProductos->procesarProductos($venta, $request->detalles);
             }
 
             if (!empty($request->cuadros)) {
+                
                 // El optimizador validará aquí si los cortes son posibles de forma física
-                $totalCuadros = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros);
+                $resultadoMarcos = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros);
+                $totalCuadros = $resultadoMarcos['total'];
+                
             }
 
             $totalVenta = $totalProductos + $totalCuadros;
 
             // Rollback SIEMPRE, ya que sólo queríamos probar que no arroje Exception al simular creación
             DB::rollBack();
-
+            
             return response()->json([
                 'message' => 'Validación exitosa, es posible realizar el trabajo',
                 'valido' => true,
-                'total_estimado' => $totalVenta
+                'total_estimado' => $totalVenta,
             ], 200);
 
         } catch (\Exception $e) {
             DB::rollBack();
+            
             return response()->json([
                 'message' => 'No es posible realizar el trabajo con el material disponible',
                 'valido' => false,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 400);
         }
     }
