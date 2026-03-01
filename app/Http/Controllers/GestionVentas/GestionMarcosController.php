@@ -231,7 +231,7 @@ class GestionMarcosController extends Controller
         if (!$respuesta['terminado']) {
             throw new \Exception('No se pudo optimizar el corte de vidrios para el cuadro especificado');
         }
-
+        
         return $this->procesarResultadoLamina($detalle, $respuesta, 'vidrio', $cuadro);
     }
 
@@ -248,7 +248,7 @@ class GestionMarcosController extends Controller
         if (!$respuesta['terminado']) {
             throw new \Exception('No se pudo optimizar el corte de contornos para el cuadro especificado');
         }
-
+        //dd($respuesta, $detalle, 'contorno', $cuadro);
         return $this->procesarResultadoLamina($detalle, $respuesta, 'contorno', $cuadro);
     }
 
@@ -361,6 +361,9 @@ class GestionMarcosController extends Controller
             'precio_unitario' => $precio,
             'detalleVP_id' => $detalle->id
         ]);
+
+        // Restar stock físico en la base de datos
+        StockVarilla::where('id', $retazo['id'])->decrement('stock', $retazo['cantidad']);
     }
 
     return $totalVarillas;
@@ -394,7 +397,16 @@ private function procesarResultadoLamina($detalle, $respuesta, $tipoMaterial, $c
     ];
 
     MaterialesVentaPersonalizada::create($materialData);
-
+    // restar stock vidrios
+    // generar un if triple para los 3 casos de contorno trupan vidrio
+    if($tipoMaterial === 'contorno'){
+        StockContorno::where('id', $materialData['stock_contorno_id'])->decrement('stock', $materialData['cantidad']);
+    }elseif($tipoMaterial === 'trupan'){
+        StockTrupan::where('id', $materialData['stock_trupan_id'])->decrement('stock', $materialData['cantidad']);
+    }elseif($tipoMaterial === 'vidrio'){
+        StockVidrio::where('id', $materialData['stock_vidrio_id'])->decrement('stock', $materialData['cantidad']);
+    }
+    
     return $precio;
 }
 
