@@ -195,7 +195,7 @@ class MateriaPrimaVarillaController extends Controller
         $totalPages = $perPage > 0 ? ceil($totalItems / $perPage) : 1;
 
         // Obtener los productos paginados preservando el filtro
-        $productos = $query->latest()
+        $varillas = $query->latest()
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
@@ -206,7 +206,7 @@ class MateriaPrimaVarillaController extends Controller
             'perPage' => $perPage,
             'totalItems' => $totalItems,
             'totalPages' => $totalPages,
-            'data' => $productos
+            'data' => $varillas
         ]);
     }
 

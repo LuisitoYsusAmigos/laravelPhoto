@@ -96,6 +96,7 @@ class MateriaPrimaContornoController extends Controller
             'stock_global_actual' => 'sometimes|integer|min:0',
             //'stock_global_minimo' => 'sometimes|integer|min:0',
             'id_sucursal' => 'sometimes|exists:sucursal,id',
+            'visibilidad' => 'nullable|boolean',
             'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
@@ -143,17 +144,31 @@ class MateriaPrimaContornoController extends Controller
 
     public function indexPaginado(Request $request)
     {
-        $page = max((int)$request->input('page', 1), 1);
-        $perPage = max((int)$request->input('perPage', 10), 1);
+        // Obtener parámetros de paginación con valores por defecto
+        $page = (int) $request->input('page', 1);
+        $perPage = (int) $request->input('perPage', 10);
+        $visibilidad = $request->input('visibilidad');
+        // Inicializar la consulta de productos
+        $query = MateriaPrimaContorno::query();
+        
+        if($visibilidad === null){
+            $query->where('visibilidad', 1);
+        }elseif($visibilidad == 0){
+            $query->where('visibilidad', 0);
+        }
+        // Obtener el total de registros con el filtro aplicado
+        $totalItems = $query->count();
 
-        $totalItems = MateriaPrimaContorno::count();
-        $totalPages = ceil($totalItems / $perPage);
+        // Calcular el total de páginas
+        $totalPages = $perPage > 0 ? ceil($totalItems / $perPage) : 1;
 
-        $contornos = MateriaPrimaContorno::latest()
+        // Obtener los productos paginados preservando el filtro
+        $contornos = $query->latest()
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
 
+        // Devolver la respuesta con el formato solicitado
         return response()->json([
             'currentPage' => $page,
             'perPage' => $perPage,

@@ -20,30 +20,22 @@ class ProductoController extends Controller
         $visibilidad = $request->input('visibilidad');
         // Inicializar la consulta de productos
         $query = Producto::query();
-
-        
-
         // Lógica de visibilidad
         if($visibilidad == 0){
             $query->where('visibilidad', 0);
         }
-        
         if($visibilidad == null){
             $query->where('visibilidad', 1);
         }
-    
         // Obtener el total de registros con el filtro aplicado
         $totalItems = $query->count();
-
         // Calcular el total de páginas
         $totalPages = $perPage > 0 ? ceil($totalItems / $perPage) : 1;
-
         // Obtener los productos paginados preservando el filtro
         $productos = $query->latest()
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
-
         // Devolver la respuesta con el formato solicitado
         return response()->json([
             'currentPage' => $page,
