@@ -29,6 +29,7 @@ return new class extends Migration
             $table->integer('stock_global_minimo');
             $table->foreignId('id_sucursal')->constrained('sucursal')->onDelete('cascade');
             $table->string('imagen')->nullable();
+            $table->boolean('visibilidad')->default(true);
             $table->timestamps();
         });
 

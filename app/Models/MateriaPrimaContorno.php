@@ -23,6 +23,7 @@ class MateriaPrimaContorno extends Model
         'stock_global_actual',
         'stock_global_minimo',
         'id_sucursal',
+        'visibilidad',
         'imagen'
     ];
 

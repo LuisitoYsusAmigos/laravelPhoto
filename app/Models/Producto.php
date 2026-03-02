@@ -20,7 +20,8 @@ class Producto extends Model
         'id_lugar',
         'categoria_id',
         'sub_categoria_id',
-        'imagen'
+        'imagen',
+        'visibilidad'
     ];
 
     // Relaciones con otras tablas

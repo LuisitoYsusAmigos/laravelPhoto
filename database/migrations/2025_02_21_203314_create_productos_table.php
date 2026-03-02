@@ -27,6 +27,7 @@ return new class extends Migration
             $table->foreignId('id_lugar')->constrained('lugars')->onDelete('cascade');
             $table->foreignId('sub_categoria_id')->nullable()->constrained('sub_categorias')->onDelete('cascade');      
             $table->string('imagen')->nullable();      
+            $table->boolean('visibilidad')->default(true);
             $table->timestamps();
         });
 

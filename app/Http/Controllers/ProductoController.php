@@ -17,15 +17,29 @@ class ProductoController extends Controller
         // Obtener parámetros de paginación con valores por defecto
         $page = (int) $request->input('page', 1);
         $perPage = (int) $request->input('perPage', 10);
+        $visibilidad = $request->input('visibilidad');
+        // Inicializar la consulta de productos
+        $query = Producto::query();
 
-        // Obtener el total de registros
-        $totalItems = Producto::count();
+        
+
+        // Lógica de visibilidad
+        if($visibilidad == 0){
+            $query->where('visibilidad', 0);
+        }
+        
+        if($visibilidad == null){
+            $query->where('visibilidad', 1);
+        }
+    
+        // Obtener el total de registros con el filtro aplicado
+        $totalItems = $query->count();
 
         // Calcular el total de páginas
         $totalPages = $perPage > 0 ? ceil($totalItems / $perPage) : 1;
 
-        // Obtener los productos paginados
-        $productos = Producto::latest()
+        // Obtener los productos paginados preservando el filtro
+        $productos = $query->latest()
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
@@ -205,7 +219,8 @@ class ProductoController extends Controller
             'id_lugar' => 'required|exists:lugars,id',
             'categoria_id' => 'required|exists:categorias,id',
             'sub_categoria_id' => 'nullable|exists:sub_categorias,id',
-            'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'visibilidad' => 'nullable|boolean'
         ]);
 
         if ($validator->fails()) {
@@ -213,8 +228,8 @@ class ProductoController extends Controller
         }
 
         // Eliminar imagen anterior si existe
-        if ($producto->imagen && \File::exists(public_path($producto->imagen))) {
-            \File::delete(public_path($producto->imagen));
+        if ($producto->imagen && File::exists(public_path($producto->imagen))) {
+            File::delete(public_path($producto->imagen));
             $producto->imagen = null;
         }
 

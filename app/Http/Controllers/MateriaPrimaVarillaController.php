@@ -102,7 +102,8 @@ class MateriaPrimaVarillaController extends Controller
             //'stock_global_actual' => 'sometimes|integer',
             'stock_global_minimo' => 'sometimes|integer',
             'id_sucursal' => 'sometimes|exists:sucursal,id',
-            'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'visibilidad' => 'nullable|boolean'
             //'imagen' => 'image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
@@ -149,11 +150,12 @@ class MateriaPrimaVarillaController extends Controller
 
         return response()->json(['message' => 'Varilla eliminada correctamente']);
     }
-
+/*
     public function indexPaginado(Request $request)
     {
         $page = max((int)$request->input('page', 1), 1);
         $perPage = max((int)$request->input('perPage', 10), 1);
+        $visibilidad = $request->input('visibilidad');
 
         $totalItems = MateriaPrimaVarilla::count();
         $totalPages = ceil($totalItems / $perPage);
@@ -169,6 +171,42 @@ class MateriaPrimaVarillaController extends Controller
             'totalItems' => $totalItems,
             'totalPages' => $totalPages,
             'data' => $varillas
+        ]);
+    }
+        */
+        public function indexPaginado(Request $request)
+    {
+        // Obtener parámetros de paginación con valores por defecto
+        $page = (int) $request->input('page', 1);
+        $perPage = (int) $request->input('perPage', 10);
+        $visibilidad = $request->input('visibilidad');
+        // Inicializar la consulta de productos
+        $query = MateriaPrimaVarilla::query();
+        
+        if($visibilidad === null){
+            $query->where('visibilidad', 1);
+        }elseif($visibilidad == 0){
+            $query->where('visibilidad', 0);
+        }
+        // Obtener el total de registros con el filtro aplicado
+        $totalItems = $query->count();
+
+        // Calcular el total de páginas
+        $totalPages = $perPage > 0 ? ceil($totalItems / $perPage) : 1;
+
+        // Obtener los productos paginados preservando el filtro
+        $productos = $query->latest()
+            ->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
+
+        // Devolver la respuesta con el formato solicitado
+        return response()->json([
+            'currentPage' => $page,
+            'perPage' => $perPage,
+            'totalItems' => $totalItems,
+            'totalPages' => $totalPages,
+            'data' => $productos
         ]);
     }
 
