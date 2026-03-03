@@ -107,7 +107,7 @@ class GestionMarcosController extends Controller
     return $resultados;
 }
 
-    public function procesarMarcos($venta, array $cuadros)
+    public function procesarMarcos($venta, array $cuadros, $factorPrecioVenta)
     {
         $totalCuadros = 0;
         
@@ -116,7 +116,7 @@ class GestionMarcosController extends Controller
         foreach ($cuadros as $index => $cuadro) {
             
             $detalle = $this->crearDetalleVentaPersonalizada($venta, $cuadro);
-            $resultadoMateriales = $this->procesarMaterialesCuadro($detalle, $cuadro);
+            $resultadoMateriales = $this->procesarMaterialesCuadro($detalle, $cuadro,$factorPrecioVenta);
             $totalCuadros += $resultadoMateriales['total'];
             
             
@@ -150,13 +150,12 @@ class GestionMarcosController extends Controller
     /**
      * Procesa todos los materiales de un cuadro
      */
-    private function procesarMaterialesCuadro($detalle, $cuadro)
+    private function procesarMaterialesCuadro($detalle, $cuadro, $factorPrecioVenta)
     {
         $precioVarillas = 0;
         $precioTrupans = 0;
         $precioVidrios = 0;
         $precioContornos = 0;
-        $factorVenta=2.5;
         
         // Procesar cada tipo de material si está especificado
         if (!empty($cuadro['id_materia_prima_varillas'])) {
@@ -180,7 +179,7 @@ class GestionMarcosController extends Controller
         }
 
         return [
-            'total' => intval(($precioVarillas + $precioTrupans + $precioVidrios + $precioContornos)*$factorVenta),
+            'total' => intval(($precioVarillas + $precioTrupans + $precioVidrios + $precioContornos)*$factorPrecioVenta),
         ];
     }
 

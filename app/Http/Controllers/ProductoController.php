@@ -151,46 +151,6 @@ class ProductoController extends Controller
         return response()->json($producto);
     }
 
-    // Actualizar un producto (cambia la imagen si se sube una nueva)
-    /*
-    public function update(Request $request, $id)
-    {
-        $producto = Producto::find($id);
-        
-        if (!$producto) {
-            return response()->json(['message' => 'Producto no encontrado'], 404);
-        }
-    
-        $validator = Validator::make($request->all(), [
-            'descripcion' => 'required|string',
-            'precioCompra' => 'required|integer',
-            'precioVenta' => 'required|integer',
-            'stock' => 'required|integer',
-            'stockMin' => 'required|integer',
-            'actualizacion' => 'required|date',
-            'sucursal_id' => 'required|exists:sucursal,id',
-            'categoria_id' => 'required|exists:categorias,id',
-            'sub_categoria_id' => 'required|exists:sub_categorias,id'
-            // imagen sigue siendo ignorado
-        ]);
-    
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
-        }
-    
-        // Eliminar imagen actual si existe
-        if ($producto->imagen && \File::exists(public_path($producto->imagen))) {
-            \File::delete(public_path($producto->imagen));
-            $producto->imagen = null; // También limpiamos la referencia en base de datos
-        }
-    
-        // Actualizar el resto de los campos (excepto imagen)
-        $producto->update($request->except('imagen'));
-    
-        return response()->json($producto);
-    }
-    */
-
     public function update(Request $request, $id)
     {
         $producto = Producto::find($id);
@@ -250,6 +210,21 @@ class ProductoController extends Controller
             $producto->imagen = 'storage/productos/' . $filename;
             $producto->save();
         }
+
+        return response()->json($producto);
+    }
+
+    public function updateStockGlobal(Request $request, $id)
+    {
+        $producto = Producto::find($id);
+
+        if (!$producto) {
+            return response()->json(['message' => 'Producto no encontrado'], 404);
+        }
+
+        $totalStock = \App\Models\StockProducto::where('id_producto', $id)->sum('stock');
+        //$producto->stock_global_actual = $totalStock;
+        $producto->save();
 
         return response()->json($producto);
     }
