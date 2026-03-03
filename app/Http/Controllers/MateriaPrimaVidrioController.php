@@ -125,6 +125,38 @@ class MateriaPrimaVidrioController extends Controller
         $vidrio->update($request->except('imagen'));
         $vidrio->save();
 
+
+
+        $stock_global_Nuevo = $request->input('stock_global_actual');
+        $totalStock = \App\Models\StockVidrio::where('id_materia_prima_vidrio', $id)->sum('stock');
+        if($totalStock>=$stock_global_Nuevo){
+            $vidrio->stock_global_actual = $totalStock-$stock_global_Nuevo;
+            $vidrio->save();
+            //dd('se puede');
+            // si se puede quiero que vayas descontando de los stock con este ide prodcuto desde el stock con id mas bajo al mas alto, si el stock llega a 0 lo actualizas y vas al siguiente stock asi vaciando uno por uno hasta que se complete el stock_global_Nuevo
+            
+            $stocks = \App\Models\StockVidrio::where('id_materia_prima_vidrio', $id)->orderBy('id', 'asc')->get();
+            $cantidad_a_descontar = $totalStock - $stock_global_Nuevo;
+
+            foreach ($stocks as $s) {
+                if ($cantidad_a_descontar <= 0) {
+                    break;
+                }
+                
+                if ($s->stock >= $cantidad_a_descontar) {
+                    $s->stock -= $cantidad_a_descontar;
+                    $s->save();
+                    $cantidad_a_descontar = 0; // Ya se descontó todo
+                } else {
+                    $cantidad_a_descontar -= $s->stock;
+                    $s->stock = 0; // Se vació este lote de stock
+                    $s->save();
+                }
+            }
+        }else{
+            return response()->json(['message' => 'No se puede actualizar el stock, el stock ingresado es mayor al stock actual'], 400);// cambia el mensaje de erorr, se gardaron todoso los camposon excepto por stock debido a que no se pudo actualizar el stock    
+        }
+
         return response()->json($vidrio);
     }
 

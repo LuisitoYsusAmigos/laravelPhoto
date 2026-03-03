@@ -164,8 +164,8 @@ class ProductoController extends Controller
             'descripcion' => 'required|string',
             'precioCompra' => 'required|integer',
             'precioVenta' => 'required|integer',
-            //'stock_global_actual' => 'required|integer',
-            'stock_global_minimo' => 'required|integer',
+            'stock_global_actual' => 'required|integer|min:0',
+            'stock_global_minimo' => 'required|integer|min:0',
             'actualizacion' => 'required|date',
             'id_sucursal' => 'required|exists:sucursal,id',
             'id_lugar' => 'required|exists:lugars,id',
@@ -174,6 +174,7 @@ class ProductoController extends Controller
             'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'visibilidad' => 'nullable|boolean'
         ]);
+       
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
@@ -210,21 +211,42 @@ class ProductoController extends Controller
             $producto->imagen = 'storage/productos/' . $filename;
             $producto->save();
         }
+        $stock_global_Nuevo = $request->input('stock_global_actual');
+        
+        
+        //updateStockGlobal($stock_global_Nuevo);
 
-        return response()->json($producto);
-    }
-
-    public function updateStockGlobal(Request $request, $id)
-    {
-        $producto = Producto::find($id);
-
-        if (!$producto) {
-            return response()->json(['message' => 'Producto no encontrado'], 404);
-        }
-
+        
+        $stock_global_Nuevo = $request->input('stock_global_actual');
         $totalStock = \App\Models\StockProducto::where('id_producto', $id)->sum('stock');
-        //$producto->stock_global_actual = $totalStock;
-        $producto->save();
+        if($totalStock>=$stock_global_Nuevo){
+            $producto->stock_global_actual = $totalStock-$stock_global_Nuevo;
+            $producto->save();
+            //dd('se puede');
+            // si se puede quiero que vayas descontando de los stock con este ide prodcuto desde el stock con id mas bajo al mas alto, si el stock llega a 0 lo actualizas y vas al siguiente stock asi vaciando uno por uno hasta que se complete el stock_global_Nuevo
+            
+            $stocks = \App\Models\StockProducto::where('id_producto', $id)->orderBy('id', 'asc')->get();
+            $cantidad_a_descontar = $totalStock - $stock_global_Nuevo;
+
+            foreach ($stocks as $s) {
+                if ($cantidad_a_descontar <= 0) {
+                    break;
+                }
+                
+                if ($s->stock >= $cantidad_a_descontar) {
+                    $s->stock -= $cantidad_a_descontar;
+                    $s->save();
+                    $cantidad_a_descontar = 0; // Ya se descontó todo
+                } else {
+                    $cantidad_a_descontar -= $s->stock;
+                    $s->stock = 0; // Se vació este lote de stock
+                    $s->save();
+                }
+            }
+        }else{
+            return response()->json(['message' => 'No se puede actualizar el stock, el stock ingresado es mayor al stock actual'], 400);// cambia el mensaje de erorr, se gardaron todoso los camposon excepto por stock debido a que no se pudo actualizar el stock    
+        }
+        
 
         return response()->json($producto);
     }
