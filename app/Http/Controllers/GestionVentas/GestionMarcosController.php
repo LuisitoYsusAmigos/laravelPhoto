@@ -117,7 +117,6 @@ class GestionMarcosController extends Controller
             
             $detalle = $this->crearDetalleVentaPersonalizada($venta, $cuadro);
             $resultadoMateriales = $this->procesarMaterialesCuadro($detalle, $cuadro);
-            
             $totalCuadros += $resultadoMateriales['total'];
             
             
@@ -153,32 +152,35 @@ class GestionMarcosController extends Controller
      */
     private function procesarMaterialesCuadro($detalle, $cuadro)
     {
-        $totalCuadro = 0;
-       
-
+        $precioVarillas = 0;
+        $precioTrupans = 0;
+        $precioVidrios = 0;
+        $precioContornos = 0;
+        $factorVenta=2.5;
+        
         // Procesar cada tipo de material si está especificado
         if (!empty($cuadro['id_materia_prima_varillas'])) {
             
-            $totalCuadro += $this->procesarVarillas($detalle, $cuadro);
+            $precioVarillas = $this->procesarVarillas($detalle, $cuadro);
         }
 
         if (!empty($cuadro['id_materia_prima_trupans'])) {
             
-            $totalCuadro += $this->procesarTrupans($detalle, $cuadro);
+            $precioTrupans = $this->procesarTrupans($detalle, $cuadro);
         }
 
         if (!empty($cuadro['id_materia_prima_vidrios'])) {
             
-            $totalCuadro += $this->procesarVidrios($detalle, $cuadro);
+            $precioVidrios = $this->procesarVidrios($detalle, $cuadro);
         }
 
         if (!empty($cuadro['id_materia_prima_contornos'])) {
             
-            $totalCuadro += $this->procesarContornos($detalle, $cuadro);
+            $precioContornos = $this->procesarContornos($detalle, $cuadro);
         }
 
         return [
-            'total' => $totalCuadro,
+            'total' => intval(($precioVarillas + $precioTrupans + $precioVidrios + $precioContornos)*$factorVenta),
         ];
     }
 
