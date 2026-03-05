@@ -116,7 +116,7 @@ class GestionVentaController extends Controller
             }
         }
 
-        // 🔎 Validar marcos y stock ANTES de crear la venta
+        //  Validar marcos y stock ANTES de crear la venta
         if (!empty($request->cuadros)) {
             $validacionMarcos = $this->gestionMarcos->verificarDisponibilidadMarcos($request->cuadros);
 

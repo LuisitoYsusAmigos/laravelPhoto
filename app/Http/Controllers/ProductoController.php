@@ -219,14 +219,17 @@ class ProductoController extends Controller
         
         $stock_global_Nuevo = $request->input('stock_global_actual');
         $totalStock = \App\Models\StockProducto::where('id_producto', $id)->sum('stock');
+
+        //dd('global anterior', $totalStock, 'global nuevo' ,$stock_global_Nuevo, ($totalStock>=$stock_global_Nuevo));
         if($totalStock>=$stock_global_Nuevo){
-            $producto->stock_global_actual = $totalStock-$stock_global_Nuevo;
+            $producto->stock_global_actual = $stock_global_Nuevo;
             $producto->save();
             //dd('se puede');
             // si se puede quiero que vayas descontando de los stock con este ide prodcuto desde el stock con id mas bajo al mas alto, si el stock llega a 0 lo actualizas y vas al siguiente stock asi vaciando uno por uno hasta que se complete el stock_global_Nuevo
             
             $stocks = \App\Models\StockProducto::where('id_producto', $id)->orderBy('id', 'asc')->get();
             $cantidad_a_descontar = $totalStock - $stock_global_Nuevo;
+            
 
             foreach ($stocks as $s) {
                 if ($cantidad_a_descontar <= 0) {
