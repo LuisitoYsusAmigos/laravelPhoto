@@ -115,8 +115,8 @@
         <td>{{ $producto['id'] }}</td>
         <td>{{ $producto['producto']['descripcion'] }}</td>
         <td>{{ $producto['cantidad'] }}</td>
+        <td>{{ number_format($producto['precio']/100/$producto['cantidad'], 2) }}</td>
         <td>{{ number_format($producto['precio']/100, 2) }}</td>
-        <td>{{ number_format($producto['precio']/100 * $producto['cantidad'], 2) }}</td>
       </tr>
       @endforeach
     </table>
@@ -173,11 +173,11 @@
         <td><strong>A cuenta</strong></td>
         <td>{{ number_format($aCuenta/100, 2) }}</td>
         <td class="right"><strong>Descuento</strong></td>
-        <td>{{ number_format($descuento, 2) }}</td>
+        <td>{{ number_format($descuento/100, 2) }}</td>
       </tr>
       <tr>
         <td><strong>Saldo</strong></td>
-        <td>{{ number_format($venta['saldo'], 2) }}</td>
+        <td>{{ number_format($venta['saldo']/100, 2) }}</td>
         <td class="no-border"></td>
         <td class="no-border"></td>
       </tr>

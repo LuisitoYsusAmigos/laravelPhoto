@@ -169,7 +169,7 @@ class GestionVentaController extends Controller
     }
 
     private function crearVentaBase(Request $request)
-    {
+    {   
         return Venta::create([
             'saldo' => $request->saldo,
             'idCliente' => $request->idCliente,
@@ -199,12 +199,14 @@ class GestionVentaController extends Controller
                 throw new \Exception("El descuento no puede ser mayor al precio total de la venta");
             }else{
                 $precioTotal = $precioTotal - $descuento;
+                // Actualizar el precio total en la base de datos para que refleje el descuento
+                $venta->update(['precioTotal' => $precioTotal]);
                 //dd("descuento aplicado");
             }
         }
         if ($saldo > $precioTotal) {
             $exceso = $saldo - $precioTotal;
-            throw new \Exception("Hay un excedente de $exceso unidades en el saldo/pagoss");
+            throw new \Exception("Hay un excedente de $exceso unidades en el saldo/pagos");
         }
 
         if ($saldo > 0) {
@@ -588,6 +590,7 @@ class GestionVentaController extends Controller
             'saldoFalante' => $venta->precioTotal - $venta->saldo,
             'precioProducto' => $venta->precioProducto,
             'precioPerzonalizado' => $venta->precioPerzonalizado, // ← Agregado
+            'descuento' => $venta->descuento,
             'precioTotal' => $venta->precioTotal,
             'created_at' => $venta->created_at,
             'updated_at' => $venta->updated_at,
