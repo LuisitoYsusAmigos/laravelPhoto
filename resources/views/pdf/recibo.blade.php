@@ -152,19 +152,14 @@
             Contorno: {{ $personalizado['materia_prima_contorno']['descripcion'] }}
           @endif
         </td>
-        <td>{{ number_format(($personalizado['total'] ?? 0) / 100, 2) }}</td>
+        <td>{{ number_format((($personalizado['total'] ?? 0) / 100) * ($venta['factorPrecioVenta'] ?? 1), 2) }}</td>
       </tr>
       @endforeach
     </table>
     @endif
 
     @php
-      $subtotal = $venta['precioProducto'];
-
-      $descuento = $venta['precioProducto'] - $venta['precioTotal'];
-      if($descuento < 0){
-        $descuento = 0;
-      }
+      $descuento = $venta['descuento'] ?? 0;
       $aCuenta = $venta['precioTotal'] - $venta['saldo'];
     @endphp
 

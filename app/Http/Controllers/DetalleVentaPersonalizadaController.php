@@ -169,7 +169,7 @@ class DetalleVentaPersonalizadaController extends Controller
                         'stock_vidrio_id' => null,
                         'stock_varilla_id' => $retazo['id'],
                         'cantidad' => $retazo['cantidad'],
-                        'precio_unitario' => $precio,
+                        'precio_unitario' => $precio ,
                         'detalleVP_id' => $detalle->id
                     ]);
                 }

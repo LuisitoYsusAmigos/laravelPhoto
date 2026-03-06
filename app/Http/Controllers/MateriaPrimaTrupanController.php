@@ -139,7 +139,7 @@ class MateriaPrimaTrupanController extends Controller
         $stock_global_Nuevo = $request->input('stock_global_actual');
         $totalStock = \App\Models\StockTrupan::where('id_materia_prima_trupans', $id)->sum('stock');
         if($totalStock>=$stock_global_Nuevo){
-            $trupan->stock_global_actual = $totalStock-$stock_global_Nuevo;
+            $trupan->stock_global_actual = $stock_global_Nuevo;
             $trupan->save();
             //dd('se puede');
             // si se puede quiero que vayas descontando de los stock con este ide prodcuto desde el stock con id mas bajo al mas alto, si el stock llega a 0 lo actualizas y vas al siguiente stock asi vaciando uno por uno hasta que se complete el stock_global_Nuevo
