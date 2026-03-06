@@ -615,4 +615,75 @@ class GestionVentaController extends Controller
             }),
         ];
     }
+
+    public function consultaPrecioRealMarco(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'factorPrecioVenta' => 'nullable|numeric|min:0',
+            'descuento' => 'nullable|integer|min:0',
+            'cuadros' => 'required|array',
+            'cuadros.*.lado_a' => 'required_with:cuadros|integer|min:1',
+            'cuadros.*.lado_b' => 'required_with:cuadros|integer|min:1',
+            'cuadros.*.cantidad' => 'required_with:cuadros|integer|min:1',
+            'cuadros.*.id_materia_prima_varillas' => 'nullable|integer',
+            'cuadros.*.id_materia_prima_trupans' => 'nullable|integer',
+            'cuadros.*.id_materia_prima_vidrios' => 'nullable|integer',
+            'cuadros.*.id_materia_prima_contornos' => 'nullable|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Faltan datos o datos inválidos',
+                'errors' => $validator->errors()
+            ], 400);
+        }
+
+        $factorPrecioVenta = $request->input('factorPrecioVenta') ?? 1;
+        $descuento = $request->input('descuento') ?? 0;
+        $cuadros = $request->input('cuadros');
+
+        try {
+            foreach ($cuadros as $index => $cuadro) {
+                if (empty($cuadro['id_materia_prima_varillas'])) {
+                    return response()->json([
+                        'error' => "Debe proporcionar una varilla válida para hacer el cálculo correcto del material en el cuadro #" . ($index + 1)
+                    ], 400);
+                }
+
+                // Calcular tamaño externo del marco
+                $medidasExternas = $this->gestionMarcos->obtenerMarcoExterno($cuadros);
+
+                $cuadros[$index]['lado_a'] = $medidasExternas['lado_a'];
+                $cuadros[$index]['lado_b'] = $medidasExternas['lado_b'];
+            }
+
+            // Validar marcos (disponibilidad de stock)
+            $validacionMarcos = $this->gestionMarcos->verificarDisponibilidadMarcos($cuadros);
+            $errores = array_filter($validacionMarcos, fn($c) => $c['valido'] === false);
+
+            if (!empty($errores)) {
+                return response()->json([
+                    'message' => 'Errores en los cuadros personalizados (Stock no disponible)',
+                    'detalles' => $errores
+                ], 400);
+            }
+
+            // Simular precio
+            $resultadoMarcos = $this->gestionMarcos->simularPrecioMarco($cuadros, $factorPrecioVenta);
+            $totalCuadros = $resultadoMarcos['total'];
+
+            $precioTotal = $totalCuadros - $descuento;
+            if ($precioTotal < 0) $precioTotal = 0;
+
+            return response()->json([
+                'message' => 'Cálculo de precio exitoso',
+                'precioCalculadoSinDescuento' => $totalCuadros,
+                'descuentoAplicado' => $descuento,
+                'precioTotal' => $precioTotal,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }

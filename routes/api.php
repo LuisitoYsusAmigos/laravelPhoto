@@ -329,6 +329,7 @@ Route::get('/estadisticas/clientesNuevos', [FuncionesGeneralesController::class,
 // Ruta para crear venta completa (productos + cuadros personalizados)
 use App\Http\Controllers\GestionVentas\GestionVentaController;
 Route::post('/ventaProductoMarco', [GestionVentaController::class, 'crearVentaCompleta']);
+Route::post('/preciorealMarco', [GestionVentaController::class, 'consultaPrecioRealMarco']);
 
 // metodo nuevo de venta 2026
 

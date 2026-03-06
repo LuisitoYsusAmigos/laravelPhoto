@@ -125,6 +125,13 @@
     {{-- Productos personalizados --}}
     @if(!empty($venta['detalle_venta_personalizadas']))
     <h3>Productos Personalizados</h3>
+    
+    @php
+      // Calculamos la suma de los subtotales de personalizados para obtener el factor
+      $sumaSubtotalesPers = collect($venta['detalle_venta_personalizadas'])->sum('total');
+      $saldoVenta = $venta['saldo'] ?? 0;
+    @endphp
+
     <table>
       <tr>
         <th>ID</th>
@@ -152,7 +159,18 @@
             Contorno: {{ $personalizado['materia_prima_contorno']['descripcion'] }}
           @endif
         </td>
-        <td>{{ number_format((($personalizado['total'] ?? 0) / 100) * ($venta['factorPrecioVenta'] ?? 1), 2) }}</td>
+        <td>
+          @php
+            $totalOriginal = $personalizado['total'] ?? 0;
+            $totalCalculado = 0;
+            
+            // Aplicamos tu lógica: Total del producto * (Saldo / Suma de subtotales personalizados)
+            if ($sumaSubtotalesPers > 0) {
+                $totalCalculado = ($totalOriginal / 100) * ($saldoVenta / $sumaSubtotalesPers);
+            }
+          @endphp
+          {{ number_format($totalCalculado, 2) }}
+        </td>
       </tr>
       @endforeach
     </table>

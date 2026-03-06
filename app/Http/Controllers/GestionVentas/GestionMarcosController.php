@@ -458,6 +458,136 @@ private function obtenerDatosMateriaPrima($tipoMaterial, $cuadro)
 
 
 
+    public function simularPrecioMarco(array $cuadros, $factorPrecioVenta)
+    {
+        $totalCuadros = 0;
+        foreach ($cuadros as $index => $cuadro) {
+            $resultadoMateriales = $this->simularMaterialesCuadro($cuadro, $factorPrecioVenta);
+            $totalCuadros += $resultadoMateriales['total'];
+        }
+        return [
+            'total' => $totalCuadros,
+        ];
+    }
+
+    private function simularMaterialesCuadro($cuadro, $factorPrecioVenta)
+    {
+        $precioVarillas = 0;
+        $precioTrupans = 0;
+        $precioVidrios = 0;
+        $precioContornos = 0;
+        
+        if (!empty($cuadro['id_materia_prima_varillas'])) {
+            $precioVarillas = $this->simularVarillas($cuadro);
+        }
+        if (!empty($cuadro['id_materia_prima_trupans'])) {
+            $precioTrupans = $this->simularTrupans($cuadro);
+        }
+        if (!empty($cuadro['id_materia_prima_vidrios'])) {
+            $precioVidrios = $this->simularVidrios($cuadro);
+        }
+        if (!empty($cuadro['id_materia_prima_contornos'])) {
+            $precioContornos = $this->simularContornos($cuadro);
+        }
+
+        return [
+            'total' => intval(($precioVarillas + $precioTrupans + $precioVidrios + $precioContornos)*$factorPrecioVenta),
+        ];
+    }
+
+    public function simularVarillas($cuadro)
+    {
+        $varillasDisponibles = $this->obtenerVarillasDisponibles($cuadro['id_materia_prima_varillas']);
+        $necesidadesCuadros = $this->crearNecesidadCuadro($cuadro);
+        
+        $resultado = $this->usoVarillasCuadro->optimizarCorte($necesidadesCuadros, $varillasDisponibles, 0.3);
+        $jsonRespuesta = $this->usoVarillasCuadro->generarJson($resultado);
+
+        if (!$jsonRespuesta['terminado']) {
+            throw new \Exception('No se pudo optimizar el corte de varillas para el cuadro especificado revisar la disponibilidad de esta varilla');
+        }
+
+        return $this->simularResultadoVarillas($jsonRespuesta['retazosUsados']);
+    }
+
+    public function simularTrupans($cuadro)
+    {
+        $trupansDisponibles = $this->obtenerTrupansDisponibles($cuadro['id_materia_prima_trupans']);
+        $necesidadCuadro = $this->crearNecesidadCuadroLamina($cuadro);
+
+        $respuesta = $this->usoLaminasCuadro->optimizarCuadro($necesidadCuadro, $trupansDisponibles);
+
+        if (!$respuesta['terminado']) {
+            throw new \Exception('No se pudo optimizar el corte de trupans para el cuadro especificado');
+        }
+
+        return $this->simularResultadoLamina($respuesta, 'trupan', $cuadro);
+    }
+
+    public function simularVidrios($cuadro)
+    {
+        $vidriosDisponibles = $this->obtenerVidriosDisponibles($cuadro['id_materia_prima_vidrios']);
+        $necesidadCuadro = $this->crearNecesidadCuadroLamina($cuadro);
+
+        $respuesta = $this->usoLaminasCuadro->optimizarCuadro($necesidadCuadro, $vidriosDisponibles);
+
+        if (!$respuesta['terminado']) {
+            throw new \Exception('No se pudo optimizar el corte de vidrios para el cuadro especificado');
+        }
+        
+        return $this->simularResultadoLamina($respuesta, 'vidrio', $cuadro);
+    }
+
+    public function simularContornos($cuadro)
+    {
+        $contornosDisponibles = $this->obtenerContornosDisponibles($cuadro['id_materia_prima_contornos']);
+        $necesidadCuadro = $this->crearNecesidadCuadroLamina($cuadro);
+
+        $respuesta = $this->usoLaminasCuadro->optimizarCuadro($necesidadCuadro, $contornosDisponibles);
+
+        if (!$respuesta['terminado']) {
+            throw new \Exception('No se pudo optimizar el corte de contornos para el cuadro especificado');
+        }
+        return $this->simularResultadoLamina($respuesta, 'contorno', $cuadro);
+    }
+
+    private function simularResultadoVarillas($retazosUsados)
+    {
+        $totalVarillas = 0;
+
+        foreach ($retazosUsados as $retazo) {
+            $datosVarilla = DB::table('stock_varillas as sv')
+                ->join('materia_prima_varillas as mpv', 'sv.id_materia_prima_varilla', '=', 'mpv.id')
+                ->where('sv.id', $retazo['id'])
+                ->first(['mpv.precioVenta', 'mpv.factor_desperdicio']);
+
+            if (!$datosVarilla) {
+                throw new \Exception("Datos de varilla no encontrados para stock ID: {$retazo['id']}");
+            }
+
+            $metrosUsados = $retazo['mmUsados'] / 1000;
+            $precio = intval($metrosUsados * $datosVarilla->precioVenta * $datosVarilla->factor_desperdicio * $retazo['cantidad']);
+            
+            $totalVarillas += $precio;
+        }
+
+        return $totalVarillas;
+    }
+
+    private function simularResultadoLamina($respuesta, $tipoMaterial, $cuadro)
+    {
+        // Área del cuadro en m² a partir de dimensiones que tal vez vienen en mm o cm
+        $areaMm2 = ($cuadro['lado_a']/100) * ($cuadro['lado_b']/100);
+        
+        $datosMateriaPrima = $this->obtenerDatosMateriaPrima($tipoMaterial, $cuadro);
+        $precioM2 = $datosMateriaPrima['precio_m2'];
+        $factorDesperdicio = $datosMateriaPrima['factor_desperdicio'];
+
+        $precio = intval($areaMm2 * $precioM2 * $factorDesperdicio * $cuadro['cantidad']);
+        
+        return $precio;
+    }
+
     public function obtenerMarcoExterno($cuadros){
         $varilla = MateriaPrimaVarilla::find($cuadros[0]['id_materia_prima_varillas']);
         // define una varible grosor con el grosor de este
