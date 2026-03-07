@@ -20,6 +20,8 @@ class CreateVentasTable extends Migration
             $table->boolean('recogido')->default(false);
             $table->dateTime('fecha');
             $table->dateTime('fechaEntrega')->nullable(); // <-- Nuevo campo
+            //factor de precio de venta
+            $table->float('factorPrecioVenta')->default(1);
 
             $table->foreignId('idCliente')->constrained('clientes')->onDelete('cascade');
             $table->foreignId('idSucursal')->constrained('sucursal')->onDelete('cascade');

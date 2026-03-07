@@ -19,6 +19,7 @@ class GestionRecibosController extends Controller
         // Usar VentaController para obtener la data
         //$ventaJson = (new VentaController)->getVentaCompleta($id);
         $ventaJson = (new GestionVentaController)->obtenerVentaCompleta($id);
+        //dd($ventaJson);
         $ventaArray = $ventaJson->getData(true)['venta'];
         //dd($ventaArray);
 

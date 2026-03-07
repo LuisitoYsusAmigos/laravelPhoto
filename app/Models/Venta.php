@@ -23,6 +23,7 @@ class Venta extends Model
         'idCliente',
         'idSucursal',
         'idUsuario',
+        'factorPrecioVenta',
     ];
 
     protected $casts = [

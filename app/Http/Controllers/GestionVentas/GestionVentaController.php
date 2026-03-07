@@ -179,6 +179,7 @@ class GestionVentaController extends Controller
             'fecha' => now(),
             'fechaEntrega' => $request->fechaEntrega ?? null,
             'descuento' => $request->descuento ?? 0,
+            'factorPrecioVenta' => $request->factorPrecioVenta ?? 1,
         ]);
     }
 
@@ -592,6 +593,7 @@ class GestionVentaController extends Controller
             'precioPerzonalizado' => $venta->precioPerzonalizado, // ← Agregado
             'descuento' => $venta->descuento,
             'precioTotal' => $venta->precioTotal,
+            'factorPrecioVenta' => $venta->factorPrecioVenta,
             'created_at' => $venta->created_at,
             'updated_at' => $venta->updated_at,
             'cliente' => $venta->cliente,

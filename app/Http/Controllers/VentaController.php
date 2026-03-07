@@ -384,6 +384,8 @@ public function getVentaCompleta($id)
                 'created_at' => $venta->created_at,
                 'precioProducto' => $venta->precioProducto,
                 'precioTotal' => $venta->precioTotal,
+                'factorPrecioVenta' => $venta->factorPrecioVenta,
+                'descuento' => $venta->descuento,
                 'cliente' => $venta->cliente,
                 'sucursal' => $venta->sucursal,
                 'detalle_venta_productos' => $venta->detalleVentaProductos,
