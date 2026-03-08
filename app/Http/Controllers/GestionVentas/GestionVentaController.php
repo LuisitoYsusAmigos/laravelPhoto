@@ -57,14 +57,9 @@ class GestionVentaController extends Controller
                 'errors' => $validator->errors()
             ], 400);
         }
-
-
         $request->merge([
             'saldo' => $request->input('pago')
         ]);
-
-
-
         if (empty($request->detalles) && empty($request->cuadros)) {
             return response()->json([
                 'error' => 'Debe incluir al menos productos o cuadros personalizados'
@@ -167,6 +162,34 @@ class GestionVentaController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+
+
+
+public function SimularVenta(Request $request)
+{
+    DB::beginTransaction();
+
+    try {
+
+        // Ejecuta todo el cálculo usando tu lógica existente
+        $respuesta = $this->crearVentaCompleta($request);
+
+        // Deshacer absolutamente todo lo que haya hecho la función
+        DB::rollBack();
+
+        // Devolver exactamente la misma respuesta
+        return $respuesta;
+
+    } catch (\Exception $e) {
+
+        DB::rollBack();
+
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 
     private function crearVentaBase(Request $request)
     {   
