@@ -152,7 +152,7 @@
             Contorno: {{ $personalizado['materia_prima_contorno']['descripcion'] }}
           @endif
         </td>
-       <td>{{ number_format(($venta['precioPerzonalizado'] ?? 0) / 100 * $venta['factorPrecioVenta'], 2) }}</td>
+       <td>{{ number_format(($venta['precioPerzonalizado'] ?? 0) / 100, 2) }}</td>
       </tr>
       @endforeach
     </table>
