@@ -66,7 +66,7 @@
 
             <div class="summary-item">
                 <span>Total de ventas:</span>
-                <span><strong>Bs {{ number_format((float) $caja['total'], 2, '.', ',') }}</strong></span>
+                <span><strong>Bs {{ number_format((float) $caja['total']/100, 2, '.', ',') }}</strong></span>
             </div>
 
             <div class="summary-item">
@@ -88,7 +88,7 @@
                 @if (!empty($caja['detalle'][$codigo]))
                     <div class="summary-item">
                         <span>{{ $label }}:</span>
-                        <span>Bs {{ number_format((float) $caja['detalle'][$codigo], 2, '.', ',') }}</span>
+                        <span>Bs {{ number_format((float) $caja['detalle'][$codigo]/100, 2, '.', ',') }}</span>
                     </div>
                 @endif
             @endforeach

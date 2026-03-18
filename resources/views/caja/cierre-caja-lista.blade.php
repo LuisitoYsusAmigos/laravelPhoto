@@ -71,12 +71,12 @@
 
             <div class="summary-item">
                 <span>Total ingresos:</span>
-                <span><strong>Bs {{ number_format((float) $caja['total_ingresos'], 2, '.', ',') }}</strong></span>
+                <span><strong>Bs {{ number_format((float) $caja['total_ingresos']/100, 2, '.', ',') }}</strong></span>
             </div>
 
             <div class="summary-item">
                 <span>Total ventas:</span>
-                <span>{{ $caja['total_ventas'] }}</span>
+                <span>{{ $caja['total_ventas']/100 }}</span>
             </div>
 
             <div class="separator"></div>
