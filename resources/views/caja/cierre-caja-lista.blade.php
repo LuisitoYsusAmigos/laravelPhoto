@@ -82,13 +82,7 @@
             <div class="separator"></div>
 
             @php
-                $formasPago = [
-                    '1' => 'Efectivo',
-                    '2' => 'Tarjeta',
-                    '3' => 'Transferencia',
-                    '4' => 'QR',
-                    '5' => 'Otros'
-                ];
+                $formasPago = \App\Models\FormaDePago::pluck('nombre', 'id')->toArray();
             @endphp
 
             @foreach ($formasPago as $clave => $label)

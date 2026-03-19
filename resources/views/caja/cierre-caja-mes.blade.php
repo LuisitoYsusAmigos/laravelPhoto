@@ -77,18 +77,15 @@
             <div class="separator"></div>
 
             @php
-                $formasPago = [
-                    '1' => 'Efectivo',
-                    '2' => 'Tarjeta',
-                    '3' => 'Transferencia',
-                ];
+                $formasPago = \App\Models\FormaDePago::pluck('nombre', 'id')->toArray();
+                $detalleDecodificado = is_string($caja['detalle']) ? json_decode($caja['detalle'], true) : $caja['detalle'];
             @endphp
 
             @foreach ($formasPago as $codigo => $label)
-                @if (!empty($caja['detalle'][$codigo]))
+                @if (!empty($detalleDecodificado[$codigo]))
                     <div class="summary-item">
                         <span>{{ $label }}:</span>
-                        <span>Bs {{ number_format((float) $caja['detalle'][$codigo]/100, 2, '.', ',') }}</span>
+                        <span>Bs {{ number_format((float) $detalleDecodificado[$codigo]/100, 2, '.', ',') }}</span>
                     </div>
                 @endif
             @endforeach
