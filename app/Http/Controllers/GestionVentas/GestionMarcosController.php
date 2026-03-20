@@ -345,10 +345,20 @@ class GestionMarcosController extends Controller
         }
 
         // Convertir mm usados a metros
-        $metrosUsados = $retazo['mmUsados'] / 1000;
+        $metrosUsados = $retazo['mmUsados']/1000 ;
+
         
         // Calcular precio: metros_usados × precio_por_metro × factor_desperdicio × cantidad
-        $precio = intval($metrosUsados * $datosVarilla->precioVenta * $datosVarilla->factor_desperdicio * $retazo['cantidad']);
+        $precio = round($metrosUsados * $datosVarilla->precioVenta * $datosVarilla->factor_desperdicio);
+        /*
+        dd(json_encode([
+            'metrosUsados' => $metrosUsados,
+            'precioVenta' => $datosVarilla->precioVenta,
+            'factor_desperdicio' => $datosVarilla->factor_desperdicio,
+            'cantidad' => $retazo['cantidad'],
+            'precio' => $precio
+        ]));
+        */
         
 
         $totalVarillas += $precio;
