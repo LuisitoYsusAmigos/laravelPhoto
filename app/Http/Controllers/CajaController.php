@@ -8,7 +8,7 @@ use App\Models\FormaDePago;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
-
+use Illuminate\Support\Facades\DB;
 
 class CajaController extends Controller
 {
@@ -220,12 +220,30 @@ class CajaController extends Controller
     public function pdfPorDia($fecha)
     {
         $caja = Caja::where('fecha', $fecha)->first();
+        //pagos del dia
+        // quiero una varibale que sea pagos que me devuelta lo de esta query SELECT 
 
         if (!$caja) {
             abort(404, 'No se encontró un cierre para la fecha indicada');
         }
 
-        $pdf = Pdf::loadView('caja.cierre-caja', compact(var_name: 'caja'));
+        $pagos = \App\Models\Pago::select(
+            'pagos.*',
+            'forma_de_pagos.nombre as nombre_forma_pago',
+            'ventas.precioProducto',
+            'ventas.precioPerzonalizado',
+            'ventas.idCliente',
+            'clientes.nombre as nombre_cliente',
+            'clientes.apellido as apellido_cliente'
+        )
+        ->join('forma_de_pagos', 'pagos.idFormaPago', '=', 'forma_de_pagos.id')
+        ->join('ventas', 'pagos.idVenta', '=', 'ventas.id')
+        ->join('clientes', 'ventas.idCliente', '=', 'clientes.id')
+        ->where('pagos.fecha', $fecha)
+        ->get();
+        
+        //dd($pagos,$caja);
+        $pdf = Pdf::loadView('caja.cierre-caja-con-listado', compact('caja', 'pagos'));
         return $pdf->stream("cierre_diario_{$fecha}.pdf");
     }
     public function cajaPorMes($fechaMes)
