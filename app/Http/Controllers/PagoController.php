@@ -161,8 +161,8 @@ class PagoController extends Controller
         }
 
         // Calcular el monto faltante
-        $montoFaltante = $venta->precioTotal - $venta->saldo - $venta->descuento;
-
+        $montoFaltante = $venta->precioTotal - $venta->saldo;// - $venta->descuento;
+        
         // Validación adicional por si acaso el saldo fuera mayor al precio total
         if ($montoFaltante <= 0) {
             return response()->json([
