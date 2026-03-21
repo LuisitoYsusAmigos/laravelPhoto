@@ -132,30 +132,42 @@
         </div>
 
         <h3>Detalle de Movimientos</h3>
-        <table class="payments-table">
-            <thead>
-                <tr>
-                    <th>Cliente</th>
-                    <th>Método</th>
-                    <th class="text-right">Monto</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($pagos as $pago)
-                <tr>
-                    <td>
-                        {{ $pago->nombre_cliente }} {{ $pago->apellido_cliente }}
-                    </td>
-                    <td>
-                        <span class="badge-pago">{{ $pago->nombre_forma_pago }}</span>
-                    </td>
-                    <td class="text-right monto-negrita">
-                        Bs {{ number_format($pago->monto/100, 2) }}
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+<table class="payments-table">
+    <thead>
+        <tr>
+            <th>Cliente</th>
+            <th>Venta</th> <th>Método</th>
+            <th class="text-right">Monto</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($pagos as $pago)
+        <tr>
+            <td>
+                {{ $pago->nombre_cliente }} {{ $pago->apellido_cliente }}
+            </td>
+            <td>
+                {{-- Lógica de etiquetas de venta --}}
+                @if($pago->precioProducto > 0 && $pago->precioPerzonalizado > 0)
+                    Producto y Marcos
+                @elseif($pago->precioPerzonalizado > 0)
+                    Marco Perzonalizado
+                @elseif($pago->precioProducto > 0)
+                    Producto
+                @else
+                    Otro
+                @endif
+            </td>
+            <td>
+                <span class="badge-pago">{{ $pago->nombre_forma_pago }}</span>
+            </td>
+            <td class="text-right monto-negrita">
+                Bs {{ number_format($pago->monto/100, 2) }}
+            </td>
+        </tr>
+        @endforeach
+    </tbody>
+</table>
     </div>
 
 </body>
