@@ -8,13 +8,14 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f6f9;
             padding: 2rem;
+            color: #333;
         }
 
         .card {
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
+            max-width: 600px; /* Aumentado un poco para que la tabla luzca mejor */
             margin: auto;
             padding: 1.5rem;
         }
@@ -34,6 +35,7 @@
             background-color: #f8fafc;
             border-radius: 6px;
             padding: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .summary h3 {
@@ -50,6 +52,44 @@
         .separator {
             border-top: 1px solid #ddd;
             margin: 0.5rem 0;
+        }
+
+        /* Estilos para la tabla de pagos */
+        .payments-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .payments-table th {
+            text-align: left;
+            background-color: #f1f5f9;
+            padding: 8px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #475569;
+        }
+
+        .payments-table td {
+            padding: 8px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .monto-negrita {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .badge-pago {
+            background-color: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
         }
     </style>
 </head>
@@ -78,7 +118,6 @@
 
             @php
                 $formasPago = \App\Models\FormaDePago::pluck('nombre', 'id')->toArray();
-                // Decodificar el detalle si viene directamente como string (Eloquent model uncast), de lo contrario usar el array.
                 $detalleDecodificado = is_string($caja['detalle']) ? json_decode($caja['detalle'], true) : $caja['detalle'];
             @endphp
 
@@ -91,6 +130,32 @@
                 @endif
             @endforeach
         </div>
+
+        <h3>Detalle de Movimientos</h3>
+        <table class="payments-table">
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Método</th>
+                    <th class="text-right">Monto</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($pagos as $pago)
+                <tr>
+                    <td>
+                        {{ $pago->nombre_cliente }} {{ $pago->apellido_cliente }}
+                    </td>
+                    <td>
+                        <span class="badge-pago">{{ $pago->nombre_forma_pago }}</span>
+                    </td>
+                    <td class="text-right monto-negrita">
+                        Bs {{ number_format($pago->monto/100, 2) }}
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
 
 </body>
