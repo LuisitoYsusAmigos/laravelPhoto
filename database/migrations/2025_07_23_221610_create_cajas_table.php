@@ -17,6 +17,7 @@ return new class extends Migration
             $table->integer('total');    // en centavos
             $table->integer('ventas');   // en centavos o cantidad
             $table->date('fecha');
+            $table->text('observaciones')->nullable();
             $table->foreignId('id_usuario')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });

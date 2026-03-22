@@ -8,7 +8,6 @@ use App\Models\FormaDePago;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\DB;
 
 class CajaController extends Controller
 {
@@ -39,6 +38,7 @@ class CajaController extends Controller
         $validator = Validator::make($request->all(), [
             'id_usuario' => 'required|exists:users,id',
             'fecha' => 'nullable|date', // fecha opcional
+            'observaciones' => 'nullable|string', // campo adicional para observaciones
         ]);
 
         if ($validator->fails()) {
@@ -80,6 +80,7 @@ class CajaController extends Controller
             'total' => $totalPagos,
             'ventas' => $ventasDelDia,
             'fecha' => $fecha,
+            'observaciones' => $request->observaciones, // guardar observaciones si se proporcionan
             'id_usuario' => $request->id_usuario,
         ]);
 

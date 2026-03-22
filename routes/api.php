@@ -232,8 +232,10 @@ use App\Http\Controllers\CajaController;
 Route::get('/cajas', [CajaController::class, 'index']);
 Route::post('/caja', [CajaController::class, 'store']);
 Route::get('/caja/{id}', [CajaController::class, 'show']);
-//Route::put('/cajas/{id}', [CajaController::class, 'update']);
+
 Route::delete('/cajas/{id}', [CajaController::class, 'destroy']);
+
+
 Route::get('/caja/fecha/{fecha}', [CajaController::class, 'obtenerPorFecha']); 
 Route::get('/caja/mes/{mes}', [CajaController::class, 'cajaPorMes']);
 //pdfss

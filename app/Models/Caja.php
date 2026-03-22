@@ -15,11 +15,12 @@ class Caja extends Model
         'ventas',
         'fecha',
         'id_usuario',
+        'observaciones'
     ];
 
     // Relación con el usuario
     public function usuario()
     {
-        return $this->belongsTo(User::class, 'id_usuario');
+        return $this->belongsTo(User::class , 'id_usuario');
     }
 }

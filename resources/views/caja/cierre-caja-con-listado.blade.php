@@ -114,6 +114,11 @@
                 <span>{{ $caja['ventas'] }}</span>
             </div>
 
+            <div class="summary-item">
+                <span>Observaciones:</span>
+                <span>{{ $caja['observaciones'] }}</span>
+            </div>
+
             <div class="separator"></div>
 
             @php
