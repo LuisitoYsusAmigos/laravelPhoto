@@ -20,7 +20,7 @@ class GestionVentaController extends Controller
         $this->gestionProductos = new GestionProductosController();
         $this->gestionMarcos = new GestionMarcosController();
     }
-    
+
 
     public function crearVentaCompleta(Request $request)
     {
@@ -49,7 +49,24 @@ class GestionVentaController extends Controller
             'cuadros.*.id_materia_prima_vidrios' => 'nullable|integer',
             'cuadros.*.id_materia_prima_contornos' => 'nullable|integer',
         ]);
-        // define una varible que sea factorprecioVenta que sea igual a la recivida en el request
+        // toma los datos de lado a y lado b y que sean ellos mismo multiplciados por 100 y modificalos en el mismo request 
+/*
+        if ($request->has('cuadros')) {
+            $cuadrosModificados = $request->input('cuadros');
+            foreach ($cuadrosModificados as &$c) {
+                if (isset($c['lado_a'])) {
+                    $c['lado_a'] = (int) ($c['lado_a'] * 100);
+                }
+                if (isset($c['lado_b'])) {
+                    $c['lado_b'] = (int) ($c['lado_b'] * 100);
+                }
+            }
+            $request->merge(['cuadros' => $cuadrosModificados]);
+        }
+            */
+        //dd($request->all());
+
+
         $factorPrecioVenta = $request->input('factorPrecioVenta') ?? 1;
         if ($validator->fails()) {
             return response()->json([
@@ -57,6 +74,20 @@ class GestionVentaController extends Controller
                 'errors' => $validator->errors()
             ], 400);
         }
+
+        if ($request->has('cuadros')) {
+            $cuadrosModificados = $request->input('cuadros');
+            foreach ($cuadrosModificados as &$c) {
+                if (isset($c['lado_a'])) {
+                    $c['lado_a'] = (int) ($c['lado_a'] * 10);
+                }
+                if (isset($c['lado_b'])) {
+                    $c['lado_b'] = (int) ($c['lado_b'] * 10);
+                }
+            }
+            $request->merge(['cuadros' => $cuadrosModificados]);
+        }
+
         $request->merge([
             'saldo' => $request->input('pago')
         ]);
@@ -79,25 +110,25 @@ class GestionVentaController extends Controller
                 $cuadros[$index]['lado_a'] = $medidasExternas['lado_a'];
                 $cuadros[$index]['lado_b'] = $medidasExternas['lado_b'];
                 $cuadros[$index]['id_materia_prima_varillas'] = $cuadro['id_materia_prima_varillas'];
-                
+
                 //quiero colocar un if si mandaron un id materia prima contorno hacer un dd si mando y si no mando un dd no mando
-                if(!empty($cuadros[$index]['id_materia_prima_contornos'])){
+                if (!empty($cuadros[$index]['id_materia_prima_contornos'])) {
                     $cuadros[$index]['id_materia_prima_contornos'] = $cuadro['id_materia_prima_contornos'];
                 }
-                if(!empty($cuadros[$index]['id_materia_prima_trupans'])){
+                if (!empty($cuadros[$index]['id_materia_prima_trupans'])) {
                     $cuadros[$index]['id_materia_prima_trupans'] = $cuadro['id_materia_prima_trupans'];
-                }     
-                if(!empty($cuadros[$index]['id_materia_prima_vidrios'])){
+                }
+                if (!empty($cuadros[$index]['id_materia_prima_vidrios'])) {
                     $cuadros[$index]['id_materia_prima_vidrios'] = $cuadro['id_materia_prima_vidrios'];
                 }
-                if(!empty($cuadros[$index]['cantidad'])){
+                if (!empty($cuadros[$index]['cantidad'])) {
                     $cuadros[$index]['cantidad'] = $cuadro['cantidad'];
                 }
-                
+
             }
-            
+
         }
-        
+
         if (!empty($request->detalles)) {
             $validacionProductos = $this->gestionProductos->verificarDisponibilidad($request->detalles);
 
@@ -140,15 +171,15 @@ class GestionVentaController extends Controller
             }
 
             if (!empty($request->cuadros)) {
-                $resultadoMarcos = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros,$factorPrecioVenta);
+                $resultadoMarcos = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros, $factorPrecioVenta);
                 $totalCuadros = $resultadoMarcos['total'];
             }
             $totalVenta = $totalProductos + $totalCuadros;
 
             // ✅ Actualizar con totales separados
             $this->actualizarTotalesVenta($venta, $totalProductos, $totalCuadros, $totalVenta);
-            
-            $this->procesarPago($venta, $request->saldo, $totalVenta, $request->idFormaPago, $request->entregado,$request->descuento);
+
+            $this->procesarPago($venta, $request->saldo, $totalVenta, $request->idFormaPago, $request->entregado, $request->descuento);
             $venta = $this->cargarRelacionesVenta($venta);
 
             DB::commit();
@@ -166,33 +197,33 @@ class GestionVentaController extends Controller
 
 
 
-public function SimularVenta(Request $request)
-{
-    DB::beginTransaction();
+    public function SimularVenta(Request $request)
+    {
+        DB::beginTransaction();
 
-    try {
+        try {
 
-        // Ejecuta todo el cálculo usando tu lógica existente
-        $respuesta = $this->crearVentaCompleta($request);
+            // Ejecuta todo el cálculo usando tu lógica existente
+            $respuesta = $this->crearVentaCompleta($request);
 
-        // Deshacer absolutamente todo lo que haya hecho la función
-        DB::rollBack();
+            // Deshacer absolutamente todo lo que haya hecho la función
+            DB::rollBack();
 
-        // Devolver exactamente la misma respuesta
-        return $respuesta;
+            // Devolver exactamente la misma respuesta
+            return $respuesta;
 
-    } catch (\Exception $e) {
+        } catch (\Exception $e) {
 
-        DB::rollBack();
+            DB::rollBack();
 
-        return response()->json([
-            'error' => $e->getMessage()
-        ], 500);
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
-}
 
     private function crearVentaBase(Request $request)
-    {   
+    {
         return Venta::create([
             'saldo' => $request->saldo,
             'idCliente' => $request->idCliente,
@@ -217,11 +248,11 @@ public function SimularVenta(Request $request)
 
     private function procesarPago($venta, $saldo, $precioTotal, $idFormaPago, $entregado, $descuento)
     {
-        if($descuento!=null){
+        if ($descuento != null) {
             //dd("se envio descuento");
-            if($descuento>$precioTotal){
+            if ($descuento > $precioTotal) {
                 throw new \Exception("El descuento no puede ser mayor al precio total de la venta");
-            }else{
+            } else {
                 $precioTotal = $precioTotal - $descuento;
                 // Actualizar el precio total en la base de datos para que refleje el descuento
                 $venta->update(['precioTotal' => $precioTotal]);
@@ -240,7 +271,7 @@ public function SimularVenta(Request $request)
                 'monto' => $saldo,
                 'fecha' => now()->toDateString(),
             ]);
-        } elseif ($saldo == 0 &&  $entregado == false) {
+        } elseif ($saldo == 0 && $entregado == false) {
             $venta->update([
                 'recogido' => false,
                 'saldo' => 0
@@ -621,7 +652,7 @@ public function SimularVenta(Request $request)
             'updated_at' => $venta->updated_at,
             'cliente' => $venta->cliente,
             'sucursal' => $venta->sucursal,
-            'detalle_venta_productos' => $venta->detalleVentaProductos->map(function($detalle) {
+            'detalle_venta_productos' => $venta->detalleVentaProductos->map(function ($detalle) {
                 return [
                     'id' => $detalle->id,
                     'cantidad' => $detalle->cantidad,
@@ -633,7 +664,7 @@ public function SimularVenta(Request $request)
                     'nombreProducto' => optional($detalle->producto)->nombre,
                 ];
             }),
-            'detalle_venta_personalizadas' => $venta->detalleVentaPersonalizadas->map(function($detalle) {
+            'detalle_venta_personalizadas' => $venta->detalleVentaPersonalizadas->map(function ($detalle) {
                 $detalleArray = $detalle->toArray();
                 $detalleArray['total'] = $detalle->materialesVentaPersonalizadas->sum('precio_unitario');
                 return $detalleArray;
@@ -662,6 +693,7 @@ public function SimularVenta(Request $request)
                 'errors' => $validator->errors()
             ], 400);
         }
+
 
         $factorPrecioVenta = $request->input('factorPrecioVenta') ?? 1;
         $descuento = $request->input('descuento') ?? 0;
@@ -698,7 +730,8 @@ public function SimularVenta(Request $request)
             $totalCuadros = $resultadoMarcos['total'];
 
             $precioTotal = $totalCuadros - $descuento;
-            if ($precioTotal < 0) $precioTotal = 0;
+            if ($precioTotal < 0)
+                $precioTotal = 0;
 
             return response()->json([
                 'message' => 'Cálculo de precio exitoso',

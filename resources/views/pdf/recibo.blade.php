@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <title>Recibo de Pago</title>
@@ -39,11 +40,14 @@
       margin-top: 20px;
     }
 
-    table, th, td {
+    table,
+    th,
+    td {
       border: 1px solid #000;
     }
 
-    th, td {
+    th,
+    td {
       padding: 6px;
       text-align: left;
     }
@@ -67,6 +71,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="recibo-container">
     <div class="header">
@@ -101,80 +106,80 @@
 
     {{-- Productos normales --}}
     @if(!empty($venta['detalle_venta_productos']))
-    <h3>Productos</h3>
-    <table>
-      <tr>
-        <th>ID</th>
-        <th>Producto</th>
-        <th>Cant.</th>
-        <th>Precio Unitario</th>
-        <th>Total</th>
-      </tr>
-      @foreach ($venta['detalle_venta_productos'] as $producto)
-      <tr>
-        <td>{{ $producto['id'] }}</td>
-        <td>{{ $producto['producto']['descripcion'] }}</td>
-        <td>{{ $producto['cantidad'] }}</td>
-        <td>{{ number_format($producto['precio']/100/$producto['cantidad'], 2) }}</td>
-        <td>{{ number_format($producto['precio']/100, 2) }}</td>
-      </tr>
-      @endforeach
-    </table>
+      <h3>Productos</h3>
+      <table>
+        <tr>
+          <th>ID</th>
+          <th>Producto</th>
+          <th>Cant.</th>
+          <th>Precio Unitario</th>
+          <th>Total</th>
+        </tr>
+        @foreach ($venta['detalle_venta_productos'] as $producto)
+          <tr>
+            <td>{{ $producto['id'] }}</td>
+            <td>{{ $producto['producto']['descripcion'] }}</td>
+            <td>{{ $producto['cantidad'] }}</td>
+            <td>{{ number_format($producto['precio'] / 100 / $producto['cantidad'], 2) }}</td>
+            <td>{{ number_format($producto['precio'] / 100, 2) }}</td>
+          </tr>
+        @endforeach
+      </table>
     @endif
 
     {{-- Productos personalizados --}}
     @if(!empty($venta['detalle_venta_personalizadas']))
-    <h3>Productos Personalizados</h3>
-    <table>
-      <tr>
-        <th>ID</th>
-        <th>Descripción</th>
-        <th>Dimensiones</th>
-        <th>Materiales</th>
-        <th>Total</th>
-      </tr>
-      @foreach ($venta['detalle_venta_personalizadas'] as $personalizado)
-      <tr>
-        <td>{{ $personalizado['id'] }}</td>
-        <td>Marco personalizado</td>
-        <td>{{ $personalizado['lado_a'] }} x {{ $personalizado['lado_b'] }} Cm</td>
-        <td>
-          @if($personalizado['materia_prima_varilla'])
-            Varilla: {{ $personalizado['materia_prima_varilla']['descripcion'] }}<br>
-          @endif
-          @if($personalizado['materia_prima_trupan'])
-            Trupan: {{ $personalizado['materia_prima_trupan']['descripcion'] }}<br>
-          @endif
-          @if($personalizado['materia_prima_vidrio'])
-            Vidrio: {{ $personalizado['materia_prima_vidrio']['descripcion'] }}<br>
-          @endif
-          @if($personalizado['materia_prima_contorno'])
-            Contorno: {{ $personalizado['materia_prima_contorno']['descripcion'] }}
-          @endif
-        </td>
-       <td>{{ number_format(($venta['precioPerzonalizado'] ?? 0) / 100, 2) }}</td>
-      </tr>
-      @endforeach
-    </table>
+      <h3>Productos Personalizados</h3>
+      <table>
+        <tr>
+          <th>ID</th>
+          <th>Descripción</th>
+          <th>Dimensiones</th>
+          <th>Materiales</th>
+          <th>Total</th>
+        </tr>
+        @foreach ($venta['detalle_venta_personalizadas'] as $personalizado)
+          <tr>
+            <td>{{ $personalizado['id'] }}</td>
+            <td>Marco personalizado</td>
+            <td>{{ $personalizado['lado_a'] / 10 }} x {{ $personalizado['lado_b'] / 10 }} Cm</td>
+            <td>
+              @if($personalizado['materia_prima_varilla'])
+                Varilla: {{ $personalizado['materia_prima_varilla']['descripcion'] }}<br>
+              @endif
+              @if($personalizado['materia_prima_trupan'])
+                Trupan: {{ $personalizado['materia_prima_trupan']['descripcion'] }}<br>
+              @endif
+              @if($personalizado['materia_prima_vidrio'])
+                Vidrio: {{ $personalizado['materia_prima_vidrio']['descripcion'] }}<br>
+              @endif
+              @if($personalizado['materia_prima_contorno'])
+                Contorno: {{ $personalizado['materia_prima_contorno']['descripcion'] }}
+              @endif
+            </td>
+            <td>{{ number_format(($venta['precioPerzonalizado'] ?? 0) / 100, 2) }}</td>
+          </tr>
+        @endforeach
+      </table>
     @endif
 
     @php
       $subtotal = $venta['precioProducto'];
 
-      
+
       $aCuenta = $venta['precioTotal'] - $venta['saldo'];
     @endphp
 
     <table class="detalle-pago">
       <tr>
         <td><strong>Faltante a pagar</strong></td>
-        <td>{{ number_format($aCuenta/100, 2) }}</td>
+        <td>{{ number_format($aCuenta / 100, 2) }}</td>
         <td class="right"><strong>Descuento</strong></td>
-        <td>{{ number_format($venta['descuento']/100, 2) }}</td>
+        <td>{{ number_format($venta['descuento'] / 100, 2) }}</td>
       </tr>
       <tr>
         <td><strong>Saldo</strong></td>
-        <td>{{ number_format($venta['saldo']/100, 2) }}</td>
+        <td>{{ number_format($venta['saldo'] / 100, 2) }}</td>
         <td class="no-border"></td>
         <td class="no-border"></td>
       </tr>
@@ -182,11 +187,12 @@
         <td class="no-border"></td>
         <td class="no-border"></td>
         <td class="right"><strong>Total</strong></td>
-        <td>{{ number_format($venta['precioTotal']/100, 2) }}</td>
+        <td>{{ number_format($venta['precioTotal'] / 100, 2) }}</td>
       </tr>
     </table>
 
     <div class="footer-line"></div>
   </div>
 </body>
+
 </html>

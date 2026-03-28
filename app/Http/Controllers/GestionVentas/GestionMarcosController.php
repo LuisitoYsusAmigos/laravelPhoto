@@ -26,7 +26,7 @@ class GestionMarcosController extends Controller
         $this->usoLaminasCuadro = new UsoLaminasCuadro();
     }
 
-/**
+    /**
      * Procesa los cuadros personalizados de una venta
      * 
      * @param $venta Modelo de venta
@@ -35,99 +35,99 @@ class GestionMarcosController extends Controller
      * @throws \Exception Si hay problemas con materiales o optimización
      */
     public function verificarDisponibilidadMarcos(array $cuadros)
-{
-    $resultados = [];
+    {
+        $resultados = [];
 
-    foreach ($cuadros as $cuadro) {
-        $errores = [];
+        foreach ($cuadros as $cuadro) {
+            $errores = [];
 
-        // Validar varillas
-        if (!empty($cuadro['id_materia_prima_varillas'])) {
-            $existe = DB::table('materia_prima_varillas')->where('id', $cuadro['id_materia_prima_varillas'])->exists();
-            if (!$existe) {
-                $errores[] = "Varilla ID {$cuadro['id_materia_prima_varillas']} no encontrada";
-            } else {
-                $stock = StockVarilla::where('id_materia_prima_varilla', $cuadro['id_materia_prima_varillas'])
-                    ->sum('stock');
-                if ($stock <= 0) {
-                    $errores[] = "Sin stock disponible para la varilla ID {$cuadro['id_materia_prima_varillas']}";
+            // Validar varillas
+            if (!empty($cuadro['id_materia_prima_varillas'])) {
+                $existe = DB::table('materia_prima_varillas')->where('id', $cuadro['id_materia_prima_varillas'])->exists();
+                if (!$existe) {
+                    $errores[] = "Varilla ID {$cuadro['id_materia_prima_varillas']} no encontrada";
+                } else {
+                    $stock = StockVarilla::where('id_materia_prima_varilla', $cuadro['id_materia_prima_varillas'])
+                        ->sum('stock');
+                    if ($stock <= 0) {
+                        $errores[] = "Sin stock disponible para la varilla ID {$cuadro['id_materia_prima_varillas']}";
+                    }
                 }
             }
-        }
 
-        // Validar trupans
-        if (!empty($cuadro['id_materia_prima_trupans'])) {
-            $existe = DB::table('materia_prima_trupans')->where('id', $cuadro['id_materia_prima_trupans'])->exists();
-            if (!$existe) {
-                $errores[] = "Trupan ID {$cuadro['id_materia_prima_trupans']} no encontrado";
-            } else {
-                $stock = StockTrupan::where('id_materia_prima_trupans', $cuadro['id_materia_prima_trupans'])
-                    ->sum('stock');
-                if ($stock <= 0) {
-                    $errores[] = "Sin stock disponible para el trupan ID {$cuadro['id_materia_prima_trupans']}";
+            // Validar trupans
+            if (!empty($cuadro['id_materia_prima_trupans'])) {
+                $existe = DB::table('materia_prima_trupans')->where('id', $cuadro['id_materia_prima_trupans'])->exists();
+                if (!$existe) {
+                    $errores[] = "Trupan ID {$cuadro['id_materia_prima_trupans']} no encontrado";
+                } else {
+                    $stock = StockTrupan::where('id_materia_prima_trupans', $cuadro['id_materia_prima_trupans'])
+                        ->sum('stock');
+                    if ($stock <= 0) {
+                        $errores[] = "Sin stock disponible para el trupan ID {$cuadro['id_materia_prima_trupans']}";
+                    }
                 }
             }
-        }
 
-        // Validar vidrios
-        if (!empty($cuadro['id_materia_prima_vidrios'])) {
-            $existe = DB::table('materia_prima_vidrios')->where('id', $cuadro['id_materia_prima_vidrios'])->exists();
-            if (!$existe) {
-                $errores[] = "Vidrio ID {$cuadro['id_materia_prima_vidrios']} no encontrado";
-            } else {
-                $stock = StockVidrio::where('id_materia_prima_vidrio', $cuadro['id_materia_prima_vidrios'])
-                    ->sum('stock');
-                if ($stock <= 0) {
-                    $errores[] = "Sin stock disponible para el vidrio ID {$cuadro['id_materia_prima_vidrios']}";
+            // Validar vidrios
+            if (!empty($cuadro['id_materia_prima_vidrios'])) {
+                $existe = DB::table('materia_prima_vidrios')->where('id', $cuadro['id_materia_prima_vidrios'])->exists();
+                if (!$existe) {
+                    $errores[] = "Vidrio ID {$cuadro['id_materia_prima_vidrios']} no encontrado";
+                } else {
+                    $stock = StockVidrio::where('id_materia_prima_vidrio', $cuadro['id_materia_prima_vidrios'])
+                        ->sum('stock');
+                    if ($stock <= 0) {
+                        $errores[] = "Sin stock disponible para el vidrio ID {$cuadro['id_materia_prima_vidrios']}";
+                    }
                 }
             }
-        }
 
-        // Validar contornos
-        if (!empty($cuadro['id_materia_prima_contornos'])) {
-            $existe = DB::table('materia_prima_contornos')->where('id', $cuadro['id_materia_prima_contornos'])->exists();
-            if (!$existe) {
-                $errores[] = "Contorno ID {$cuadro['id_materia_prima_contornos']} no encontrado";
-            } else {
-                $stock = StockContorno::where('id_materia_prima_contorno', $cuadro['id_materia_prima_contornos'])
-                    ->sum('stock');
-                if ($stock <= 0) {
-                    $errores[] = "Sin stock disponible para el contorno ID {$cuadro['id_materia_prima_contornos']}";
+            // Validar contornos
+            if (!empty($cuadro['id_materia_prima_contornos'])) {
+                $existe = DB::table('materia_prima_contornos')->where('id', $cuadro['id_materia_prima_contornos'])->exists();
+                if (!$existe) {
+                    $errores[] = "Contorno ID {$cuadro['id_materia_prima_contornos']} no encontrado";
+                } else {
+                    $stock = StockContorno::where('id_materia_prima_contorno', $cuadro['id_materia_prima_contornos'])
+                        ->sum('stock');
+                    if ($stock <= 0) {
+                        $errores[] = "Sin stock disponible para el contorno ID {$cuadro['id_materia_prima_contornos']}";
+                    }
                 }
             }
+
+            $resultados[] = [
+                'cuadro' => $cuadro,
+                'valido' => empty($errores),
+                'errores' => $errores
+            ];
         }
 
-        $resultados[] = [
-            'cuadro' => $cuadro,
-            'valido' => empty($errores),
-            'errores' => $errores
-        ];
+        return $resultados;
     }
-
-    return $resultados;
-}
 
     public function procesarMarcos($venta, array $cuadros, $factorPrecioVenta)
     {
         $totalCuadros = 0;
-        
-        
-   
-        foreach ($cuadros as $index => $cuadro) {
-            
-            $detalle = $this->crearDetalleVentaPersonalizada($venta, $cuadro);
-            $resultadoMateriales = $this->procesarMaterialesCuadro($detalle, $cuadro,$factorPrecioVenta);
-            $totalCuadros += $resultadoMateriales['total'];
-            
-            
-        }
-        
 
-        
+
+
+        foreach ($cuadros as $index => $cuadro) {
+
+            $detalle = $this->crearDetalleVentaPersonalizada($venta, $cuadro);
+            $resultadoMateriales = $this->procesarMaterialesCuadro($detalle, $cuadro, $factorPrecioVenta);
+            $totalCuadros += $resultadoMateriales['total'];
+
+
+        }
+
+
+
 
         return [
             'total' => $totalCuadros,
-            
+
         ];
     }
 
@@ -156,30 +156,30 @@ class GestionMarcosController extends Controller
         $precioTrupans = 0;
         $precioVidrios = 0;
         $precioContornos = 0;
-        
+
         // Procesar cada tipo de material si está especificado
         if (!empty($cuadro['id_materia_prima_varillas'])) {
-            
+
             $precioVarillas = $this->procesarVarillas($detalle, $cuadro);
         }
 
         if (!empty($cuadro['id_materia_prima_trupans'])) {
-            
+
             $precioTrupans = $this->procesarTrupans($detalle, $cuadro);
         }
 
         if (!empty($cuadro['id_materia_prima_vidrios'])) {
-            
+
             $precioVidrios = $this->procesarVidrios($detalle, $cuadro);
         }
 
         if (!empty($cuadro['id_materia_prima_contornos'])) {
-            
+
             $precioContornos = $this->procesarContornos($detalle, $cuadro);
         }
 
         return [
-            'total' => intval(($precioVarillas + $precioTrupans + $precioVidrios + $precioContornos)*$factorPrecioVenta),
+            'total' => intval(($precioVarillas / 10 + $precioTrupans / 100 + $precioVidrios / 100 + $precioContornos / 100) * $factorPrecioVenta),
         ];
     }
 
@@ -190,10 +190,10 @@ class GestionMarcosController extends Controller
     {
         $varillasDisponibles = $this->obtenerVarillasDisponibles($cuadro['id_materia_prima_varillas']);
         $necesidadesCuadros = $this->crearNecesidadCuadro($cuadro);
-        
+
         $resultado = $this->usoVarillasCuadro->optimizarCorte($necesidadesCuadros, $varillasDisponibles, 0.3);
         $jsonRespuesta = $this->usoVarillasCuadro->generarJson($resultado);
-
+        //dd($varillasDisponibles, $necesidadesCuadros, $resultado, $jsonRespuesta);
         if (!$jsonRespuesta['terminado']) {
             throw new \Exception('No se pudo optimizar el corte de varillas para el cuadro especificado revisar la disponibilidad de esta varilla');
         }
@@ -227,12 +227,12 @@ class GestionMarcosController extends Controller
         $necesidadCuadro = $this->crearNecesidadCuadroLamina($cuadro);
 
         $respuesta = $this->usoLaminasCuadro->optimizarCuadro($necesidadCuadro, $vidriosDisponibles);
-        
+
 
         if (!$respuesta['terminado']) {
             throw new \Exception('No se pudo optimizar el corte de vidrios para el cuadro especificado');
         }
-        
+
         return $this->procesarResultadoLamina($detalle, $respuesta, 'vidrio', $cuadro);
     }
 
@@ -330,140 +330,140 @@ class GestionMarcosController extends Controller
     // Métodos para procesar resultados
 
     private function procesarResultadoVarillas($detalle, $retazosUsados)
-{
-    $totalVarillas = 0;
+    {
+        $totalVarillas = 0;
 
-    foreach ($retazosUsados as $retazo) {
-        // Obtener datos de la materia prima varilla
-        $datosVarilla = DB::table('stock_varillas as sv')
-            ->join('materia_prima_varillas as mpv', 'sv.id_materia_prima_varilla', '=', 'mpv.id')
-            ->where('sv.id', $retazo['id'])
-            ->first(['mpv.precioVenta', 'mpv.factor_desperdicio']);
+        foreach ($retazosUsados as $retazo) {
+            // Obtener datos de la materia prima varilla
+            $datosVarilla = DB::table('stock_varillas as sv')
+                ->join('materia_prima_varillas as mpv', 'sv.id_materia_prima_varilla', '=', 'mpv.id')
+                ->where('sv.id', $retazo['id'])
+                ->first(['mpv.precioVenta', 'mpv.factor_desperdicio']);
 
-        if (!$datosVarilla) {
-            throw new \Exception("Datos de varilla no encontrados para stock ID: {$retazo['id']}");
+            if (!$datosVarilla) {
+                throw new \Exception("Datos de varilla no encontrados para stock ID: {$retazo['id']}");
+            }
+
+            // Convertir mm usados a metros
+            $metrosUsados = $retazo['mmUsados'] / 1000;
+
+
+            // Calcular precio: metros_usados × precio_por_metro × factor_desperdicio × cantidad
+            $precio = round($metrosUsados * $datosVarilla->precioVenta * $datosVarilla->factor_desperdicio);
+            /*
+            dd(json_encode([
+                'metrosUsados' => $metrosUsados,
+                'precioVenta' => $datosVarilla->precioVenta,
+                'factor_desperdicio' => $datosVarilla->factor_desperdicio,
+                'cantidad' => $retazo['cantidad'],
+                'precio' => $precio
+            ]));
+            */
+
+
+            $totalVarillas += $precio;
+
+            MaterialesVentaPersonalizada::create([
+                'stock_contorno_id' => null,
+                'stock_trupan_id' => null,
+                'stock_vidrio_id' => null,
+                'stock_varilla_id' => $retazo['id'],
+                'cantidad' => $retazo['cantidad'],
+                'precio_unitario' => intval($precio / 10),
+                'detalleVP_id' => $detalle->id
+            ]);
+
+            // Restar stock físico en la base de datos
+            StockVarilla::where('id', $retazo['id'])->decrement('stock', $retazo['cantidad']);
         }
 
-        // Convertir mm usados a metros
-        $metrosUsados = $retazo['mmUsados']/1000 ;
+        return $totalVarillas;
+    }
 
-        
-        // Calcular precio: metros_usados × precio_por_metro × factor_desperdicio × cantidad
-        $precio = round($metrosUsados * $datosVarilla->precioVenta * $datosVarilla->factor_desperdicio);
-        /*
-        dd(json_encode([
-            'metrosUsados' => $metrosUsados,
-            'precioVenta' => $datosVarilla->precioVenta,
-            'factor_desperdicio' => $datosVarilla->factor_desperdicio,
-            'cantidad' => $retazo['cantidad'],
-            'precio' => $precio
-        ]));
-        */
-        
+    private function procesarResultadoLamina($detalle, $respuesta, $tipoMaterial, $cuadro)
+    {
+        $materialId = $respuesta['material'];
 
-        $totalVarillas += $precio;
+        // Área del cuadro en mm²
+        $areaMm2 = ($cuadro['lado_a'] / 100) * ($cuadro['lado_b'] / 100);
 
-        MaterialesVentaPersonalizada::create([
-            'stock_contorno_id' => null,
-            'stock_trupan_id' => null,
-            'stock_vidrio_id' => null,
-            'stock_varilla_id' => $retazo['id'],
-            'cantidad' => $retazo['cantidad'],
-            'precio_unitario' => $precio,
+
+
+        // Obtener precio por m² y factor de desperdicio de la materia prima
+        $datosMateriaPrima = $this->obtenerDatosMateriaPrima($tipoMaterial, $cuadro);
+        $precioM2 = $datosMateriaPrima['precio_m2'];
+        $factorDesperdicio = $datosMateriaPrima['factor_desperdicio'];
+
+        // Aplicar fórmula correcta: área_m² × precio_m² × factor_desperdicio × cantidad
+        $precio = intval($areaMm2 * $precioM2 * $factorDesperdicio * $cuadro['cantidad']);
+
+        $materialData = [
+            'stock_contorno_id' => $tipoMaterial === 'contorno' ? $materialId : null,
+            'stock_trupan_id' => $tipoMaterial === 'trupan' ? $materialId : null,
+            'stock_vidrio_id' => $tipoMaterial === 'vidrio' ? $materialId : null,
+            'stock_varilla_id' => null,
+            'cantidad' => $cuadro['cantidad'],
+            'precio_unitario' => intval($precio / 100),
             'detalleVP_id' => $detalle->id
-        ]);
+        ];
 
-        // Restar stock físico en la base de datos
-        StockVarilla::where('id', $retazo['id'])->decrement('stock', $retazo['cantidad']);
+        MaterialesVentaPersonalizada::create($materialData);
+        // restar stock vidrios
+        // generar un if triple para los 3 casos de contorno trupan vidrio
+        if ($tipoMaterial === 'contorno') {
+            StockContorno::where('id', $materialData['stock_contorno_id'])->decrement('stock', $materialData['cantidad']);
+        } elseif ($tipoMaterial === 'trupan') {
+            StockTrupan::where('id', $materialData['stock_trupan_id'])->decrement('stock', $materialData['cantidad']);
+        } elseif ($tipoMaterial === 'vidrio') {
+            StockVidrio::where('id', $materialData['stock_vidrio_id'])->decrement('stock', $materialData['cantidad']);
+        }
+
+        return $precio;
     }
 
-    return $totalVarillas;
-}
+    /**
+     * Obtiene precio_m2 y factor_desperdicio de la materia prima específica
+     */
+    private function obtenerDatosMateriaPrima($tipoMaterial, $cuadro)
+    {
+        switch ($tipoMaterial) {
+            case 'trupan':
+                $materiaPrima = DB::table('materia_prima_trupans')
+                    ->where('id', $cuadro['id_materia_prima_trupans'])
+                    ->first(['precioVenta', 'largo', 'alto', 'factor_desperdicio']);
+                break;
 
-private function procesarResultadoLamina($detalle, $respuesta, $tipoMaterial, $cuadro)
-{
-    $materialId = $respuesta['material'];
+            case 'vidrio':
+                $materiaPrima = DB::table('materia_prima_vidrios')
+                    ->where('id', $cuadro['id_materia_prima_vidrios'])
+                    ->first(['precioVenta', 'largo', 'alto', 'factor_desperdicio']);
+                break;
 
-    // Área del cuadro en mm²
-    $areaMm2 = ($cuadro['lado_a']/100) * ($cuadro['lado_b']/100);
-    
-    
+            case 'contorno':
+                $materiaPrima = DB::table('materia_prima_contornos')
+                    ->where('id', $cuadro['id_materia_prima_contornos'])
+                    ->first(['precioVenta', 'largo', 'alto', 'factor_desperdicio']);
+                break;
 
-    // Obtener precio por m² y factor de desperdicio de la materia prima
-    $datosMateriaPrima = $this->obtenerDatosMateriaPrima($tipoMaterial, $cuadro);
-    $precioM2 = $datosMateriaPrima['precio_m2'];
-    $factorDesperdicio = $datosMateriaPrima['factor_desperdicio'];
+            default:
+                throw new \Exception("Tipo de material no válido: {$tipoMaterial}");
+        }
 
-    // Aplicar fórmula correcta: área_m² × precio_m² × factor_desperdicio × cantidad
-    $precio = intval($areaMm2 * $precioM2 * $factorDesperdicio * $cuadro['cantidad']);
-    
-    $materialData = [
-        'stock_contorno_id' => $tipoMaterial === 'contorno' ? $materialId : null,
-        'stock_trupan_id'   => $tipoMaterial === 'trupan' ? $materialId : null,
-        'stock_vidrio_id'   => $tipoMaterial === 'vidrio' ? $materialId : null,
-        'stock_varilla_id'  => null,
-        'cantidad'          => $cuadro['cantidad'],
-        'precio_unitario'   => $precio,
-        'detalleVP_id'      => $detalle->id
-    ];
+        if (!$materiaPrima) {
+            throw new \Exception("Materia prima no encontrada para tipo: {$tipoMaterial}");
+        }
 
-    MaterialesVentaPersonalizada::create($materialData);
-    // restar stock vidrios
-    // generar un if triple para los 3 casos de contorno trupan vidrio
-    if($tipoMaterial === 'contorno'){
-        StockContorno::where('id', $materialData['stock_contorno_id'])->decrement('stock', $materialData['cantidad']);
-    }elseif($tipoMaterial === 'trupan'){
-        StockTrupan::where('id', $materialData['stock_trupan_id'])->decrement('stock', $materialData['cantidad']);
-    }elseif($tipoMaterial === 'vidrio'){
-        StockVidrio::where('id', $materialData['stock_vidrio_id'])->decrement('stock', $materialData['cantidad']);
+        // Calcular precio_m2 como lo hacen los modelos
+        $area_mm2 = $materiaPrima->alto * $materiaPrima->largo;
+        $area_m2 = $area_mm2 / 1_000_000;
+        //$precio_m2 = round($materiaPrima->precioVenta / $area_m2);
+        $precio_m2 = $materiaPrima->precioVenta;
+
+        return [
+            'precio_m2' => $precio_m2,
+            'factor_desperdicio' => $materiaPrima->factor_desperdicio
+        ];
     }
-    
-    return $precio;
-}
-
-/**
- * Obtiene precio_m2 y factor_desperdicio de la materia prima específica
- */
-private function obtenerDatosMateriaPrima($tipoMaterial, $cuadro)
-{
-    switch ($tipoMaterial) {
-        case 'trupan':
-            $materiaPrima = DB::table('materia_prima_trupans')
-                ->where('id', $cuadro['id_materia_prima_trupans'])
-                ->first(['precioVenta', 'largo', 'alto', 'factor_desperdicio']);
-            break;
-        
-        case 'vidrio':
-            $materiaPrima = DB::table('materia_prima_vidrios')
-                ->where('id', $cuadro['id_materia_prima_vidrios'])
-                ->first(['precioVenta', 'largo', 'alto', 'factor_desperdicio']);
-            break;
-        
-        case 'contorno':
-            $materiaPrima = DB::table('materia_prima_contornos')
-                ->where('id', $cuadro['id_materia_prima_contornos'])
-                ->first(['precioVenta', 'largo', 'alto', 'factor_desperdicio']);
-            break;
-        
-        default:
-            throw new \Exception("Tipo de material no válido: {$tipoMaterial}");
-    }
-
-    if (!$materiaPrima) {
-        throw new \Exception("Materia prima no encontrada para tipo: {$tipoMaterial}");
-    }
-
-    // Calcular precio_m2 como lo hacen los modelos
-    $area_mm2 = $materiaPrima->alto * $materiaPrima->largo;
-    $area_m2 = $area_mm2 / 1_000_000;
-    //$precio_m2 = round($materiaPrima->precioVenta / $area_m2);
-    $precio_m2= $materiaPrima->precioVenta;
-
-    return [
-        'precio_m2' => $precio_m2,
-        'factor_desperdicio' => $materiaPrima->factor_desperdicio
-    ];
-}
 
 
 
@@ -486,7 +486,7 @@ private function obtenerDatosMateriaPrima($tipoMaterial, $cuadro)
         $precioTrupans = 0;
         $precioVidrios = 0;
         $precioContornos = 0;
-        
+
         if (!empty($cuadro['id_materia_prima_varillas'])) {
             $precioVarillas = $this->simularVarillas($cuadro);
         }
@@ -501,7 +501,7 @@ private function obtenerDatosMateriaPrima($tipoMaterial, $cuadro)
         }
 
         return [
-            'total' => intval(($precioVarillas + $precioTrupans + $precioVidrios + $precioContornos)*$factorPrecioVenta),
+            'total' => intval(($precioVarillas + $precioTrupans + $precioVidrios + $precioContornos) * $factorPrecioVenta),
         ];
     }
 
@@ -509,7 +509,7 @@ private function obtenerDatosMateriaPrima($tipoMaterial, $cuadro)
     {
         $varillasDisponibles = $this->obtenerVarillasDisponibles($cuadro['id_materia_prima_varillas']);
         $necesidadesCuadros = $this->crearNecesidadCuadro($cuadro);
-        
+
         $resultado = $this->usoVarillasCuadro->optimizarCorte($necesidadesCuadros, $varillasDisponibles, 0.3);
         $jsonRespuesta = $this->usoVarillasCuadro->generarJson($resultado);
 
@@ -544,7 +544,7 @@ private function obtenerDatosMateriaPrima($tipoMaterial, $cuadro)
         if (!$respuesta['terminado']) {
             throw new \Exception('No se pudo optimizar el corte de vidrios para el cuadro especificado');
         }
-        
+
         return $this->simularResultadoLamina($respuesta, 'vidrio', $cuadro);
     }
 
@@ -577,7 +577,7 @@ private function obtenerDatosMateriaPrima($tipoMaterial, $cuadro)
 
             $metrosUsados = $retazo['mmUsados'] / 1000;
             $precio = intval($metrosUsados * $datosVarilla->precioVenta * $datosVarilla->factor_desperdicio * $retazo['cantidad']);
-            
+
             $totalVarillas += $precio;
         }
 
@@ -587,18 +587,19 @@ private function obtenerDatosMateriaPrima($tipoMaterial, $cuadro)
     private function simularResultadoLamina($respuesta, $tipoMaterial, $cuadro)
     {
         // Área del cuadro en m² a partir de dimensiones que tal vez vienen en mm o cm
-        $areaMm2 = ($cuadro['lado_a']/100) * ($cuadro['lado_b']/100);
-        
+        $areaMm2 = ($cuadro['lado_a'] / 100) * ($cuadro['lado_b'] / 100);
+
         $datosMateriaPrima = $this->obtenerDatosMateriaPrima($tipoMaterial, $cuadro);
         $precioM2 = $datosMateriaPrima['precio_m2'];
         $factorDesperdicio = $datosMateriaPrima['factor_desperdicio'];
 
         $precio = intval($areaMm2 * $precioM2 * $factorDesperdicio * $cuadro['cantidad']);
-        
+
         return $precio;
     }
 
-    public function obtenerMarcoExterno($cuadros){
+    public function obtenerMarcoExterno($cuadros)
+    {
         $varilla = MateriaPrimaVarilla::find($cuadros[0]['id_materia_prima_varillas']);
         // define una varible grosor con el grosor de este
         $grosor = $varilla->grosor;
@@ -607,7 +608,7 @@ private function obtenerDatosMateriaPrima($tipoMaterial, $cuadro)
             'lado_a' => $cuadros[0]['lado_a'] + 2 * $grosor,
             'lado_b' => $cuadros[0]['lado_b'] + 2 * $grosor,
         ];
-        
-        
+
+
     }
 }
