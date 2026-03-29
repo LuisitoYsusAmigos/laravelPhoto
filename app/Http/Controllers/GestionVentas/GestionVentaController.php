@@ -697,6 +697,20 @@ class GestionVentaController extends Controller
 
         $factorPrecioVenta = $request->input('factorPrecioVenta') ?? 1;
         $descuento = $request->input('descuento') ?? 0;
+
+        if ($request->has('cuadros')) {
+            $cuadrosModificados = $request->input('cuadros');
+            foreach ($cuadrosModificados as &$c) {
+                if (isset($c['lado_a'])) {
+                    $c['lado_a'] = (int) ($c['lado_a'] * 10);
+                }
+                if (isset($c['lado_b'])) {
+                    $c['lado_b'] = (int) ($c['lado_b'] * 10);
+                }
+            }
+            $request->merge(['cuadros' => $cuadrosModificados]);
+        }
+
         $cuadros = $request->input('cuadros');
 
         try {

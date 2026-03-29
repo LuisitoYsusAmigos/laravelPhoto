@@ -179,7 +179,7 @@ class GestionMarcosController extends Controller
         }
 
         return [
-            'total' => intval(($precioVarillas / 10 + $precioTrupans / 100 + $precioVidrios / 100 + $precioContornos / 100) * $factorPrecioVenta),
+            'total' => intval(($precioVarillas + $precioTrupans + $precioVidrios + $precioContornos) * $factorPrecioVenta),
         ];
     }
 
@@ -195,7 +195,7 @@ class GestionMarcosController extends Controller
         $jsonRespuesta = $this->usoVarillasCuadro->generarJson($resultado);
         //dd($varillasDisponibles, $necesidadesCuadros, $resultado, $jsonRespuesta);
         if (!$jsonRespuesta['terminado']) {
-            throw new \Exception('No se pudo optimizar el corte de varillas para el cuadro especificado revisar la disponibilidad de esta varilla');
+            throw new \Exception('No hay disponibilidad de esas medidas de varillas para el cuadro especificado');
         }
 
         return $this->procesarResultadoVarillas($detalle, $jsonRespuesta['retazosUsados']);
@@ -212,7 +212,7 @@ class GestionMarcosController extends Controller
         $respuesta = $this->usoLaminasCuadro->optimizarCuadro($necesidadCuadro, $trupansDisponibles);
 
         if (!$respuesta['terminado']) {
-            throw new \Exception('No se pudo optimizar el corte de trupans para el cuadro especificado');
+            throw new \Exception('No hay disponibilidad de esas medidas de trupan para el cuadro especificado');
         }
 
         return $this->procesarResultadoLamina($detalle, $respuesta, 'trupan', $cuadro);
@@ -230,7 +230,7 @@ class GestionMarcosController extends Controller
 
 
         if (!$respuesta['terminado']) {
-            throw new \Exception('No se pudo optimizar el corte de vidrios para el cuadro especificado');
+            throw new \Exception('No hay disponibilidad de esas medidas de vidrios para el cuadro especificado');
         }
 
         return $this->procesarResultadoLamina($detalle, $respuesta, 'vidrio', $cuadro);
@@ -247,7 +247,7 @@ class GestionMarcosController extends Controller
         $respuesta = $this->usoLaminasCuadro->optimizarCuadro($necesidadCuadro, $contornosDisponibles);
 
         if (!$respuesta['terminado']) {
-            throw new \Exception('No se pudo optimizar el corte de contornos para el cuadro especificado');
+            throw new \Exception('No hay disponibilidad de esas medidas de contornos para el cuadro especificado');
         }
         //dd($respuesta, $detalle, 'contorno', $cuadro);
         return $this->procesarResultadoLamina($detalle, $respuesta, 'contorno', $cuadro);
@@ -348,20 +348,11 @@ class GestionMarcosController extends Controller
             $metrosUsados = $retazo['mmUsados'] / 1000;
 
 
-            // Calcular precio: metros_usados × precio_por_metro × factor_desperdicio × cantidad
-            $precio = round($metrosUsados * $datosVarilla->precioVenta * $datosVarilla->factor_desperdicio);
-            /*
-            dd(json_encode([
-                'metrosUsados' => $metrosUsados,
-                'precioVenta' => $datosVarilla->precioVenta,
-                'factor_desperdicio' => $datosVarilla->factor_desperdicio,
-                'cantidad' => $retazo['cantidad'],
-                'precio' => $precio
-            ]));
-            */
+            // Calcular precio unitario aplicando la división por 10 usada históricamente para las varillas
+            $precio = ($metrosUsados * $datosVarilla->precioVenta * $datosVarilla->factor_desperdicio) / 10;
+            $precioTotal = round($precio * $retazo['cantidad']);
 
-
-            $totalVarillas += $precio;
+            $totalVarillas += $precioTotal;
 
             MaterialesVentaPersonalizada::create([
                 'stock_contorno_id' => null,
@@ -369,7 +360,7 @@ class GestionMarcosController extends Controller
                 'stock_vidrio_id' => null,
                 'stock_varilla_id' => $retazo['id'],
                 'cantidad' => $retazo['cantidad'],
-                'precio_unitario' => intval($precio / 10),
+                'precio_unitario' => intval($precio),
                 'detalleVP_id' => $detalle->id
             ]);
 
@@ -384,18 +375,17 @@ class GestionMarcosController extends Controller
     {
         $materialId = $respuesta['material'];
 
-        // Área del cuadro en mm²
-        $areaMm2 = ($cuadro['lado_a'] / 100) * ($cuadro['lado_b'] / 100);
-
-
+        // Área del cuadro en m² (convervión milímetros a metros)
+        $areaM2 = ($cuadro['lado_a'] / 1000) * ($cuadro['lado_b'] / 1000);
 
         // Obtener precio por m² y factor de desperdicio de la materia prima
         $datosMateriaPrima = $this->obtenerDatosMateriaPrima($tipoMaterial, $cuadro);
         $precioM2 = $datosMateriaPrima['precio_m2'];
         $factorDesperdicio = $datosMateriaPrima['factor_desperdicio'];
 
-        // Aplicar fórmula correcta: área_m² × precio_m² × factor_desperdicio × cantidad
-        $precio = intval($areaMm2 * $precioM2 * $factorDesperdicio * $cuadro['cantidad']);
+        // Aplicar fórmula correcta: área_m² × precio_m² × factor_desperdicio (por unidad)
+        $precioUnitario = $areaM2 * $precioM2 * $factorDesperdicio;
+        $precioTotal = intval($precioUnitario * $cuadro['cantidad']);
 
         $materialData = [
             'stock_contorno_id' => $tipoMaterial === 'contorno' ? $materialId : null,
@@ -403,7 +393,7 @@ class GestionMarcosController extends Controller
             'stock_vidrio_id' => $tipoMaterial === 'vidrio' ? $materialId : null,
             'stock_varilla_id' => null,
             'cantidad' => $cuadro['cantidad'],
-            'precio_unitario' => intval($precio / 100),
+            'precio_unitario' => intval($precioUnitario),
             'detalleVP_id' => $detalle->id
         ];
 
@@ -418,7 +408,7 @@ class GestionMarcosController extends Controller
             StockVidrio::where('id', $materialData['stock_vidrio_id'])->decrement('stock', $materialData['cantidad']);
         }
 
-        return $precio;
+        return $precioTotal;
     }
 
     /**
@@ -514,7 +504,7 @@ class GestionMarcosController extends Controller
         $jsonRespuesta = $this->usoVarillasCuadro->generarJson($resultado);
 
         if (!$jsonRespuesta['terminado']) {
-            throw new \Exception('No se pudo optimizar el corte de varillas para el cuadro especificado revisar la disponibilidad de esta varilla');
+            throw new \Exception('No se pudo obtener las medidas de varillas para el cuadro especificado');
         }
 
         return $this->simularResultadoVarillas($jsonRespuesta['retazosUsados']);
@@ -576,9 +566,9 @@ class GestionMarcosController extends Controller
             }
 
             $metrosUsados = $retazo['mmUsados'] / 1000;
-            $precio = intval($metrosUsados * $datosVarilla->precioVenta * $datosVarilla->factor_desperdicio * $retazo['cantidad']);
+            $precio = ($metrosUsados * $datosVarilla->precioVenta * $datosVarilla->factor_desperdicio) / 10;
 
-            $totalVarillas += $precio;
+            $totalVarillas += intval($precio * $retazo['cantidad']);
         }
 
         return $totalVarillas;
@@ -586,16 +576,16 @@ class GestionMarcosController extends Controller
 
     private function simularResultadoLamina($respuesta, $tipoMaterial, $cuadro)
     {
-        // Área del cuadro en m² a partir de dimensiones que tal vez vienen en mm o cm
-        $areaMm2 = ($cuadro['lado_a'] / 100) * ($cuadro['lado_b'] / 100);
+        // Área del cuadro en m² directo en base a los milímetros (mm a metros)
+        $areaM2 = ($cuadro['lado_a'] / 1000) * ($cuadro['lado_b'] / 1000);
 
         $datosMateriaPrima = $this->obtenerDatosMateriaPrima($tipoMaterial, $cuadro);
         $precioM2 = $datosMateriaPrima['precio_m2'];
         $factorDesperdicio = $datosMateriaPrima['factor_desperdicio'];
 
-        $precio = intval($areaMm2 * $precioM2 * $factorDesperdicio * $cuadro['cantidad']);
+        $precioTotal = intval($areaM2 * $precioM2 * $factorDesperdicio * $cuadro['cantidad']);
 
-        return $precio;
+        return $precioTotal;
     }
 
     public function obtenerMarcoExterno($cuadros)
