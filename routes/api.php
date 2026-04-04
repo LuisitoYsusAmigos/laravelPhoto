@@ -299,6 +299,8 @@ use App\Http\Controllers\GestionRecibosController;
 
 Route::get('/recibo/html/{id}', [GestionRecibosController::class, 'getHtml'])->name('recibo.html');
 Route::get('/recibo/pdf/{id}', [GestionRecibosController::class, 'getPdf'])->name('recibo.pdf');
+Route::get('/recibo/administrativo/html/{id}', [GestionRecibosController::class, 'getHtml'])->name('recibo.html');
+Route::get('/recibo/administrativo/pdf/{id}', [GestionRecibosController::class, 'getPdf'])->name('recibo.pdf');
 Route::get('/recibo/{id}', [GestionRecibosController::class, 'show']);
 
 
