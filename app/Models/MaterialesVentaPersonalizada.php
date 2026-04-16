@@ -72,4 +72,9 @@ class MaterialesVentaPersonalizada extends Model
         
         return null;
     }
+
+    public function cortes()
+    {
+        return $this->hasMany(CorteMaterialVenta::class, 'material_vp_id');
+    }
 }

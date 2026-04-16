@@ -200,6 +200,7 @@ Route::post('/venta/ventasConDetalle', [VentaController::class, 'storeConDetalle
 
 Route::post('/venta/ventaDetalles', [VentaController::class, 'store1']);
 Route::get('/venta/ventaCompleta/{id}', [VentaController::class, 'getVentaCompleta']);
+Route::get('/venta/ventaCompletaAdministrativa/{id}', [VentaController::class, 'getVentaCompletaAdministrativa']);
 Route::put('venta/completar/{id}', [VentaController::class, 'completarVenta']);
 
 Route::get('/ventas/resumen-dashboard', [VentaController::class, 'resumenDashboard']);
@@ -299,8 +300,8 @@ use App\Http\Controllers\GestionRecibosController;
 
 Route::get('/recibo/html/{id}', [GestionRecibosController::class, 'getHtml'])->name('recibo.html');
 Route::get('/recibo/pdf/{id}', [GestionRecibosController::class, 'getPdf'])->name('recibo.pdf');
-Route::get('/recibo/administrativo/html/{id}', [GestionRecibosController::class, 'getHtml'])->name('recibo.html');
-Route::get('/recibo/administrativo/pdf/{id}', [GestionRecibosController::class, 'getPdf'])->name('recibo.pdf');
+Route::get('/recibo/administrativo/html/{id}', [GestionRecibosController::class, 'getAdministrativoHtml'])->name('recibo.admin.html');
+Route::get('/recibo/administrativo/pdf/{id}', [GestionRecibosController::class, 'getAdministrativoPdf'])->name('recibo.admin.pdf');
 Route::get('/recibo/{id}', [GestionRecibosController::class, 'show']);
 
 

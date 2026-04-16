@@ -398,9 +398,97 @@ public function getVentaCompleta($id)
     }
 }
 
+public function getVentaCompletaAdministrativa($id)
+{
+    try {
+        // Carga las relaciones necesarias, incluyendo producto dentro de cada detalle, y los cortes de material
+        $venta = Venta::with([
+            'cliente',
+            'sucursal',
+            'detalleVentaProductos.producto',
+            'detalleVentaPersonalizadas.materiaPrimaVarilla',
+            'detalleVentaPersonalizadas.materiaPrimaTrupan',
+            'detalleVentaPersonalizadas.materiaPrimaVidrio',
+            'detalleVentaPersonalizadas.materiaPrimaContorno',
+            'detalleVentaPersonalizadas.materialesVentaPersonalizadas.cortes.stockVarilla',
+            'detalleVentaPersonalizadas.materialesVentaPersonalizadas.cortes.stockTrupan',
+            'detalleVentaPersonalizadas.materialesVentaPersonalizadas.cortes.stockVidrio',
+            'detalleVentaPersonalizadas.materialesVentaPersonalizadas.cortes.stockContorno',
+            'detalleVentaPersonalizadas.materialesVentaPersonalizadas.stockContorno',
+            'detalleVentaPersonalizadas.materialesVentaPersonalizadas.stockTrupan',
+            'detalleVentaPersonalizadas.materialesVentaPersonalizadas.stockVidrio',
+            'detalleVentaPersonalizadas.materialesVentaPersonalizadas.stockVarilla'
+        ])->find($id);
 
+        if (!$venta) {
+            return response()->json(['error' => 'Venta no encontrada'], 404);
+        }
 
+        // Añadir precioDetalle y nombreProducto a cada detalle, y eliminar el objeto producto
+        foreach ($venta->detalleVentaProductos as $detalle) {
+            if ($detalle->producto) {
+                $producto = $detalle->producto;
+                $detalle->precioDetalle = $detalle->cantidad * $producto->precioVenta;
+                $detalle->nombreProducto = $producto->descripcion;
 
+                // Eliminar la relación completa para no devolverla en el JSON
+                unset($detalle->producto);
+            }
+        }
+
+        foreach ($venta->detalleVentaPersonalizadas as $personalizado) {
+            if ($personalizado->materiaPrimaVarilla) {
+                $personalizado->codigo_materia_prima_varillas = $personalizado->materiaPrimaVarilla->codigo;
+                $personalizado->descripcion_materia_prima_varillas = $personalizado->materiaPrimaVarilla->descripcion;
+            }
+            if ($personalizado->materiaPrimaTrupan) {
+                $personalizado->codigo_materia_prima_trupans = $personalizado->materiaPrimaTrupan->codigo;
+                $personalizado->descripcion_materia_prima_trupans = $personalizado->materiaPrimaTrupan->descripcion;
+            }
+            if ($personalizado->materiaPrimaVidrio) {
+                $personalizado->codigo_materia_prima_vidrios = $personalizado->materiaPrimaVidrio->codigo;
+                $personalizado->descripcion_materia_prima_vidrios = $personalizado->materiaPrimaVidrio->descripcion;
+            }
+            if ($personalizado->materiaPrimaContorno) {
+                $personalizado->codigo_materia_prima_contornos = $personalizado->materiaPrimaContorno->codigo;
+                $personalizado->descripcion_materia_prima_contornos = $personalizado->materiaPrimaContorno->descripcion;
+            }
+            // Eliminar objetos de materia prima completos para limpiar el JSON devuelto
+            unset(
+                $personalizado->materiaPrimaVarilla,
+                $personalizado->materiaPrimaTrupan,
+                $personalizado->materiaPrimaVidrio,
+                $personalizado->materiaPrimaContorno
+            );
+        }
+
+        // Estructura de respuesta
+        return response()->json([
+            'venta' => [
+                'id' => $venta->id,
+                'saldo' => $venta->saldo,
+                'idCliente' => $venta->idCliente,
+                'idSucursal' => $venta->idSucursal,
+                'recogido' => $venta->recogido,
+                'fecha' => $venta->fecha,
+                'updated_at' => $venta->updated_at,
+                'created_at' => $venta->created_at,
+                'precioProducto' => $venta->precioProducto,
+                'precioTotal' => $venta->precioTotal,
+                'factorPrecioVenta' => $venta->factorPrecioVenta,
+                'descuento' => $venta->descuento,
+                'cliente' => $venta->cliente,
+                'sucursal' => $venta->sucursal,
+                'detalle_venta_productos' => $venta->detalleVentaProductos,
+                'detalle_venta_personalizadas' => $venta->detalleVentaPersonalizadas,
+                'idUsuario' => $venta->idUsuario,
+            ],
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
 public function completarVenta($id)
 {
     $venta = Venta::find($id);

@@ -192,13 +192,14 @@ class GestionMarcosController extends Controller
         $necesidadesCuadros = $this->crearNecesidadCuadro($cuadro);
 
         $resultado = $this->usoVarillasCuadro->optimizarCorte($necesidadesCuadros, $varillasDisponibles, 0.3);
+        // dd removido
         $jsonRespuesta = $this->usoVarillasCuadro->generarJson($resultado);
         //dd($varillasDisponibles, $necesidadesCuadros, $resultado, $jsonRespuesta);
         if (!$jsonRespuesta['terminado']) {
             throw new \Exception('No hay disponibilidad de esas medidas de varillas para el cuadro especificado');
         }
 
-        return $this->procesarResultadoVarillas($detalle, $jsonRespuesta['retazosUsados']);
+        return $this->procesarResultadoVarillas($detalle, $jsonRespuesta['retazosUsados'], $resultado['retazosUsados']);
     }
 
     /**
@@ -329,7 +330,7 @@ class GestionMarcosController extends Controller
 
     // Métodos para procesar resultados
 
-    private function procesarResultadoVarillas($detalle, $retazosUsados)
+    private function procesarResultadoVarillas($detalle, $retazosUsados, $cortesDetallados = [])
     {
         $totalVarillas = 0;
 
@@ -354,7 +355,7 @@ class GestionMarcosController extends Controller
 
             $totalVarillas += $precioTotal;
 
-            MaterialesVentaPersonalizada::create([
+            $materialVenta = MaterialesVentaPersonalizada::create([
                 'stock_contorno_id' => null,
                 'stock_trupan_id' => null,
                 'stock_vidrio_id' => null,
@@ -363,6 +364,24 @@ class GestionMarcosController extends Controller
                 'precio_unitario' => intval($precio),
                 'detalleVP_id' => $detalle->id
             ]);
+
+            // Registrar los cortes detallados si existen
+            if (!empty($cortesDetallados)) {
+                foreach ($cortesDetallados as $corteUnico) {
+                    if ($corteUnico['idOriginal'] == $retazo['id']) {
+                        foreach ($corteUnico['piezas'] as $pieza) {
+                            \App\Models\CorteMaterialVenta::create([
+                                'material_vp_id' => $materialVenta->id,
+                                'stock_varilla_id' => $retazo['id'],
+                                'largo_corte' => $pieza['largo'],
+                                'ancho_corte' => null,
+                                'tipo_corte' => $pieza['tipo'],
+                                'origen' => $pieza['origen'],
+                            ]);
+                        }
+                    }
+                }
+            }
 
             // Restar stock físico en la base de datos
             StockVarilla::where('id', $retazo['id'])->decrement('stock', $retazo['cantidad']);
@@ -397,7 +416,22 @@ class GestionMarcosController extends Controller
             'detalleVP_id' => $detalle->id
         ];
 
-        MaterialesVentaPersonalizada::create($materialData);
+        $materialVenta = MaterialesVentaPersonalizada::create($materialData);
+
+        // Registrar el corte para la lámina
+        for ($i = 0; $i < $cuadro['cantidad']; $i++) {
+            \App\Models\CorteMaterialVenta::create([
+                'material_vp_id' => $materialVenta->id,
+                'stock_varilla_id' => null,
+                'stock_trupan_id' => $materialData['stock_trupan_id'],
+                'stock_vidrio_id' => $materialData['stock_vidrio_id'],
+                'stock_contorno_id' => $materialData['stock_contorno_id'],
+                'largo_corte' => $cuadro['lado_a'],
+                'ancho_corte' => $cuadro['lado_b'],
+                'tipo_corte' => 'lámina',
+                'origen' => 'Cuadro #' . ($i + 1),
+            ]);
+        }
         // restar stock vidrios
         // generar un if triple para los 3 casos de contorno trupan vidrio
         if ($tipoMaterial === 'contorno') {

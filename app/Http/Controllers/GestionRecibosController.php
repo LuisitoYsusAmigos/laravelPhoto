@@ -40,6 +40,33 @@ class GestionRecibosController extends Controller
         return $pdf->stream("recibo_{$ventaArray['id']}.pdf");
     }
 
+    public function getAdministrativoHtml($id)
+    {
+        $venta = Venta::find($id);
+        if (!$venta) {
+            return response()->json(['message' => 'Venta no encontrada'], 404);
+        }
+        
+        $ventaJson = (new VentaController)->getVentaCompletaAdministrativa($id);
+        $ventaArray = $ventaJson->getData(true)['venta'];
+
+        return view('pdf.recibo-administrativo', ['venta' => $ventaArray]);
+    }
+
+    public function getAdministrativoPdf($id)
+    {
+        $venta = Venta::find($id);
+        if (!$venta) {
+            return response()->json(['message' => 'Venta no encontrada'], 404);
+        }
+        
+        $ventaJson = (new VentaController)->getVentaCompletaAdministrativa($id);
+        $ventaArray = $ventaJson->getData(true)['venta'];
+
+        $pdf = Pdf::loadView('pdf.recibo-administrativo', ['venta' => $ventaArray]);
+        return $pdf->stream("recibo_administrativo_{$ventaArray['id']}.pdf");
+    }
+
     public function show($id)
     {
         $venta = Venta::find($id);
