@@ -170,20 +170,30 @@
       @foreach ($venta['detalle_venta_personalizadas'] as $personalizado)
         @foreach($personalizado['materiales_venta_personalizadas'] as $material)
           @php
-            $infoMaterial = "Material no identificado";
-            $dimOriginal = "";
+            $tipoMaterial = "DESCONOCIDO";
+            $descMaterial = "N/A";
+            $codigoMaterial = "N/A";
+            $dimOriginal = "N/A";
 
             if ($material['stock_varilla']) {
-              $infoMaterial = "VARILLA (ID: " . $material['stock_varilla']['id'] . ")";
+              $tipoMaterial = "VARILLA";
+              $descMaterial = $personalizado['descripcion_materia_prima_varillas'] ?? 'N/A';
+              $codigoMaterial = $personalizado['codigo_materia_prima_varillas'] ?? 'N/A';
               $dimOriginal = "Largo: " . ($material['stock_varilla']['largo'] / 10) . " cm";
             } elseif ($material['stock_trupan']) {
-              $infoMaterial = "TRUPAN (ID: " . $material['stock_trupan']['id'] . ")";
+              $tipoMaterial = "TRUPAN";
+              $descMaterial = $personalizado['descripcion_materia_prima_trupans'] ?? 'N/A';
+              $codigoMaterial = $personalizado['codigo_materia_prima_trupans'] ?? 'N/A';
               $dimOriginal = ($material['stock_trupan']['largo'] / 10) . " x " . ($material['stock_trupan']['alto'] / 10) . " cm";
             } elseif ($material['stock_vidrio']) {
-              $infoMaterial = "VIDRIO (ID: " . $material['stock_vidrio']['id'] . ")";
+              $tipoMaterial = "VIDRIO";
+              $descMaterial = $personalizado['descripcion_materia_prima_vidrios'] ?? 'N/A';
+              $codigoMaterial = $personalizado['codigo_materia_prima_vidrios'] ?? 'N/A';
               $dimOriginal = ($material['stock_vidrio']['largo'] / 10) . " x " . ($material['stock_vidrio']['alto'] / 10) . " cm";
             } elseif ($material['stock_contorno']) {
-              $infoMaterial = "CONTORNO (ID: " . $material['stock_contorno']['id'] . ")";
+              $tipoMaterial = "CONTORNO";
+              $descMaterial = $personalizado['descripcion_materia_prima_contornos'] ?? 'N/A';
+              $codigoMaterial = $personalizado['codigo_materia_prima_contornos'] ?? 'N/A';
               $dimOriginal = ($material['stock_contorno']['largo'] / 10) . " x " . ($material['stock_contorno']['alto'] / 10) . " cm";
             }
 
@@ -191,7 +201,10 @@
           @endphp
 
           <div class="material-box">
-            <strong>{{ $infoMaterial }}</strong> | <strong>Tamaño Original:</strong> {{ $dimOriginal }}
+            <strong>{{ $tipoMaterial }}</strong><br>
+            <strong>DESCRIPCIÓN:</strong> {{ $descMaterial }}<br>
+            <strong>CÓDIGO:</strong> {{ $codigoMaterial }}<br>
+            <strong>TAMAÑO ORIGINAL:</strong> {{ $dimOriginal }}<br>
             <br>
             <span style="text-decoration: underline;">
               @if($numCortes > 1)
