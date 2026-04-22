@@ -78,7 +78,7 @@
       <div class="info-empresa">
         <strong>PhotoStore / Diego Sandoval</strong><br>
         Dir: Bartolo la Pampa, Av. La Paz y Potosí<br>
-        Cel: +591 7299 3550 / 7299 1362<br>
+        Cel: 69315632 - 72993950<br>
         Correo: fotografiatarija@gmail.com
       </div>
       <div class="title">
@@ -178,7 +178,7 @@
         <td>{{ number_format($venta['descuento'] / 100, 2) }}</td>
       </tr>
       <tr>
-        <td><strong>Saldo</strong></td>
+        <td><strong>Adelanto</strong></td>
         <td>{{ number_format($venta['saldo'] / 100, 2) }}</td>
         <td class="no-border"></td>
         <td class="no-border"></td>
