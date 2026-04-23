@@ -96,7 +96,7 @@
     <div class="header">
       <div class="info-empresa">
         <strong>PhotoStore / Diego Sandoval</strong><br>
-        Dir: Bartolo la Pampa, Av. La Paz y Potosí<br>
+        Dir: Barrio La Pampa, Av. La Paz y Potosí<br>
         Correo: fotografiatarija@gmail.com
       </div>
       <div class="title">
