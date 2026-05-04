@@ -628,10 +628,19 @@ class GestionMarcosController extends Controller
         // define una varible grosor con el grosor de este
         $grosor = $varilla->grosor;
         //dd($grosor);
-        return [
-            'lado_a' => $cuadros[0]['lado_a'] + 2 * $grosor,
-            'lado_b' => $cuadros[0]['lado_b'] + 2 * $grosor,
+        $resultado = [
+            'lado_a' => $cuadros[0]['lado_a'] + 20 * $grosor,
+            'lado_b' => $cuadros[0]['lado_b'] + 20 * $grosor,
         ];
+        /*
+                dd([
+                    'lado_a_cuadro' => $cuadros[0]['lado_a'],
+                    'lado_b_cuadro' => $cuadros[0]['lado_b'],
+                    'grosor' => $grosor,
+                    'resultado' => $resultado
+                ]);
+                */
+        return $resultado;
 
 
     }
