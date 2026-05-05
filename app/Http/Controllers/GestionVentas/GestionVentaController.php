@@ -49,23 +49,6 @@ class GestionVentaController extends Controller
             'cuadros.*.id_materia_prima_vidrios' => 'nullable|integer',
             'cuadros.*.id_materia_prima_contornos' => 'nullable|integer',
         ]);
-        // toma los datos de lado a y lado b y que sean ellos mismo multiplciados por 100 y modificalos en el mismo request 
-/*
-        if ($request->has('cuadros')) {
-            $cuadrosModificados = $request->input('cuadros');
-            foreach ($cuadrosModificados as &$c) {
-                if (isset($c['lado_a'])) {
-                    $c['lado_a'] = (int) ($c['lado_a'] * 100);
-                }
-                if (isset($c['lado_b'])) {
-                    $c['lado_b'] = (int) ($c['lado_b'] * 100);
-                }
-            }
-            $request->merge(['cuadros' => $cuadrosModificados]);
-        }
-            */
-        //dd($request->all());
-
 
         $factorPrecioVenta = $request->input('factorPrecioVenta') ?? 1;
         if ($validator->fails()) {
@@ -98,36 +81,26 @@ class GestionVentaController extends Controller
         }
 
         if (!empty($request->cuadros)) {
-            foreach ($request->cuadros as $index => $cuadro) {
+            $cuadrosModificados = $request->input('cuadros');
+            foreach ($cuadrosModificados as $index => &$cuadro) {
                 if (empty($cuadro['id_materia_prima_varillas'])) {
                     return response()->json([
                         'error' => "Debe proporcionar una varilla válida para hacer el cálculo correcto del material en el cuadro #" . ($index + 1)
                     ], 400);
                 }
-                //calcular tamaño externo del marco
-                $medidasExternas = $this->gestionMarcos->obtenerMarcoExterno($request->cuadros);
 
-                $cuadros[$index]['lado_a'] = $medidasExternas['lado_a'];
-                $cuadros[$index]['lado_b'] = $medidasExternas['lado_b'];
-                $cuadros[$index]['id_materia_prima_varillas'] = $cuadro['id_materia_prima_varillas'];
+                //calcular tamaño externo del marco usando las medidas del cuadro actual
+                $medidasExternas = $this->gestionMarcos->obtenerMarcoExterno($cuadro);
 
-                //quiero colocar un if si mandaron un id materia prima contorno hacer un dd si mando y si no mando un dd no mando
-                if (!empty($cuadros[$index]['id_materia_prima_contornos'])) {
-                    $cuadros[$index]['id_materia_prima_contornos'] = $cuadro['id_materia_prima_contornos'];
-                }
-                if (!empty($cuadros[$index]['id_materia_prima_trupans'])) {
-                    $cuadros[$index]['id_materia_prima_trupans'] = $cuadro['id_materia_prima_trupans'];
-                }
-                if (!empty($cuadros[$index]['id_materia_prima_vidrios'])) {
-                    $cuadros[$index]['id_materia_prima_vidrios'] = $cuadro['id_materia_prima_vidrios'];
-                }
-                if (!empty($cuadros[$index]['cantidad'])) {
-                    $cuadros[$index]['cantidad'] = $cuadro['cantidad'];
-                }
-
+                // Sobrescribir las medidas con el tamaño externo calculado
+                $cuadro['lado_a'] = $medidasExternas['lado_a'];
+                $cuadro['lado_b'] = $medidasExternas['lado_b'];
             }
 
+            // Reemplazamos los cuadros del request con los cuadros modificados
+            $request->merge(['cuadros' => $cuadrosModificados]);
         }
+
 
         if (!empty($request->detalles)) {
             $validacionProductos = $this->gestionProductos->verificarDisponibilidad($request->detalles);
@@ -714,18 +687,18 @@ class GestionVentaController extends Controller
         $cuadros = $request->input('cuadros');
 
         try {
-            foreach ($cuadros as $index => $cuadro) {
+            foreach ($cuadros as $index => &$cuadro) {
                 if (empty($cuadro['id_materia_prima_varillas'])) {
                     return response()->json([
                         'error' => "Debe proporcionar una varilla válida para hacer el cálculo correcto del material en el cuadro #" . ($index + 1)
                     ], 400);
                 }
 
-                // Calcular tamaño externo del marco
-                $medidasExternas = $this->gestionMarcos->obtenerMarcoExterno($cuadros);
+                // Calcular tamaño externo del marco usando las medidas del cuadro actual
+                $medidasExternas = $this->gestionMarcos->obtenerMarcoExterno($cuadro);
 
-                $cuadros[$index]['lado_a'] = $medidasExternas['lado_a'];
-                $cuadros[$index]['lado_b'] = $medidasExternas['lado_b'];
+                $cuadro['lado_a'] = $medidasExternas['lado_a'];
+                $cuadro['lado_b'] = $medidasExternas['lado_b'];
             }
 
             // Validar marcos (disponibilidad de stock)

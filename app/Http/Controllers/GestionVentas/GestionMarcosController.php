@@ -622,15 +622,15 @@ class GestionMarcosController extends Controller
         return $precioTotal;
     }
 
-    public function obtenerMarcoExterno($cuadros)
+    public function obtenerMarcoExterno($cuadro)
     {
-        $varilla = MateriaPrimaVarilla::find($cuadros[0]['id_materia_prima_varillas']);
+        $varilla = MateriaPrimaVarilla::find($cuadro['id_materia_prima_varillas']);
         // define una varible grosor con el grosor de este
         $grosor = $varilla->grosor;
         //dd($grosor);
         $resultado = [
-            'lado_a' => $cuadros[0]['lado_a'] + 2 * $grosor,
-            'lado_b' => $cuadros[0]['lado_b'] + 2 * $grosor,
+            'lado_a' => $cuadro['lado_a'] + 2 * $grosor,
+            'lado_b' => $cuadro['lado_b'] + 2 * $grosor,
         ];
         /*
                 dd([
