@@ -629,8 +629,8 @@ class GestionMarcosController extends Controller
         $grosor = $varilla->grosor;
         //dd($grosor);
         $resultado = [
-            'lado_a' => $cuadros[0]['lado_a'] + 20 * $grosor,
-            'lado_b' => $cuadros[0]['lado_b'] + 20 * $grosor,
+            'lado_a' => $cuadros[0]['lado_a'] + 2 * $grosor,
+            'lado_b' => $cuadros[0]['lado_b'] + 2 * $grosor,
         ];
         /*
                 dd([
