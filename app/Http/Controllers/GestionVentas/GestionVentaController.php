@@ -84,17 +84,21 @@ class GestionVentaController extends Controller
             $cuadrosModificados = $request->input('cuadros');
             foreach ($cuadrosModificados as $index => &$cuadro) {
                 if (empty($cuadro['id_materia_prima_varillas'])) {
-                    return response()->json([
-                        'error' => "Debe proporcionar una varilla válida para hacer el cálculo correcto del material en el cuadro #" . ($index + 1)
-                    ], 400);
+
+                    //return response()->json([
+                    //    'error' => "Debe proporcionar una varilla válida para hacer el cálculo correcto del material en el cuadro #" . ($index + 1)
+                    //], 400);
+                } else {
+
+                    //calcular tamaño externo del marco usando las medidas del cuadro actual
+                    $medidasExternas = $this->gestionMarcos->obtenerMarcoExterno($cuadro);
+
+                    // Sobrescribir las medidas con el tamaño externo calculado
+                    $cuadro['lado_a'] = $medidasExternas['lado_a'];
+                    $cuadro['lado_b'] = $medidasExternas['lado_b'];
+
                 }
 
-                //calcular tamaño externo del marco usando las medidas del cuadro actual
-                $medidasExternas = $this->gestionMarcos->obtenerMarcoExterno($cuadro);
-
-                // Sobrescribir las medidas con el tamaño externo calculado
-                $cuadro['lado_a'] = $medidasExternas['lado_a'];
-                $cuadro['lado_b'] = $medidasExternas['lado_b'];
             }
 
             // Reemplazamos los cuadros del request con los cuadros modificados
@@ -149,10 +153,10 @@ class GestionVentaController extends Controller
             }
             $totalVenta = $totalProductos + $totalCuadros;
 
-            // ✅ Actualizar con totales separados
+
             $this->actualizarTotalesVenta($venta, $totalProductos, $totalCuadros, $totalVenta);
 
-            $this->procesarPago($venta, $request->saldo, $totalVenta, $request->idFormaPago, $request->entregado, $request->descuento);
+            $this->procesarPago($venta, $request->saldo, $totalVenta, $request->idFormaPago, $request->entregado, $request->descuento, $request->fechaEntrega);
             $venta = $this->cargarRelacionesVenta($venta);
 
             DB::commit();
@@ -219,7 +223,7 @@ class GestionVentaController extends Controller
         ]);
     }
 
-    private function procesarPago($venta, $saldo, $precioTotal, $idFormaPago, $entregado, $descuento)
+    private function procesarPago($venta, $saldo, $precioTotal, $idFormaPago, $entregado, $descuento, $fechaEntrega)
     {
         if ($descuento != null) {
             //dd("se envio descuento");
@@ -244,15 +248,17 @@ class GestionVentaController extends Controller
                 'monto' => $saldo,
                 'fecha' => now()->toDateString(),
             ]);
-        } elseif ($saldo == 0 && $entregado == false) {
+        } elseif ($saldo == 0 && $entregado === false) {
             $venta->update([
                 'recogido' => false,
                 'saldo' => 0
             ]);
-        } elseif ($saldo == 0) {
+        } elseif ($saldo == 0 && $fechaEntrega === null) {
+
             $venta->update([
                 'recogido' => true,
-                'saldo' => $precioTotal
+                'saldo' => $precioTotal,
+                'fechaEntrega' => now()->toDateString(),
             ]);
 
             Pago::create([

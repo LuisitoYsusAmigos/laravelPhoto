@@ -191,7 +191,7 @@ class GestionMarcosController extends Controller
         $varillasDisponibles = $this->obtenerVarillasDisponibles($cuadro['id_materia_prima_varillas']);
         $necesidadesCuadros = $this->crearNecesidadCuadro($cuadro);
 
-        $resultado = $this->usoVarillasCuadro->optimizarCorte($necesidadesCuadros, $varillasDisponibles, 0.3);
+        $resultado = $this->usoVarillasCuadro->optimizarCorte($necesidadesCuadros, $varillasDisponibles, 0.0);
         // dd removido
         $jsonRespuesta = $this->usoVarillasCuadro->generarJson($resultado);
         //dd($varillasDisponibles, $necesidadesCuadros, $resultado, $jsonRespuesta);
