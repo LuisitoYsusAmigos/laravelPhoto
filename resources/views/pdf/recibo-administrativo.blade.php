@@ -152,6 +152,8 @@
           <th>ID</th>
           <th>Descripción</th>
           <th>Dimensiones Marco</th>
+          <th>Cant.</th>
+          <th>P. Unitario</th>
           <th>Total Item</th>
         </tr>
         @foreach ($venta['detalle_venta_personalizadas'] as $personalizado)
@@ -159,7 +161,9 @@
             <td>{{ $personalizado['id'] }}</td>
             <td>Marco personalizado</td>
             <td>{{ $personalizado['lado_a'] / 10 }} x {{ $personalizado['lado_b'] / 10 }} cm</td>
-            <td>{{ number_format(($venta['precioTotal'] - $venta['precioProducto']) / 100, 2) }}</td>
+            <td>{{ $personalizado['cantidad'] ?? 1 }}</td>
+            <td>{{ number_format(($personalizado['precio_unitario'] ?? 0) / 100, 2) }}</td>
+            <td>{{ number_format(($personalizado['total'] ?? 0) / 100, 2) }}</td>
           </tr>
         @endforeach
       </table>

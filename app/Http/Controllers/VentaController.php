@@ -460,6 +460,16 @@ public function getVentaCompletaAdministrativa($id)
                 $personalizado->materiaPrimaVidrio,
                 $personalizado->materiaPrimaContorno
             );
+            
+            $totalBaseUnitario = $personalizado->materialesVentaPersonalizadas->sum('precio_unitario');
+            $cantidad = $personalizado->materialesVentaPersonalizadas->first()->cantidad ?? 1;
+            $factor = $venta->factorPrecioVenta > 0 ? $venta->factorPrecioVenta : 1;
+            
+            $precioUnitario = $totalBaseUnitario * $factor;
+            
+            $personalizado->setAttribute('cantidad', $cantidad);
+            $personalizado->setAttribute('precio_unitario', $precioUnitario);
+            $personalizado->setAttribute('total', $precioUnitario * $cantidad);
         }
 
         // Estructura de respuesta

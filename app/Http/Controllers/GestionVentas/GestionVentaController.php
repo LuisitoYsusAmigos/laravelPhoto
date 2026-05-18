@@ -643,9 +643,18 @@ class GestionVentaController extends Controller
                     'nombreProducto' => optional($detalle->producto)->nombre,
                 ];
             }),
-            'detalle_venta_personalizadas' => $venta->detalleVentaPersonalizadas->map(function ($detalle) {
+            'detalle_venta_personalizadas' => $venta->detalleVentaPersonalizadas->map(function ($detalle) use ($venta) {
                 $detalleArray = $detalle->toArray();
-                $detalleArray['total'] = $detalle->materialesVentaPersonalizadas->sum('precio_unitario');
+                $totalBaseUnitario = $detalle->materialesVentaPersonalizadas->sum('precio_unitario');
+                $cantidad = $detalle->materialesVentaPersonalizadas->first()->cantidad ?? 1;
+                $factor = $venta->factorPrecioVenta > 0 ? $venta->factorPrecioVenta : 1;
+                
+                $precioUnitario = $totalBaseUnitario * $factor;
+                
+                $detalleArray['cantidad'] = $cantidad;
+                $detalleArray['precio_unitario'] = $precioUnitario;
+                $detalleArray['total'] = $precioUnitario * $cantidad;
+                
                 return $detalleArray;
             }),
         ];

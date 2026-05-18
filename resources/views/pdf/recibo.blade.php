@@ -136,6 +136,8 @@
           <th>Descripción</th>
           <th>Dimensiones</th>
           <th>Materiales</th>
+          <th>Cant.</th>
+          <th>P. Unitario</th>
           <th>Total</th>
         </tr>
         @foreach ($venta['detalle_venta_personalizadas'] as $personalizado)
@@ -153,11 +155,13 @@
               @if($personalizado['materia_prima_vidrio'])
                 Vidrio: {{ $personalizado['materia_prima_vidrio']['descripcion'] }}<br>
               @endif
-              @if($personalizado['materia_prima_contorno'])
+              @if(isset($personalizado['materia_prima_contorno']))
                 Contorno: {{ $personalizado['materia_prima_contorno']['descripcion'] }}
               @endif
             </td>
-            <td>{{ number_format(($venta['precioPerzonalizado'] ?? 0) / 100, 2) }}</td>
+            <td>{{ $personalizado['cantidad'] ?? 1 }}</td>
+            <td>{{ number_format(($personalizado['precio_unitario'] ?? 0) / 100, 2) }}</td>
+            <td>{{ number_format(($personalizado['total'] ?? 0) / 100, 2) }}</td>
           </tr>
         @endforeach
       </table>
