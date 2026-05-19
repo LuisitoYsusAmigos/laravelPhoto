@@ -645,15 +645,26 @@ class GestionVentaController extends Controller
             }),
             'detalle_venta_personalizadas' => $venta->detalleVentaPersonalizadas->map(function ($detalle) use ($venta) {
                 $detalleArray = $detalle->toArray();
-                $totalBaseUnitario = $detalle->materialesVentaPersonalizadas->sum('precio_unitario');
-                $cantidad = $detalle->materialesVentaPersonalizadas->first()->cantidad ?? 1;
+                $totalBaseUnitario = $detalle->materialesVentaPersonalizadas->sum(function($mat) {
+                    return $mat->precio_unitario * $mat->cantidad;
+                });
+                
+                // Calcular la cantidad de cuadros basándose en los cortes
+                $cantidad = \Illuminate\Support\Facades\DB::table('corte_material_ventas')
+                    ->join('materiales_venta_personalizadas', 'corte_material_ventas.material_vp_id', '=', 'materiales_venta_personalizadas.id')
+                    ->where('materiales_venta_personalizadas.detalleVP_id', $detalle->id)
+                    ->distinct('corte_material_ventas.origen')
+                    ->count('corte_material_ventas.origen');
+                    
+                if ($cantidad == 0) $cantidad = 1;
+
                 $factor = $venta->factorPrecioVenta > 0 ? $venta->factorPrecioVenta : 1;
                 
-                $precioUnitario = $totalBaseUnitario * $factor;
+                $precioTotal = $totalBaseUnitario * $factor;
                 
                 $detalleArray['cantidad'] = $cantidad;
-                $detalleArray['precio_unitario'] = $precioUnitario;
-                $detalleArray['total'] = $precioUnitario * $cantidad;
+                $detalleArray['precio_unitario'] = $precioTotal / $cantidad;
+                $detalleArray['total'] = $precioTotal;
                 
                 return $detalleArray;
             }),

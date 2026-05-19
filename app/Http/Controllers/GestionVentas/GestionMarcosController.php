@@ -349,9 +349,9 @@ class GestionMarcosController extends Controller
             $metrosUsados = $retazo['mmUsados'] / 1000;
 
 
-            // Calcular precio unitario aplicando la división por 10 usada históricamente para las varillas
-            $precio = ($metrosUsados * $datosVarilla->precioVenta * $datosVarilla->factor_desperdicio) / 10;
-            $precioTotal = round($precio * $retazo['cantidad']);
+            // Calcular precio total aplicando la división por 10 usada históricamente para las varillas
+            $precioTotal = ($metrosUsados * $datosVarilla->precioVenta * $datosVarilla->factor_desperdicio) / 10;
+            $precioUnitario = $retazo['cantidad'] > 0 ? ($precioTotal / $retazo['cantidad']) : $precioTotal;
 
             $totalVarillas += $precioTotal;
 
@@ -361,7 +361,7 @@ class GestionMarcosController extends Controller
                 'stock_vidrio_id' => null,
                 'stock_varilla_id' => $retazo['id'],
                 'cantidad' => $retazo['cantidad'],
-                'precio_unitario' => intval($precio),
+                'precio_unitario' => intval($precioUnitario),
                 'detalleVP_id' => $detalle->id
             ]);
 
@@ -600,9 +600,8 @@ class GestionMarcosController extends Controller
             }
 
             $metrosUsados = $retazo['mmUsados'] / 1000;
-            $precio = ($metrosUsados * $datosVarilla->precioVenta * $datosVarilla->factor_desperdicio) / 10;
-
-            $totalVarillas += intval($precio * $retazo['cantidad']);
+            $precioTotal = ($metrosUsados * $datosVarilla->precioVenta * $datosVarilla->factor_desperdicio) / 10;
+            $totalVarillas += intval($precioTotal);
         }
 
         return $totalVarillas;

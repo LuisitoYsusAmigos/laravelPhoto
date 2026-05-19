@@ -461,15 +461,26 @@ public function getVentaCompletaAdministrativa($id)
                 $personalizado->materiaPrimaContorno
             );
             
-            $totalBaseUnitario = $personalizado->materialesVentaPersonalizadas->sum('precio_unitario');
-            $cantidad = $personalizado->materialesVentaPersonalizadas->first()->cantidad ?? 1;
+            $totalBaseUnitario = $personalizado->materialesVentaPersonalizadas->sum(function($mat) {
+                return $mat->precio_unitario * $mat->cantidad;
+            });
+            
+            // Calcular la cantidad de cuadros basándose en los cortes
+            $cantidad = \Illuminate\Support\Facades\DB::table('corte_material_ventas')
+                ->join('materiales_venta_personalizadas', 'corte_material_ventas.material_vp_id', '=', 'materiales_venta_personalizadas.id')
+                ->where('materiales_venta_personalizadas.detalleVP_id', $personalizado->id)
+                ->distinct('corte_material_ventas.origen')
+                ->count('corte_material_ventas.origen');
+                
+            if ($cantidad == 0) $cantidad = 1;
+
             $factor = $venta->factorPrecioVenta > 0 ? $venta->factorPrecioVenta : 1;
             
-            $precioUnitario = $totalBaseUnitario * $factor;
+            $precioTotal = $totalBaseUnitario * $factor;
             
             $personalizado->setAttribute('cantidad', $cantidad);
-            $personalizado->setAttribute('precio_unitario', $precioUnitario);
-            $personalizado->setAttribute('total', $precioUnitario * $cantidad);
+            $personalizado->setAttribute('precio_unitario', $precioTotal / $cantidad);
+            $personalizado->setAttribute('total', $precioTotal);
         }
 
         // Estructura de respuesta

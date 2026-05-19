@@ -171,7 +171,11 @@
       {{-- SECCIÓN DE MATERIALES Y CORTES --}}
       <h3 style="background: #333; color: #fff;">Guía de Cortes y Materiales Utilizados</h3>
       @foreach ($venta['detalle_venta_personalizadas'] as $personalizado)
-        @foreach($personalizado['materiales_venta_personalizadas'] as $material)
+        @if(count($personalizado['materiales_venta_personalizadas']) > 0)
+          <h4 style="margin-top: 15px; margin-bottom: 5px; color: #444; border-bottom: 1px solid #ccc;">
+            Cortes para Marco ID: {{ $personalizado['id'] }} ({{ $personalizado['lado_a'] / 10 }} x {{ $personalizado['lado_b'] / 10 }} cm)
+          </h4>
+          @foreach($personalizado['materiales_venta_personalizadas'] as $material)
           @php
             $tipoMaterial = "DESCONOCIDO";
             $descMaterial = "N/A";
@@ -226,7 +230,8 @@
               @endforeach
             </ul>
           </div>
-        @endforeach
+          @endforeach
+        @endif
       @endforeach
     @endif
 
