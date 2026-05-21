@@ -250,7 +250,7 @@ class ProductoController extends Controller
             return response()->json(['message' => 'No se puede actualizar el stock, el stock ingresado es mayor al stock actual'], 400);// cambia el mensaje de erorr, se gardaron todoso los camposon excepto por stock debido a que no se pudo actualizar el stock    
         }
         
-        Log::info("Producto actualizado " . now()->toDateTimeString());
+        Log::info("Producto actualizado " . now()->toDateTimeString() . " - precio compra: " . $producto->precioCompra . " precio venta: " . $producto->precioVenta);
         Log::info(json_encode($producto));
 
         return response()->json($producto);
