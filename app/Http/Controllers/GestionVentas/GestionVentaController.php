@@ -757,4 +757,44 @@ class GestionVentaController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    /**
+     * Crea una devolución.
+     */
+    public function crearDevolucion(Request $request, $id = null)
+    {
+        $idVenta = $id ?? $request->input('idVenta') ?? $request->input('id');
+        $venta = Venta::find($idVenta);
+
+        if (!$venta) {
+            return response()->json([
+                'message' => 'no existe esa venta'
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'devolucion correcta'
+        ]);
+    }
+
+    /**
+     * Anula una venta.
+     */
+    public function anularVenta(Request $request, $id = null)
+    {
+        $idVenta = $id ?? $request->input('idVenta') ?? $request->input('id');
+        $venta = Venta::find($idVenta);
+
+        if (!$venta) {
+            return response()->json([
+                'message' => 'no existe esa venta'
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'venta anulada'
+        ]);
+    }
+
 }
+

@@ -336,10 +336,12 @@ use App\Http\Controllers\GestionVentas\GestionVentaController;
 Route::post('/ventaProductoMarco', [GestionVentaController::class, 'crearVentaCompleta']);
 Route::post('/ventaProductoMarco/SimularVenta', [GestionVentaController::class, 'SimularVenta']);
 
-//Route::post('/preciorealMarco', [GestionVentaController::class, 'consultaPrecioRealMarco']);
 
-// metodo nuevo de venta 2026
 
+// devoluciones
+route::post('/ventaProductoMarco/devolucion/{id}', [GestionVentaController::class, 'crearDevolucion']);
+//anular venta
+route::post('/ventaProductoMarco/anular/{id}', [GestionVentaController::class, 'anularVenta']);
 
 
 // En routes/api.php
