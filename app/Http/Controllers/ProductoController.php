@@ -55,7 +55,6 @@ class ProductoController extends Controller
     // Crear un nuevo producto
     public function store(Request $request)
     {
-
         $validator = Validator::make($request->all(), [
             'codigo' => 'string|nullable',
             'descripcion' => 'required|string',
@@ -79,8 +78,8 @@ class ProductoController extends Controller
         $data['stock_global_actual'] = 0;
 
         // Crear el producto sin imagen para obtener el ID
-        Log::info('📦 Datos para crear producto:', $data);
-
+        
+        //dd($request);
         $producto = Producto::create($request->except('imagen'));
 
         // Verificar si se subió una imagen
@@ -117,10 +116,6 @@ class ProductoController extends Controller
             $producto->imagen = 'storage/productos/' . $filename;
             $producto->save();
             // Guardar la ruta relativa en la base de datos y actualizar precioVenta
-
-            
-
-
             //dd($productoNuevo);
         }
         //datos para el stock
@@ -134,8 +129,8 @@ class ProductoController extends Controller
         $stockController = new StockProductoController();
         $stockController->store(new Request($stock));
 
-        Producto::where('id', $producto->id)->update(['precioVenta' => $producto->precioVenta]);
-
+        //Producto::where('id', $producto->id)->update(['precioVenta' => $producto->precioVenta]);
+        Log::info('Datos para crear producto:', $data);
         return response()->json($producto, 201);
     }
 

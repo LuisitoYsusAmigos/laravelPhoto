@@ -38,7 +38,7 @@ return new class extends Migration
                             FROM stock_productos
                             WHERE contable = 1 AND id_producto = NEW.id_producto
                         ),
-                        precioVenta = NEW.precio
+                        precioCompra = NEW.precio
                     WHERE id = NEW.id_producto;
                 END IF;
             END
@@ -58,7 +58,7 @@ return new class extends Migration
                             FROM stock_productos
                             WHERE contable = 1 AND id_producto = NEW.id_producto
                         ),
-                        precioVenta = NEW.precio
+                        precioCompra = NEW.precio
                     WHERE id = NEW.id_producto;
                 END IF;
 
