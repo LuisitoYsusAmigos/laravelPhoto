@@ -3,24 +3,24 @@
 namespace App\Http\Controllers\GestionVentas;
 
 use App\Http\Controllers\Controller;
+use App\Models\Pago;
+use App\Models\Venta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use App\Models\Venta;
-use App\Models\Pago;
 
 class GestionVentaController extends Controller
 {
     protected $gestionProductos;
+
     protected $gestionMarcos;
 
     public function __construct()
     {
-        $this->gestionProductos = new GestionProductosController();
-        $this->gestionMarcos = new GestionMarcosController();
+        $this->gestionProductos = new GestionProductosController;
+        $this->gestionMarcos = new GestionMarcosController;
     }
-
 
     public function crearVentaCompleta(Request $request)
     {
@@ -54,7 +54,7 @@ class GestionVentaController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Faltan datos o datos inválidos',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 400);
         }
 
@@ -72,25 +72,25 @@ class GestionVentaController extends Controller
         }
 
         $request->merge([
-            'saldo' => $request->input('pago')
+            'saldo' => $request->input('pago'),
         ]);
         if (empty($request->detalles) && empty($request->cuadros)) {
             return response()->json([
-                'error' => 'Debe incluir al menos productos o cuadros personalizados'
+                'error' => 'Debe incluir al menos productos o cuadros personalizados',
             ], 400);
         }
 
-        if (!empty($request->cuadros)) {
+        if (! empty($request->cuadros)) {
             $cuadrosModificados = $request->input('cuadros');
             foreach ($cuadrosModificados as $index => &$cuadro) {
                 if (empty($cuadro['id_materia_prima_varillas'])) {
 
-                    //return response()->json([
+                    // return response()->json([
                     //    'error' => "Debe proporcionar una varilla válida para hacer el cálculo correcto del material en el cuadro #" . ($index + 1)
-                    //], 400);
+                    // ], 400);
                 } else {
 
-                    //calcular tamaño externo del marco usando las medidas del cuadro actual
+                    // calcular tamaño externo del marco usando las medidas del cuadro actual
                     $medidasExternas = $this->gestionMarcos->obtenerMarcoExterno($cuadro);
 
                     // Sobrescribir las medidas con el tamaño externo calculado
@@ -105,30 +105,29 @@ class GestionVentaController extends Controller
             $request->merge(['cuadros' => $cuadrosModificados]);
         }
 
-
-        if (!empty($request->detalles)) {
+        if (! empty($request->detalles)) {
             $validacionProductos = $this->gestionProductos->verificarDisponibilidad($request->detalles);
 
-            $errores = array_filter($validacionProductos, fn($p) => $p['disponible'] === false);
+            $errores = array_filter($validacionProductos, fn ($p) => $p['disponible'] === false);
 
-            if (!empty($errores)) {
+            if (! empty($errores)) {
                 return response()->json([
                     'message' => 'Errores en los productos',
-                    'detalles' => $errores
+                    'detalles' => $errores,
                 ], 400);
             }
         }
 
         //  Validar marcos y stock ANTES de crear la venta
-        if (!empty($request->cuadros)) {
+        if (! empty($request->cuadros)) {
             $validacionMarcos = $this->gestionMarcos->verificarDisponibilidadMarcos($request->cuadros);
 
-            $errores = array_filter($validacionMarcos, fn($c) => $c['valido'] === false);
+            $errores = array_filter($validacionMarcos, fn ($c) => $c['valido'] === false);
 
-            if (!empty($errores)) {
+            if (! empty($errores)) {
                 return response()->json([
                     'message' => 'Errores en los cuadros personalizados',
-                    'detalles' => $errores
+                    'detalles' => $errores,
                 ], 400);
             }
         }
@@ -143,16 +142,15 @@ class GestionVentaController extends Controller
             $totalProductos = 0;
             $totalCuadros = 0;
 
-            if (!empty($request->detalles)) {
+            if (! empty($request->detalles)) {
                 $totalProductos = $this->gestionProductos->procesarProductos($venta, $request->detalles);
             }
 
-            if (!empty($request->cuadros)) {
+            if (! empty($request->cuadros)) {
                 $resultadoMarcos = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros, $factorPrecioVenta);
                 $totalCuadros = $resultadoMarcos['total'];
             }
             $totalVenta = $totalProductos + $totalCuadros;
-
 
             $this->actualizarTotalesVenta($venta, $totalProductos, $totalCuadros, $totalVenta);
 
@@ -167,12 +165,10 @@ class GestionVentaController extends Controller
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
-
-
 
     public function SimularVenta(Request $request)
     {
@@ -194,7 +190,7 @@ class GestionVentaController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -226,14 +222,14 @@ class GestionVentaController extends Controller
     private function procesarPago($venta, $saldo, $precioTotal, $idFormaPago, $entregado, $descuento, $fechaEntrega)
     {
         if ($descuento != null) {
-            //dd("se envio descuento");
+            // dd("se envio descuento");
             if ($descuento > $precioTotal) {
-                throw new \Exception("El descuento no puede ser mayor al precio total de la venta");
+                throw new \Exception('El descuento no puede ser mayor al precio total de la venta');
             } else {
                 $precioTotal = $precioTotal - $descuento;
                 // Actualizar el precio total en la base de datos para que refleje el descuento
                 $venta->update(['precioTotal' => $precioTotal]);
-                //dd("descuento aplicado");
+                // dd("descuento aplicado");
             }
         }
         if ($saldo > $precioTotal) {
@@ -251,7 +247,7 @@ class GestionVentaController extends Controller
         } elseif ($saldo == 0 && $entregado === false) {
             $venta->update([
                 'recogido' => false,
-                'saldo' => 0
+                'saldo' => 0,
             ]);
         } elseif ($saldo == 0 && $fechaEntrega === null) {
 
@@ -279,13 +275,11 @@ class GestionVentaController extends Controller
             'detalleVentaPersonalizadas.materiaPrimaVarilla',
             'detalleVentaPersonalizadas.materiaPrimaTrupan',
             'detalleVentaPersonalizadas.materiaPrimaVidrio',
-            'detalleVentaPersonalizadas.materiaPrimaContorno'
+            'detalleVentaPersonalizadas.materiaPrimaContorno',
         ]);
     }
 
     // ... resto de métodos (obtenerVentaCompleta, obtenerVentas, eliminarVenta, verificarEliminacionVenta, formatearRespuestaVenta)
-
-
 
     /**
      * Obtiene una venta completa por ID
@@ -302,12 +296,12 @@ class GestionVentaController extends Controller
                 'detalleVentaPersonalizadas.materiaPrimaTrupan',
                 'detalleVentaPersonalizadas.materiaPrimaVidrio',
                 'detalleVentaPersonalizadas.materiaPrimaContorno',
-                'detalleVentaPersonalizadas.materialesVentaPersonalizadas'
+                'detalleVentaPersonalizadas.materialesVentaPersonalizadas',
             ])->find($id);
 
-            if (!$venta) {
+            if (! $venta) {
                 return response()->json([
-                    'error' => 'Venta no encontrada'
+                    'error' => 'Venta no encontrada',
                 ], 404);
             }
 
@@ -325,11 +319,11 @@ class GestionVentaController extends Controller
 
             return response()->json([
                 'message' => 'Venta obtenida exitosamente',
-                'venta' => $ventaFormateada
+                'venta' => $ventaFormateada,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Error al obtener la venta: ' . $e->getMessage()
+                'error' => 'Error al obtener la venta: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -403,11 +397,11 @@ class GestionVentaController extends Controller
                 }
 
                 $descripcionFiltros = empty($filtrosAplicados)
-                    ? "todas las ventas"
+                    ? 'todas las ventas'
                     : implode(', ', $filtrosAplicados);
 
                 return response()->json([
-                    'error' => "No se encontraron ventas con los filtros aplicados: {$descripcionFiltros}"
+                    'error' => "No se encontraron ventas con los filtros aplicados: {$descripcionFiltros}",
                 ], 404);
             }
 
@@ -424,7 +418,7 @@ class GestionVentaController extends Controller
                     'detalleVentaPersonalizadas.materiaPrimaVarilla',
                     'detalleVentaPersonalizadas.materiaPrimaTrupan',
                     'detalleVentaPersonalizadas.materiaPrimaVidrio',
-                    'detalleVentaPersonalizadas.materiaPrimaContorno'
+                    'detalleVentaPersonalizadas.materiaPrimaContorno',
                 ])
                 ->get();
 
@@ -455,22 +449,21 @@ class GestionVentaController extends Controller
                     'total' => $totalItems,
                     'from' => $totalItems > 0 ? (($page - 1) * $perPage) + 1 : null,
                     'to' => $totalItems > 0 ? min($page * $perPage, $totalItems) : null,
-                ]
+                ],
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Error al obtener las ventas: ' . $e->getMessage()
+                'error' => 'Error al obtener las ventas: '.$e->getMessage(),
             ], 500);
         }
     }
-
 
     // ============== MÉTODO DE ELIMINACIÓN DE VENTA ==============
 
     /**
      * Elimina completamente una venta y devuelve todo el stock
-     * 
-     * @param int $idVenta ID de la venta a eliminar
+     *
+     * @param  int  $idVenta  ID de la venta a eliminar
      * @return \Illuminate\Http\JsonResponse
      */
     public function eliminarVenta($idVenta)
@@ -481,12 +474,12 @@ class GestionVentaController extends Controller
             // 1. Verificar que la venta existe
             $venta = Venta::with([
                 'detalleVentaProductos',
-                'detalleVentaPersonalizadas.materialesVentaPersonalizada'
+                'detalleVentaPersonalizadas.materialesVentaPersonalizada',
             ])->find($idVenta);
 
-            if (!$venta) {
+            if (! $venta) {
                 return response()->json([
-                    'error' => 'Venta no encontrada'
+                    'error' => 'Venta no encontrada',
                 ], 404);
             }
 
@@ -495,7 +488,7 @@ class GestionVentaController extends Controller
                 'venta_id' => $venta->id,
                 'fecha_venta' => $venta->fecha,
                 'total_venta' => $venta->precioTotal,
-                'productos_info' => []
+                'productos_info' => [],
             ];
 
             // 3. Procesar productos regulares si existen
@@ -513,7 +506,7 @@ class GestionVentaController extends Controller
             // 4. Por ahora, si hay marcos personalizados, mostrar error
             if ($venta->detalleVentaPersonalizadas->count() > 0) {
                 return response()->json([
-                    'error' => 'No se pueden eliminar ventas con marcos personalizados. Esta funcionalidad estará disponible próximamente.'
+                    'error' => 'No se pueden eliminar ventas con marcos personalizados. Esta funcionalidad estará disponible próximamente.',
                 ], 400);
             }
 
@@ -524,10 +517,10 @@ class GestionVentaController extends Controller
             $venta->delete();
 
             // 7. Log de auditoría
-            Log::info("Venta eliminada completamente", [
+            Log::info('Venta eliminada completamente', [
                 'venta_id' => $idVenta,
                 'pagos_eliminados' => $pagosEliminados,
-                'info_eliminacion' => $infoEliminacion
+                'info_eliminacion' => $infoEliminacion,
             ]);
 
             DB::commit();
@@ -539,28 +532,28 @@ class GestionVentaController extends Controller
                     'fecha_original' => $infoEliminacion['fecha_venta'],
                     'total_original' => $infoEliminacion['total_venta'],
                     'productos_devueltos' => $infoEliminacion['productos_info']['total_productos_diferentes'] ?? 0,
-                    'pagos_eliminados' => $pagosEliminados
-                ]
+                    'pagos_eliminados' => $pagosEliminados,
+                ],
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
 
-            Log::error("Error al eliminar venta", [
+            Log::error('Error al eliminar venta', [
                 'venta_id' => $idVenta,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
-                'error' => 'Error al eliminar la venta: ' . $e->getMessage()
+                'error' => 'Error al eliminar la venta: '.$e->getMessage(),
             ], 500);
         }
     }
 
     /**
      * Verifica si una venta puede ser eliminada
-     * 
-     * @param int $idVenta ID de la venta
+     *
+     * @param  int  $idVenta  ID de la venta
      * @return \Illuminate\Http\JsonResponse
      */
     public function verificarEliminacionVenta($idVenta)
@@ -569,13 +562,13 @@ class GestionVentaController extends Controller
             $venta = Venta::with([
                 'detalleVentaProductos',
                 'detalleVentaPersonalizadas',
-                'pagos'
+                'pagos',
             ])->find($idVenta);
 
-            if (!$venta) {
+            if (! $venta) {
                 return response()->json([
                     'puede_eliminar' => false,
-                    'motivo' => 'Venta no encontrada'
+                    'motivo' => 'Venta no encontrada',
                 ], 404);
             }
 
@@ -583,7 +576,7 @@ class GestionVentaController extends Controller
             if ($venta->detalleVentaPersonalizadas->count() > 0) {
                 return response()->json([
                     'puede_eliminar' => false,
-                    'motivo' => 'No se pueden eliminar ventas con marcos personalizados. Esta funcionalidad estará disponible próximamente.'
+                    'motivo' => 'No se pueden eliminar ventas con marcos personalizados. Esta funcionalidad estará disponible próximamente.',
                 ], 400);
             }
 
@@ -599,13 +592,13 @@ class GestionVentaController extends Controller
                     'cliente_id' => $venta->idCliente,
                     'productos_count' => $productosCount,
                     'pagos_count' => $pagosCount,
-                    'recogido' => $venta->recogido
-                ]
+                    'recogido' => $venta->recogido,
+                ],
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'puede_eliminar' => false,
-                'motivo' => 'Error al verificar: ' . $e->getMessage()
+                'motivo' => 'Error al verificar: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -645,27 +638,29 @@ class GestionVentaController extends Controller
             }),
             'detalle_venta_personalizadas' => $venta->detalleVentaPersonalizadas->map(function ($detalle) use ($venta) {
                 $detalleArray = $detalle->toArray();
-                $totalBaseUnitario = $detalle->materialesVentaPersonalizadas->sum(function($mat) {
+                $totalBaseUnitario = $detalle->materialesVentaPersonalizadas->sum(function ($mat) {
                     return $mat->precio_unitario * $mat->cantidad;
                 });
-                
+
                 // Calcular la cantidad de cuadros basándose en los cortes
                 $cantidad = \Illuminate\Support\Facades\DB::table('corte_material_ventas')
                     ->join('materiales_venta_personalizadas', 'corte_material_ventas.material_vp_id', '=', 'materiales_venta_personalizadas.id')
                     ->where('materiales_venta_personalizadas.detalleVP_id', $detalle->id)
                     ->distinct('corte_material_ventas.origen')
                     ->count('corte_material_ventas.origen');
-                    
-                if ($cantidad == 0) $cantidad = 1;
+
+                if ($cantidad == 0) {
+                    $cantidad = 1;
+                }
 
                 $factor = $venta->factorPrecioVenta > 0 ? $venta->factorPrecioVenta : 1;
-                
+
                 $precioTotal = $totalBaseUnitario * $factor;
-                
+
                 $detalleArray['cantidad'] = $cantidad;
                 $detalleArray['precio_unitario'] = $precioTotal / $cantidad;
                 $detalleArray['total'] = $precioTotal;
-                
+
                 return $detalleArray;
             }),
         ];
@@ -689,10 +684,9 @@ class GestionVentaController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Faltan datos o datos inválidos',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 400);
         }
-
 
         $factorPrecioVenta = $request->input('factorPrecioVenta') ?? 1;
         $descuento = $request->input('descuento') ?? 0;
@@ -716,7 +710,7 @@ class GestionVentaController extends Controller
             foreach ($cuadros as $index => &$cuadro) {
                 if (empty($cuadro['id_materia_prima_varillas'])) {
                     return response()->json([
-                        'error' => "Debe proporcionar una varilla válida para hacer el cálculo correcto del material en el cuadro #" . ($index + 1)
+                        'error' => 'Debe proporcionar una varilla válida para hacer el cálculo correcto del material en el cuadro #'.($index + 1),
                     ], 400);
                 }
 
@@ -729,12 +723,12 @@ class GestionVentaController extends Controller
 
             // Validar marcos (disponibilidad de stock)
             $validacionMarcos = $this->gestionMarcos->verificarDisponibilidadMarcos($cuadros);
-            $errores = array_filter($validacionMarcos, fn($c) => $c['valido'] === false);
+            $errores = array_filter($validacionMarcos, fn ($c) => $c['valido'] === false);
 
-            if (!empty($errores)) {
+            if (! empty($errores)) {
                 return response()->json([
                     'message' => 'Errores en los cuadros personalizados (Stock no disponible)',
-                    'detalles' => $errores
+                    'detalles' => $errores,
                 ], 400);
             }
 
@@ -743,8 +737,9 @@ class GestionVentaController extends Controller
             $totalCuadros = $resultadoMarcos['total'];
 
             $precioTotal = $totalCuadros - $descuento;
-            if ($precioTotal < 0)
+            if ($precioTotal < 0) {
                 $precioTotal = 0;
+            }
 
             return response()->json([
                 'message' => 'Cálculo de precio exitoso',
@@ -761,40 +756,40 @@ class GestionVentaController extends Controller
     /**
      * Crea una devolución.
      */
-    public function crearDevolucion(Request $request, $id = null)
+    public function crearDevolucion(Request $request)
     {
-        $idVenta = $id ?? $request->input('idVenta') ?? $request->input('id');
+        $idVenta = $request->input('idVenta');
         $venta = Venta::find($idVenta);
 
-        if (!$venta) {
+        if (! $venta) {
             return response()->json([
-                'message' => 'no existe esa venta'
+                'message' => 'no existe esa venta',
             ], 404);
         }
 
         return response()->json([
-            'message' => 'devolucion correcta'
+            'message' => 'devolucion correcta',
         ]);
     }
 
     /**
      * Anula una venta.
      */
-    public function anularVenta(Request $request, $id = null)
+    public function anularVenta(Request $request)
     {
-        $idVenta = $id ?? $request->input('idVenta') ?? $request->input('id');
+        $idVenta = $request->input('idVenta');
         $venta = Venta::find($idVenta);
 
-        if (!$venta) {
+        if (! $venta) {
             return response()->json([
-                'message' => 'no existe esa venta'
+                'message' => 'no existe esa venta',
             ], 404);
         }
 
+        $venta->delete();
+
         return response()->json([
-            'message' => 'venta anulada'
+            'message' => 'venta anulada',
         ]);
     }
-
 }
-
