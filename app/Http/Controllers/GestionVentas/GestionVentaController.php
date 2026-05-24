@@ -3,8 +3,14 @@
 namespace App\Http\Controllers\GestionVentas;
 
 use App\Http\Controllers\Controller;
+use App\Models\MaterialesVentaPersonalizada;
 use App\Models\Pago;
 use App\Models\Venta;
+use App\Services\DevolucionStockContornos;
+use App\Services\DevolucionStockProductos;
+use App\Services\DevolucionStockTrupans;
+use App\Services\DevolucionStockVarillas;
+use App\Services\DevolucionStockVidrios;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -753,13 +759,9 @@ class GestionVentaController extends Controller
         }
     }
 
-    /**
-     * Crea una devolución.
-     */
-    public function crearDevolucion(Request $request)
+    public function crearDevolucion($id)
     {
-        $idVenta = $request->input('idVenta');
-        $venta = Venta::find($idVenta);
+        $venta = Venta::find($id);
 
         if (! $venta) {
             return response()->json([
@@ -767,29 +769,65 @@ class GestionVentaController extends Controller
             ], 404);
         }
 
-        return response()->json([
-            'message' => 'devolucion correcta',
-        ]);
-    }
+        DB::beginTransaction();
 
-    /**
-     * Anula una venta.
-     */
-    public function anularVenta(Request $request)
-    {
-        $idVenta = $request->input('idVenta');
-        $venta = Venta::find($idVenta);
+        try {
 
-        if (! $venta) {
+            if ($venta->detalleVentaProductos()->exists()) {
+                $devolucionProductos = new DevolucionStockProductos;
+                $devolucionProductos->devolucionStockProductos($venta);
+            }
+
+            if ($venta->detalleVentaPersonalizadas()->exists()) {
+                $detalleIds = $venta->detalleVentaPersonalizadas()->pluck('id');
+
+                $tieneVarillas = MaterialesVentaPersonalizada::whereIn('detalleVP_id', $detalleIds)
+                    ->whereNotNull('stock_varilla_id')
+                    ->exists();
+                if ($tieneVarillas) {
+                    $devolucionVarillas = new DevolucionStockVarillas;
+                    $devolucionVarillas->devolucionStockVarillas($venta);
+                }
+
+                $tieneTrupans = MaterialesVentaPersonalizada::whereIn('detalleVP_id', $detalleIds)
+                    ->whereNotNull('stock_trupan_id')
+                    ->exists();
+                if ($tieneTrupans) {
+                    $devolucionTrupans = new DevolucionStockTrupans;
+                    $devolucionTrupans->devolucionStockTrupans($venta);
+                }
+
+                $tieneVidrios = MaterialesVentaPersonalizada::whereIn('detalleVP_id', $detalleIds)
+                    ->whereNotNull('stock_vidrio_id')
+                    ->exists();
+                if ($tieneVidrios) {
+                    $devolucionVidrios = new DevolucionStockVidrios;
+                    $devolucionVidrios->devolucionStockVidrios($venta);
+                }
+
+                $tieneContornos = MaterialesVentaPersonalizada::whereIn('detalleVP_id', $detalleIds)
+                    ->whereNotNull('stock_contorno_id')
+                    ->exists();
+                if ($tieneContornos) {
+                    $devolucionContornos = new DevolucionStockContornos;
+                    $devolucionContornos->devolucionStockContornos($venta);
+                }
+            }
+
+            $venta->delete();
+
+            DB::commit();
+
             return response()->json([
-                'message' => 'no existe esa venta',
-            ], 404);
+                'message' => 'devolucion correcta',
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'error' => 'Error al realizar la devolución: '.$e->getMessage(),
+            ], 500);
         }
-
-        $venta->delete();
-
-        return response()->json([
-            'message' => 'venta anulada',
-        ]);
     }
 }

@@ -1,38 +1,34 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\SucursalController;
-use App\Http\Controllers\ProductoController;
-use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\SubCategoriaController;
-use App\Http\Controllers\MateriaPrimaVarillaController;
-use App\Http\Controllers\MateriaPrimaTrupanController;
-use App\Http\Controllers\MateriaPrimaVidrioController;
-use App\Http\Controllers\MateriaPrimaContornoController;
-
-use App\Http\Controllers\StockVarillaController;
-use App\Http\Controllers\StockVidrioController;
-use App\Http\Controllers\StockTrupanController;
-use App\Http\Controllers\StockProductoController;
-use App\Http\Controllers\StockContornoController;
-
-use App\Http\Controllers\VentaController;
-
+use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\CotizadorController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\FuncionesGeneralesController;
-use App\Http\Controllers\RolController;
 use App\Http\Controllers\LugarController;
+use App\Http\Controllers\MateriaPrimaContornoController;
+use App\Http\Controllers\MateriaPrimaTrupanController;
+use App\Http\Controllers\MateriaPrimaVarillaController;
+use App\Http\Controllers\MateriaPrimaVidrioController;
+use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\RolController;
+use App\Http\Controllers\StockContornoController;
+use App\Http\Controllers\StockProductoController;
+use App\Http\Controllers\StockTrupanController;
+use App\Http\Controllers\StockVarillaController;
+use App\Http\Controllers\StockVidrioController;
+use App\Http\Controllers\SubCategoriaController;
+use App\Http\Controllers\SucursalController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\VentaController;
+use Illuminate\Support\Facades\Route;
 
-//Lugares
+// Lugares
 Route::get('/lugares', [LugarController::class, 'index']);
 Route::post('/lugar', [LugarController::class, 'store']);
 Route::get('/lugar/{id}', [LugarController::class, 'show']);
 Route::put('/lugar/{id}', [LugarController::class, 'update']);
-Route::delete('/lugar/{id}', [LugarController::class, 'destroy']);  
+Route::delete('/lugar/{id}', [LugarController::class, 'destroy']);
 
 // Sucursales
 
@@ -41,9 +37,8 @@ Route::get('/sucursal/{id}', [SucursalController::class, 'show']);
 Route::post('/sucursal', [SucursalController::class, 'store']);
 Route::put('/sucursal/{id}', [SucursalController::class, 'update']);
 Route::delete('/sucursal/{id}', [SucursalController::class, 'destroy']);
-  
 
-//categorias
+// categorias
 Route::get('/categorias', [CategoriaController::class, 'index']);
 Route::post('/categoria', [CategoriaController::class, 'store']);
 Route::get('/categoria/{id}', [CategoriaController::class, 'show']);
@@ -60,7 +55,7 @@ Route::put('/subCategoria/{id}', [SubCategoriaController::class, 'update']);
 Route::delete('/subCategoria/{id}', [SubCategoriaController::class, 'destroy']);
 Route::get('/subCategoria/porCategoria/{id}', [SubCategoriaController::class, 'subcategoriasPorCategoria']);
 
-//producto
+// producto
 
 Route::get('/productos', [ProductoController::class, 'index']);
 Route::post('/producto', [ProductoController::class, 'store']);
@@ -70,7 +65,6 @@ Route::delete('/producto/{id}', [ProductoController::class, 'destroy']);
 Route::get('/productos/search', [ProductoController::class, 'search']);
 Route::get('/productos/search-categorias', [ProductoController::class, 'searchCategorias']);
 Route::get('/productos/paginados', [ProductoController::class, 'indexPaginado']);
-
 
 // mateira prima varilla
 // Materia Prima Varillas
@@ -85,7 +79,6 @@ Route::get('/materiaPrimaVarillas/paginados', [MateriaPrimaVarillaController::cl
 Route::get('/materiaPrimaVarillas/search', [MateriaPrimaVarillaController::class, 'search']);
 Route::get('/materiaPrimaVarillas/search-categorias', [MateriaPrimaVarillaController::class, 'searchCategorias']);
 
-
 // mateira prima trupan
 Route::get('/materiaPrimaTrupanes', [MateriaPrimaTrupanController::class, 'index']);
 Route::post('/materiaPrimaTrupan', [MateriaPrimaTrupanController::class, 'store']);
@@ -97,8 +90,7 @@ Route::get('/materiaPrimaTrupanes/paginados', [MateriaPrimaTrupanController::cla
 Route::get('/materiaPrimaTrupanes/search', [MateriaPrimaTrupanController::class, 'search']); // Búsqueda general
 Route::get('/materiaPrimaTrupanes/search-categorias', [MateriaPrimaTrupanController::class, 'searchCategorias']); // Filtro por categoría y subcategoría
 
-
-//materia prima vidrio
+// materia prima vidrio
 Route::get('/materiaPrimaVidrios', [MateriaPrimaVidrioController::class, 'index']);
 Route::post('/materiaPrimaVidrio', [MateriaPrimaVidrioController::class, 'store']);
 Route::get('/materiaPrimaVidrio/{id}', [MateriaPrimaVidrioController::class, 'show']);
@@ -108,7 +100,6 @@ Route::delete('/materiaPrimaVidrio/{id}', [MateriaPrimaVidrioController::class, 
 Route::get('/materiaPrimaVidrios/paginados', [MateriaPrimaVidrioController::class, 'indexPaginado']); // Listado paginado
 Route::get('/materiaPrimaVidrios/search', [MateriaPrimaVidrioController::class, 'search']); // Búsqueda general
 Route::get('/materiaPrimaVidrios/search-categorias', [MateriaPrimaVidrioController::class, 'searchCategorias']); // Filtro por categoría y subcategoría
-
 
 // materia prima contorno
 Route::get('/materiaPrimaContornos', [MateriaPrimaContornoController::class, 'index']);
@@ -121,8 +112,7 @@ Route::get('/materiaPrimaContornos/paginados', [MateriaPrimaContornoController::
 Route::get('/materiaPrimaContornos/search', [MateriaPrimaContornoController::class, 'search']); // Búsqueda general
 Route::get('/materiaPrimaContornos/search-categorias', [MateriaPrimaContornoController::class, 'searchCategorias']); // Filtro por categoría y subcategoría
 
-
-// stock varila 
+// stock varila
 
 Route::get('/stockVarillas', [StockVarillaController::class, 'index']); // Obtener todos los registros
 Route::post('/stockVarillas', [StockVarillaController::class, 'store']); // Crear un nuevo registro
@@ -139,7 +129,7 @@ Route::get('/stockVidrios/porVidrio/{id}', [StockVidrioController::class, 'index
 Route::put('/stockVidrio/{id}', [StockVidrioController::class, 'update']); // Actualizar un registro
 Route::delete('/stockVidrio/{id}', [StockVidrioController::class, 'destroy']); // Eliminar un registro
 
-//stock trupan
+// stock trupan
 Route::get('/stockTrupans', [StockTrupanController::class, 'index']); // Obtener todos los registros
 Route::post('/stockTrupans', [StockTrupanController::class, 'store']); // Crear un nuevo registro
 Route::get('/stockTrupans/{id}', [StockTrupanController::class, 'show']); // Obtener un registro por ID
@@ -147,15 +137,14 @@ Route::get('/stockTrupans/porTrupan/{id}', [StockTrupanController::class, 'index
 Route::put('/stockTrupans/{id}', [StockTrupanController::class, 'update']); // Actualizar un registro
 Route::delete('/stockTrupans/{id}', [StockTrupanController::class, 'destroy']); // Eliminar un registro
 
-
 // Stock de Productos
-Route::get  ('/stockProductos',           [StockProductoController::class, 'index']);   // Obtener todos los registros
-Route::post ('/stockProducto',           [StockProductoController::class, 'store']);   // Crear un nuevo registro
-Route::get  ('/stockProducto/{id}',      [StockProductoController::class, 'show']);    // Obtener un registro por ID
+Route::get('/stockProductos', [StockProductoController::class, 'index']);   // Obtener todos los registros
+Route::post('/stockProducto', [StockProductoController::class, 'store']);   // Crear un nuevo registro
+Route::get('/stockProducto/{id}', [StockProductoController::class, 'show']);    // Obtener un registro por ID
 Route::get('/stockProductos/porProducto/{id_producto}', [StockProductoController::class, 'getByProducto']);
-Route::put  ('/stockProducto/{id}',      [StockProductoController::class, 'update']);  // Actualizar un registro
-Route::delete('/stockProducto/{id}',      [StockProductoController::class, 'destroy']); // Eliminar un registro
-//stock de contornos
+Route::put('/stockProducto/{id}', [StockProductoController::class, 'update']);  // Actualizar un registro
+Route::delete('/stockProducto/{id}', [StockProductoController::class, 'destroy']); // Eliminar un registro
+// stock de contornos
 
 Route::get('/stockContornos', [StockContornoController::class, 'index']);
 Route::post('/stockContorno', [StockContornoController::class, 'store']);
@@ -164,8 +153,7 @@ Route::put('/stockContorno/{id}', [StockContornoController::class, 'update']);
 Route::delete('/stockContorno/{id}', [StockContornoController::class, 'destroy']);
 Route::get('/stockContorno/porContorno/{id}', [StockContornoController::class, 'indexPorContorno']);
 
-
-//cliente
+// cliente
 Route::get('/clientes', [ClienteController::class, 'index']); // Obtener todos los registros
 Route::get('/clientes/fullName', [ClienteController::class, 'indexFullName']); // Obtener todos los registros con nombre completo
 Route::get('/clientes/paginados', [ClienteController::class, 'indexPaginado']); // Obtener registros paginados
@@ -177,15 +165,14 @@ Route::get('/cliente/{id}', [ClienteController::class, 'show']); // Obtener un r
 Route::put('/cliente/{id}', [ClienteController::class, 'update']); // Actualizar un registro
 Route::delete('/cliente/{id}', [ClienteController::class, 'destroy']); // Eliminar un registro
 
-//roles
+// roles
 Route::get('/roles', [RolController::class, 'index']); // Obtener todos los roles
 Route::post('/rol', [RolController::class, 'store']); // Crear un nuevo rol
 Route::get('/rol/{id}', [RolController::class, 'show']); // Obtener un rol por ID
 Route::put('/rol/{id}', [RolController::class, 'update']); // Actualizar un rol
 Route::delete('/rol/{id}', [RolController::class, 'destroy']); // Eliminar un rol
 
-
-//ventas
+// ventas
 // venta
 Route::get('/ventas', [VentaController::class, 'index']); // Obtener todas las ventas
 Route::get('/ventas/paginadas', [VentaController::class, 'indexPaginado']); // Obtener ventas paginadas
@@ -195,7 +182,7 @@ Route::post('/venta', [VentaController::class, 'store']); // Crear una nueva ven
 Route::get('/venta/{id}', [VentaController::class, 'showVentaDetalleProducto']); // Obtener una venta por ID
 Route::put('/venta/{id}', [VentaController::class, 'update']); // Actualizar una venta
 Route::delete('/venta/{id}', [VentaController::class, 'destroy']); // Eliminar una venta
-//venta con detalle
+// venta con detalle
 Route::post('/venta/ventasConDetalle', [VentaController::class, 'storeConDetalle']); // Obtener todas las ventas con detalle
 
 Route::post('/venta/ventaDetalles', [VentaController::class, 'store1']);
@@ -208,7 +195,7 @@ Route::get('/ventas/detallado', [VentaController::class, 'ventasPorFechaDetallad
 
 Route::get('/ventas/cierrecaja', [VentaController::class, 'resumenDelDia']);
 
-//formas de pago
+// formas de pago
 use App\Http\Controllers\FormaDePagoController;
 
 Route::get('/formasPago', [FormaDePagoController::class, 'index']);
@@ -236,25 +223,19 @@ Route::get('/caja/{id}', [CajaController::class, 'show']);
 
 Route::delete('/cajas/{id}', [CajaController::class, 'destroy']);
 
-
-Route::get('/caja/fecha/{fecha}', [CajaController::class, 'obtenerPorFecha']); 
+Route::get('/caja/fecha/{fecha}', [CajaController::class, 'obtenerPorFecha']);
 Route::get('/caja/mes/{mes}', [CajaController::class, 'cajaPorMes']);
-//pdfss
+// pdfss
 Route::get('/caja/html/{fecha}', [CajaController::class, 'htmlPorDia'])->name('html.caja.dia');
 Route::get('/cajas/html/mes/{mes}', [CajaController::class, 'htmlPorMes'])->name('html.cajas.mes');
 
 Route::get('/caja/pdf/{fecha}', [CajaController::class, 'pdfPorDia'])->name('pdf.caja.dia');
 Route::get('/caja/pdf/mes/{fechaMes}', [CajaController::class, 'cajaPorMes'])->name('pdf.caja.mes');
 
-
-//Route::get('/pruebaController', [CajaController::class, 'errotest']);
+// Route::get('/pruebaController', [CajaController::class, 'errotest']);
 Route::get('/pruebaController/{fechaMes}', [CajaController::class, 'cajaPorMes']);
 
-
-
-
-
-//detalle venta producto
+// detalle venta producto
 use App\Http\Controllers\DetalleVentaProductoController;
 
 Route::get('/detalle-venta-productos', [DetalleVentaProductoController::class, 'index']); // Listar todos con paginación opcional
@@ -263,9 +244,8 @@ Route::post('/detalle-venta-producto', [DetalleVentaProductoController::class, '
 Route::put('/detalle-venta-producto/{id}', [DetalleVentaProductoController::class, 'update']); // Actualizar
 Route::delete('/detalle-venta-producto/{id}', [DetalleVentaProductoController::class, 'destroy']); // Eliminar
 
-
-
 use App\Http\Controllers\DetalleVentaPersonalizadaController;
+
 // Detalle Venta Personalizada
 Route::get('/detalle-venta-personalizadas', [DetalleVentaPersonalizadaController::class, 'index']);
 Route::get('/detalle-venta-personalizada/{id}', [DetalleVentaPersonalizadaController::class, 'show']);
@@ -292,10 +272,10 @@ Route::put('/material-venta-personalizada/{materialesVentaPersonalizada}', [Mate
 Route::delete('/material-venta-personalizada/{materialesVentaPersonalizada}', [MaterialesVentaPersonalizadaController::class, 'destroy']);
 Route::get('/materiales-venta-personalizada/detalle/{detalleVP_id}', [MaterialesVentaPersonalizadaController::class, 'materialesPorVentaVp']);
 
-//todo de productos
+// todo de productos
 Route::get('/materias-primas-paginado', [CotizadorController::class, 'indexPaginadoGeneralPorMasReciente']);
 Route::get('/materias-primas-search', [CotizadorController::class, 'searchPaginadoGeneral']);
-//recibos
+// recibos
 use App\Http\Controllers\GestionRecibosController;
 
 Route::get('/recibo/html/{id}', [GestionRecibosController::class, 'getHtml'])->name('recibo.html');
@@ -304,45 +284,41 @@ Route::get('/recibo/administrativo/html/{id}', [GestionRecibosController::class,
 Route::get('/recibo/administrativo/pdf/{id}', [GestionRecibosController::class, 'getAdministrativoPdf'])->name('recibo.admin.pdf');
 Route::get('/recibo/{id}', [GestionRecibosController::class, 'show']);
 
-
-//auth
+// auth
 Route::post('/register', [AuthController::class, 'register']);
 
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::get('/cotizar',[CotizadorController::class, 'calcular']);
+Route::get('/cotizar', [CotizadorController::class, 'calcular']);
 
-Route::middleware('auth:sanctum')->group(function(){
+Route::middleware('auth:sanctum')->group(function () {
     Route::get('/logout', [AuthController::class, 'logout']);
 });
 
-//user
+// user
 Route::get('/users', [UserController::class, 'index']); // Obtener todos los usuarios
-//Route::post('/user', [UserController::class, 'store']); // Crear un nuevo usuario
+// Route::post('/user', [UserController::class, 'store']); // Crear un nuevo usuario
 Route::get('/user/{id}', [UserController::class, 'show']); // Obtener un usuario por ID
 Route::put('/user/{id}', [UserController::class, 'update']); // Actualizar un usuario
 Route::delete('/user/{id}', [UserController::class, 'destroy']); // Eliminar un usuario
 
 // Funciones Generales
 Route::get('/estadisticas/clientesNuevos', [FuncionesGeneralesController::class, 'ClientesNuevos']);
-//4 del cuadro de estadisticas
-//Route::get('/clientes/total', [ClienteController::class, 'totalClientes']);
-//venta completa de prodcuto y marcos
+// 4 del cuadro de estadisticas
+// Route::get('/clientes/total', [ClienteController::class, 'totalClientes']);
+// venta completa de prodcuto y marcos
 
 // use App\Http\Controllers\GestiionVentas\GestionVenta;
 
 // Ruta para crear venta completa (productos + cuadros personalizados)
 use App\Http\Controllers\GestionVentas\GestionVentaController;
+
 Route::post('/ventaProductoMarco', [GestionVentaController::class, 'crearVentaCompleta']);
 Route::post('/ventaProductoMarco/SimularVenta', [GestionVentaController::class, 'SimularVenta']);
 
-
-
 // devoluciones
-route::post('/ventaProductoMarco/devolucion/{id}', [GestionVentaController::class, 'crearDevolucion']);
-//anular venta
-route::post('/ventaProductoMarco/anular/{id}', [GestionVentaController::class, 'anularVenta']);
 
+Route::delete('/ventaProductoMarco/devolucion/{id}', [GestionVentaController::class, 'crearDevolucion']);
 
 // En routes/api.php
 Route::get('/ventaProductoMarco/{id}', [GestionVentaController::class, 'obtenerVentaCompleta']);
