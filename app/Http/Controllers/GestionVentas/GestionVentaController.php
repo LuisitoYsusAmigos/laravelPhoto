@@ -47,8 +47,8 @@ class GestionVentaController extends Controller
             'detalles.*.cantidad' => 'required_with:detalles|integer|min:1',
 
             'cuadros' => 'nullable|array',
-            'cuadros.*.lado_a' => 'required_with:cuadros|integer|min:1',
-            'cuadros.*.lado_b' => 'required_with:cuadros|integer|min:1',
+            'cuadros.*.lado_a' => 'required_with:cuadros|numeric|min:1|decimal:0,2',
+            'cuadros.*.lado_b' => 'required_with:cuadros|numeric|min:1|decimal:0,2',
             'cuadros.*.cantidad' => 'required_with:cuadros|integer|min:1',
             'cuadros.*.id_materia_prima_varillas' => 'nullable|integer',
             'cuadros.*.id_materia_prima_trupans' => 'nullable|integer',
