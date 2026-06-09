@@ -10,6 +10,7 @@
 .envHost
 .envLocal
 .env.backup
+.envProdHost
 .env.production
 .phpactor.json
 .phpunit.result.cache
