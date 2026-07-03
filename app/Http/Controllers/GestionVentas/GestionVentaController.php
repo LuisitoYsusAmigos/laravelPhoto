@@ -338,7 +338,7 @@ class GestionVentaController extends Controller
      * Obtiene múltiples ventas con filtros opcionales
      */
     public function obtenerVentas(Request $request)
-    {
+    { 
         try {
             // Construir consulta base
             $query = Venta::query();
@@ -359,7 +359,6 @@ class GestionVentaController extends Controller
             if ($request->has('fecha_hasta')) {
                 $query->whereDate('fecha', '<=', $request->fecha_hasta);
             }
-
             if ($request->has('recogido')) {
                 $recogidoValue = $request->recogido;
                 // Convertir string a booleano correctamente
@@ -367,12 +366,23 @@ class GestionVentaController extends Controller
                     $query->where('recogido', true);
                 } elseif ($recogidoValue === 'false' || $recogidoValue === '0' || $recogidoValue === 0) {
                     $query->where('recogido', false);
+                    
                 }
             }
 
             // Parámetros de paginación
-            $page = (int) $request->input('page', 1);
-            $perPage = (int) $request->input('per_page', 15);
+            if ($request->has('page')) {
+                $page = (int) $request->input('page', 1);
+            }else{
+                $page = 1;
+            }   
+
+            if ($request->has('per_page')) {
+                $perPage = (int) $request->input('per_page', 15);
+            }else{
+                $perPage = 15;
+                
+            }
 
             // Validar valores
             $perPage = max(1, min($perPage, 100));
@@ -446,16 +456,12 @@ class GestionVentaController extends Controller
             });
 
             return response()->json([
+                'currentPage' => $page,
+                'perPage' => $perPage,
+                'totalItems' => $totalItems,
+                'totalPages' => $totalPages,
                 'message' => 'Ventas obtenidas exitosamente',
                 'ventas' => $ventasTransformadas,
-                'pagination' => [
-                    'current_page' => $page,
-                    'last_page' => $totalPages,
-                    'per_page' => $perPage,
-                    'total' => $totalItems,
-                    'from' => $totalItems > 0 ? (($page - 1) * $perPage) + 1 : null,
-                    'to' => $totalItems > 0 ? min($page * $perPage, $totalItems) : null,
-                ],
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
