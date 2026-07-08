@@ -824,6 +824,11 @@ class GestionVentaController extends Controller
 
             DB::commit();
 
+            Log::info('Devolución realizada correctamente', [
+                'venta_id'   => $id,
+                'fecha_hora' => now()->toDateTimeString(),
+            ]);
+
             return response()->json([
                 'message' => 'devolucion correcta',
             ]);
