@@ -191,26 +191,31 @@ class GestionMarcosController extends Controller
         $precioTrupans = 0;
         $precioVidrios = 0;
         $precioContornos = 0;
+        $tiempos = [];
 
         // Procesar cada tipo de material si está especificado
         if (!empty($cuadro['id_materia_prima_varillas'])) {
-
+            $t0 = microtime(true);
             $precioVarillas = $this->procesarVarillas($detalle, $cuadro);
+            $tiempos['procesarVarillas'] = round((microtime(true) - $t0) * 1000, 2) . ' ms';
         }
 
         if (!empty($cuadro['id_materia_prima_trupans'])) {
-
+            $t0 = microtime(true);
             $precioTrupans = $this->procesarTrupans($detalle, $cuadro);
+            $tiempos['procesarTrupans'] = round((microtime(true) - $t0) * 1000, 2) . ' ms';
         }
 
         if (!empty($cuadro['id_materia_prima_vidrios'])) {
-
+            $t0 = microtime(true);
             $precioVidrios = $this->procesarVidrios($detalle, $cuadro);
+            $tiempos['procesarVidrios'] = round((microtime(true) - $t0) * 1000, 2) . ' ms';
         }
 
         if (!empty($cuadro['id_materia_prima_contornos'])) {
-
+            $t0 = microtime(true);
             $precioContornos = $this->procesarContornos($detalle, $cuadro);
+            $tiempos['procesarContornos'] = round((microtime(true) - $t0) * 1000, 2) . ' ms';
         }
 
         return [

@@ -5,43 +5,109 @@ namespace App\Services;
 class UsoVarillasCuadro
 {
 
+    /**
+     * Optimiza el corte de varillas usando First Fit Decreasing (FFD).
+     * Complejidad O(P × R) en lugar del backtracking O(2^P) anterior.
+     *
+     * @param  array  $necesidades        [{largo, ancho, cantidad, nombre}]
+     * @param  array  $retazosDisponibles [[id, largo, cantidad], ...]
+     * @param  float  $espesorSierra      Kerf entre cortes (mm)
+     */
     public function optimizarCorte($necesidades, $retazosDisponibles, $espesorSierra = 0.0)
     {
-        // Expandir retazos según cantidad disponible
+        // Expandir retazos: cada unidad de stock se convierte en un bin potencial
+        $poolDisponible = $this->expandirRetazos($retazosDisponibles);
 
-        $retazosExpandidos = $this->expandirRetazos($retazosDisponibles);
-
+        // Generar piezas y ordenarlas de mayor a menor (First Fit Decreasing)
         $piezasPendientes = $this->generarListaPiezas($necesidades);
-
         usort($piezasPendientes, function ($a, $b) {
             return $b['largo'] <=> $a['largo'];
         });
 
-        $retazosUsados = [];
-        $piezasRestantes = $piezasPendientes;
+        // Bins abiertos: cada bin = 1 retazo físico en uso
+        // [ 'retazo' => [...], 'piezas' => [...], 'espacioUsado' => float ]
+        $bins          = [];
+        $piezasRestantes = [];
 
-        while (!empty($piezasRestantes) && !empty($retazosExpandidos)) {
-            $mejorCorte = $this->encontrarMejorCorte($piezasRestantes, $retazosExpandidos, $espesorSierra);
+        foreach ($piezasPendientes as $pieza) {
+            $asignado = false;
 
-            if ($mejorCorte === null) {
-                break;
+            // ── Best-fit en bins ya abiertos ────────────────────────────────
+            $mejorBinIdx  = -1;
+            $menorEspacio = PHP_INT_MAX;
+
+            foreach ($bins as $idx => $bin) {
+                $kerf       = count($bin['piezas']) > 0 ? $espesorSierra : 0;
+                $necesario  = $pieza['largo'] + $kerf;
+                $disponible = $bin['retazo'][1] - $bin['espacioUsado'];
+
+                if ($disponible >= $necesario && $disponible < $menorEspacio) {
+                    $menorEspacio = $disponible;
+                    $mejorBinIdx  = $idx;
+                }
             }
 
-            $retazosUsados[] = $mejorCorte['corte'];
-            $piezasRestantes = $mejorCorte['piezasRestantes'];
+            if ($mejorBinIdx !== -1) {
+                $kerf = count($bins[$mejorBinIdx]['piezas']) > 0 ? $espesorSierra : 0;
+                $bins[$mejorBinIdx]['piezas'][]      = $pieza;
+                $bins[$mejorBinIdx]['espacioUsado'] += $pieza['largo'] + $kerf;
+                $asignado = true;
+            } else {
+                // ── Abrir el retazo más pequeño del pool que aún quepa la pieza ──
+                $mejorPoolIdx  = -1;
+                $menorLargoFit = PHP_INT_MAX;
 
-            $retazosExpandidos = array_filter($retazosExpandidos, function ($retazo) use ($mejorCorte) {
-                return $retazo[0] != $mejorCorte['corte']['idUnico'];
-            });
-            $retazosExpandidos = array_values($retazosExpandidos);
+                foreach ($poolDisponible as $pidx => $retazoDisp) {
+                    if ($retazoDisp[1] >= $pieza['largo'] && $retazoDisp[1] < $menorLargoFit) {
+                        $menorLargoFit = $retazoDisp[1];
+                        $mejorPoolIdx  = $pidx;
+                    }
+                }
+
+                if ($mejorPoolIdx !== -1) {
+                    $nuevoRetazo = $poolDisponible[$mejorPoolIdx];
+                    unset($poolDisponible[$mejorPoolIdx]);
+                    $poolDisponible = array_values($poolDisponible);
+
+                    $bins[] = [
+                        'retazo'      => $nuevoRetazo,
+                        'piezas'      => [$pieza],
+                        'espacioUsado' => $pieza['largo'],  // primer pieza: sin kerf
+                    ];
+                    $asignado = true;
+                }
+            }
+
+            if (!$asignado) {
+                $piezasRestantes[] = $pieza;
+            }
+        }
+
+        // Convertir bins al formato retazosUsados esperado por el resto del sistema
+        $retazosUsados = [];
+        foreach ($bins as $bin) {
+            $retazo      = $bin['retazo'];
+            $desperdicio = $retazo[1] - $bin['espacioUsado'];
+
+            $retazosUsados[] = [
+                'idUnico'      => $retazo[0],
+                'idOriginal'   => $retazo[2],
+                'numeroUnidad' => $retazo[3],
+                'largo'        => $retazo[1],
+                'piezas'       => $bin['piezas'],
+                'desperdicio'  => $desperdicio,
+                'eficiencia'   => $retazo[1] > 0
+                    ? (($retazo[1] - $desperdicio) / $retazo[1]) * 100
+                    : 0,
+            ];
         }
 
         return [
-            'retazosUsados' => $retazosUsados,
-            'piezasFaltantes' => count($piezasRestantes),
+            'retazosUsados'    => $retazosUsados,
+            'piezasFaltantes'  => count($piezasRestantes),
             'piezasPendientes' => $piezasRestantes,
-            'resumen' => $this->generarResumen($retazosUsados, $piezasRestantes),
-            'retazosSobrantes' => $this->calcularSobrantes($retazosDisponibles, $retazosUsados)
+            'resumen'          => $this->generarResumen($retazosUsados, $piezasRestantes),
+            'retazosSobrantes' => $this->calcularSobrantes($retazosDisponibles, $retazosUsados),
         ];
     }
 
@@ -182,150 +248,8 @@ class UsoVarillasCuadro
         return $sobrantes;
     }
 
-    private function encontrarMejorCorte($piezasPendientes, $retazosExpandidos, $espesorSierra)
-    {
-        $mejorCorte = null;
-        $menorDesperdicio = PHP_INT_MAX;
-        $mayorPiezasCortadas = 0;
-
-        foreach ($retazosExpandidos as $retazo) {
-            $idUnico = $retazo[0];
-            $largo = $retazo[1];
-            $idOriginal = $retazo[2];
-            $numeroUnidad = $retazo[3];
-
-            $resultado = $this->optimizarCombinaciones($largo, $piezasPendientes, $espesorSierra);
-
-            if (!empty($resultado['piezasCortadas'])) {
-                $desperdicio = $resultado['desperdicio'];
-                $numPiezas = count($resultado['piezasCortadas']);
-
-                $esMejor = false;
-                if ($desperdicio < $menorDesperdicio) {
-                    $esMejor = true;
-                } elseif ($desperdicio == $menorDesperdicio && $numPiezas > $mayorPiezasCortadas) {
-                    $esMejor = true;
-                }
-
-                if ($esMejor) {
-                    $menorDesperdicio = $desperdicio;
-                    $mayorPiezasCortadas = $numPiezas;
-
-                    $mejorCorte = [
-                        'corte' => [
-                            'idUnico' => $idUnico,
-                            'idOriginal' => $idOriginal,
-                            'numeroUnidad' => $numeroUnidad,
-                            'largo' => $largo,
-                            'piezas' => $resultado['piezasCortadas'],
-                            'desperdicio' => $desperdicio,
-                            'eficiencia' => (($largo - $desperdicio) / $largo) * 100
-                        ],
-                        'piezasRestantes' => $resultado['piezasRestantes']
-                    ];
-
-                    if ($desperdicio == 0) {
-                        break;
-                    }
-                }
-            }
-        }
-
-        return $mejorCorte;
-    }
-
-    private function optimizarCombinaciones($retazoLargo, $piezasPendientes, $espesorSierra)
-    {
-        $n = count($piezasPendientes);
-
-        $mejorCombinacion = $this->buscarMejorCombinacion(
-            $piezasPendientes,
-            $retazoLargo,
-            $espesorSierra,
-            0,
-            [],
-            0
-        );
-
-        if ($mejorCombinacion === null) {
-            return ['piezasCortadas' => [], 'piezasRestantes' => $piezasPendientes, 'desperdicio' => $retazoLargo];
-        }
-
-        $piezasCortadas = [];
-        $piezasRestantes = [];
-
-        for ($i = 0; $i < $n; $i++) {
-            if (in_array($i, $mejorCombinacion['indices'])) {
-                $piezasCortadas[] = $piezasPendientes[$i];
-            } else {
-                $piezasRestantes[] = $piezasPendientes[$i];
-            }
-        }
-
-        return [
-            'piezasCortadas' => $piezasCortadas,
-            'piezasRestantes' => $piezasRestantes,
-            'desperdicio' => $mejorCombinacion['desperdicio']
-        ];
-    }
-
-    private function buscarMejorCombinacion($piezas, $espacioDisponible, $espesorSierra, $indice, $combinacionActual, $espacioUsado)
-    {
-        static $mejorSolucion = null;
-        static $menorDesperdicio = PHP_INT_MAX;
-
-        if ($indice == 0) {
-            $mejorSolucion = null;
-            $menorDesperdicio = PHP_INT_MAX;
-        }
-
-        $desperdicioActual = $espacioDisponible - $espacioUsado;
-
-        if ($desperdicioActual >= 0 && $desperdicioActual < $menorDesperdicio) {
-            $menorDesperdicio = $desperdicioActual;
-            $mejorSolucion = [
-                'indices' => $combinacionActual,
-                'desperdicio' => $desperdicioActual
-            ];
-
-            if ($desperdicioActual == 0) {
-                return $mejorSolucion;
-            }
-        }
-
-        if ($indice >= count($piezas) || $desperdicioActual < 0) {
-            return $mejorSolucion;
-        }
-
-        $piezaActual = $piezas[$indice];
-        $espacioNecesario = $piezaActual['largo'] + (count($combinacionActual) > 0 ? $espesorSierra : 0);
-
-        // Incluir pieza actual si cabe
-        if ($espacioUsado + $espacioNecesario <= $espacioDisponible) {
-            $nuevaCombinacion = $combinacionActual;
-            $nuevaCombinacion[] = $indice;
-            $this->buscarMejorCombinacion(
-                $piezas,
-                $espacioDisponible,
-                $espesorSierra,
-                $indice + 1,
-                $nuevaCombinacion,
-                $espacioUsado + $espacioNecesario
-            );
-        }
-
-        // No incluir pieza actual
-        $this->buscarMejorCombinacion(
-            $piezas,
-            $espacioDisponible,
-            $espesorSierra,
-            $indice + 1,
-            $combinacionActual,
-            $espacioUsado
-        );
-
-        return $mejorSolucion;
-    }
+    // encontrarMejorCorte, optimizarCombinaciones y buscarMejorCombinacion
+    // fueron eliminados: el backtracking O(2^N) fue reemplazado por FFD en optimizarCorte.
 
     private function generarListaPiezas($necesidades)
     {
