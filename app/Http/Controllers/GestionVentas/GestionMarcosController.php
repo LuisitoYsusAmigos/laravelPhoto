@@ -36,75 +36,110 @@ class GestionMarcosController extends Controller
      */
     public function verificarDisponibilidadMarcos(array $cuadros)
     {
+        // ── Paso 1: recolectar IDs únicos por tipo de material ──────────────
+        $idsVarillas  = array_values(array_unique(array_filter(array_column($cuadros, 'id_materia_prima_varillas'))));
+        $idsTrupans   = array_values(array_unique(array_filter(array_column($cuadros, 'id_materia_prima_trupans'))));
+        $idsVidrios   = array_values(array_unique(array_filter(array_column($cuadros, 'id_materia_prima_vidrios'))));
+        $idsContornos = array_values(array_unique(array_filter(array_column($cuadros, 'id_materia_prima_contornos'))));
+
+        // ── Paso 2: 1 query batch por tipo (LEFT JOIN → existencia + stock) ─
+        // Si un ID no aparece en el mapa → materia prima no encontrada.
+        // Si aparece con total_stock <= 0 → sin stock disponible.
+        $stockVarillas = $this->fetchStockBatch(
+            'materia_prima_varillas', 'stock_varillas', 'id_materia_prima_varilla', $idsVarillas
+        );
+        $stockTrupans = $this->fetchStockBatch(
+            'materia_prima_trupans', 'stock_trupans', 'id_materia_prima_trupans', $idsTrupans
+        );
+        $stockVidrios = $this->fetchStockBatch(
+            'materia_prima_vidrios', 'stock_vidrios', 'id_materia_prima_vidrio', $idsVidrios
+        );
+        $stockContornos = $this->fetchStockBatch(
+            'materia_prima_contornos', 'stock_contornos', 'id_materia_prima_contorno', $idsContornos
+        );
+
+        // ── Paso 3: mapear resultados a cada cuadro ──────────────────────────
         $resultados = [];
 
         foreach ($cuadros as $cuadro) {
             $errores = [];
 
-            // Validar varillas
             if (!empty($cuadro['id_materia_prima_varillas'])) {
-                $existe = DB::table('materia_prima_varillas')->where('id', $cuadro['id_materia_prima_varillas'])->exists();
-                if (!$existe) {
-                    $errores[] = "Varilla ID {$cuadro['id_materia_prima_varillas']} no encontrada";
-                } else {
-                    $stock = StockVarilla::where('id_materia_prima_varilla', $cuadro['id_materia_prima_varillas'])
-                        ->sum('stock');
-                    if ($stock <= 0) {
-                        $errores[] = "Sin stock disponible para la varilla ID {$cuadro['id_materia_prima_varillas']}";
-                    }
+                $id = $cuadro['id_materia_prima_varillas'];
+                if (!array_key_exists($id, $stockVarillas)) {
+                    $errores[] = "Varilla ID {$id} no encontrada";
+                } elseif ($stockVarillas[$id] <= 0) {
+                    $errores[] = "Sin stock disponible para la varilla ID {$id}";
                 }
             }
 
-            // Validar trupans
             if (!empty($cuadro['id_materia_prima_trupans'])) {
-                $existe = DB::table('materia_prima_trupans')->where('id', $cuadro['id_materia_prima_trupans'])->exists();
-                if (!$existe) {
-                    $errores[] = "Trupan ID {$cuadro['id_materia_prima_trupans']} no encontrado";
-                } else {
-                    $stock = StockTrupan::where('id_materia_prima_trupans', $cuadro['id_materia_prima_trupans'])
-                        ->sum('stock');
-                    if ($stock <= 0) {
-                        $errores[] = "Sin stock disponible para el trupan ID {$cuadro['id_materia_prima_trupans']}";
-                    }
+                $id = $cuadro['id_materia_prima_trupans'];
+                if (!array_key_exists($id, $stockTrupans)) {
+                    $errores[] = "Trupan ID {$id} no encontrado";
+                } elseif ($stockTrupans[$id] <= 0) {
+                    $errores[] = "Sin stock disponible para el trupan ID {$id}";
                 }
             }
 
-            // Validar vidrios
             if (!empty($cuadro['id_materia_prima_vidrios'])) {
-                $existe = DB::table('materia_prima_vidrios')->where('id', $cuadro['id_materia_prima_vidrios'])->exists();
-                if (!$existe) {
-                    $errores[] = "Vidrio ID {$cuadro['id_materia_prima_vidrios']} no encontrado";
-                } else {
-                    $stock = StockVidrio::where('id_materia_prima_vidrio', $cuadro['id_materia_prima_vidrios'])
-                        ->sum('stock');
-                    if ($stock <= 0) {
-                        $errores[] = "Sin stock disponible para el vidrio ID {$cuadro['id_materia_prima_vidrios']}";
-                    }
+                $id = $cuadro['id_materia_prima_vidrios'];
+                if (!array_key_exists($id, $stockVidrios)) {
+                    $errores[] = "Vidrio ID {$id} no encontrado";
+                } elseif ($stockVidrios[$id] <= 0) {
+                    $errores[] = "Sin stock disponible para el vidrio ID {$id}";
                 }
             }
 
-            // Validar contornos
             if (!empty($cuadro['id_materia_prima_contornos'])) {
-                $existe = DB::table('materia_prima_contornos')->where('id', $cuadro['id_materia_prima_contornos'])->exists();
-                if (!$existe) {
-                    $errores[] = "Contorno ID {$cuadro['id_materia_prima_contornos']} no encontrado";
-                } else {
-                    $stock = StockContorno::where('id_materia_prima_contorno', $cuadro['id_materia_prima_contornos'])
-                        ->sum('stock');
-                    if ($stock <= 0) {
-                        $errores[] = "Sin stock disponible para el contorno ID {$cuadro['id_materia_prima_contornos']}";
-                    }
+                $id = $cuadro['id_materia_prima_contornos'];
+                if (!array_key_exists($id, $stockContornos)) {
+                    $errores[] = "Contorno ID {$id} no encontrado";
+                } elseif ($stockContornos[$id] <= 0) {
+                    $errores[] = "Sin stock disponible para el contorno ID {$id}";
                 }
             }
 
             $resultados[] = [
                 'cuadro' => $cuadro,
                 'valido' => empty($errores),
-                'errores' => $errores
+                'errores' => $errores,
             ];
         }
 
         return $resultados;
+    }
+
+    /**
+     * Hace una sola query que verifica existencia y suma stock en batch.
+     * Retorna un mapa [ id_materia_prima => total_stock ].
+     * Si un ID no aparece en el mapa, significa que no existe en la tabla de materia prima.
+     *
+     * @param  string  $tablaMp     Tabla de materia prima (ej. 'materia_prima_varillas')
+     * @param  string  $tablaStock  Tabla de stock (ej. 'stock_varillas')
+     * @param  string  $fkColumn    Columna FK en tablaStock (ej. 'id_materia_prima_varilla')
+     * @param  array   $ids         IDs únicos a consultar
+     * @return array<int, int>      [ id => total_stock ]
+     */
+    private function fetchStockBatch(string $tablaMp, string $tablaStock, string $fkColumn, array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        $rows = DB::table("{$tablaMp} as mp")
+            ->leftJoin("{$tablaStock} as s", "s.{$fkColumn}", '=', 'mp.id')
+            ->whereIn('mp.id', $ids)
+            ->groupBy('mp.id')
+            ->selectRaw('mp.id, COALESCE(SUM(CASE WHEN s.stock > 0 THEN s.stock ELSE 0 END), 0) as total_stock')
+            ->get();
+
+        $mapa = [];
+        foreach ($rows as $row) {
+            $mapa[(int) $row->id] = (int) $row->total_stock;
+        }
+
+        return $mapa;
     }
 
     public function procesarMarcos($venta, array $cuadros, $factorPrecioVenta)
@@ -365,21 +400,28 @@ class GestionMarcosController extends Controller
                 'detalleVP_id' => $detalle->id
             ]);
 
-            // Registrar los cortes detallados si existen
+            // Registrar los cortes detallados en batch (1 INSERT con N filas)
             if (!empty($cortesDetallados)) {
+                $cortesBatch = [];
+                $now = now();
                 foreach ($cortesDetallados as $corteUnico) {
                     if ($corteUnico['idOriginal'] == $retazo['id']) {
                         foreach ($corteUnico['piezas'] as $pieza) {
-                            \App\Models\CorteMaterialVenta::create([
-                                'material_vp_id' => $materialVenta->id,
+                            $cortesBatch[] = [
+                                'material_vp_id'  => $materialVenta->id,
                                 'stock_varilla_id' => $retazo['id'],
-                                'largo_corte' => $pieza['largo'],
-                                'ancho_corte' => null,
-                                'tipo_corte' => $pieza['tipo'],
-                                'origen' => $pieza['origen'],
-                            ]);
+                                'largo_corte'      => $pieza['largo'],
+                                'ancho_corte'      => null,
+                                'tipo_corte'       => $pieza['tipo'],
+                                'origen'           => $pieza['origen'],
+                                'created_at'       => $now,
+                                'updated_at'       => $now,
+                            ];
                         }
                     }
+                }
+                if (!empty($cortesBatch)) {
+                    \App\Models\CorteMaterialVenta::insert($cortesBatch);
                 }
             }
 
@@ -418,20 +460,25 @@ class GestionMarcosController extends Controller
 
         $materialVenta = MaterialesVentaPersonalizada::create($materialData);
 
-        // Registrar el corte para la lámina
+        // Registrar los cortes en batch (1 INSERT con N filas en lugar de N INSERTs)
+        $cortesBatch = [];
+        $now = now();
         for ($i = 0; $i < $cuadro['cantidad']; $i++) {
-            \App\Models\CorteMaterialVenta::create([
-                'material_vp_id' => $materialVenta->id,
-                'stock_varilla_id' => null,
-                'stock_trupan_id' => $materialData['stock_trupan_id'],
-                'stock_vidrio_id' => $materialData['stock_vidrio_id'],
+            $cortesBatch[] = [
+                'material_vp_id'    => $materialVenta->id,
+                'stock_varilla_id'  => null,
+                'stock_trupan_id'   => $materialData['stock_trupan_id'],
+                'stock_vidrio_id'   => $materialData['stock_vidrio_id'],
                 'stock_contorno_id' => $materialData['stock_contorno_id'],
-                'largo_corte' => $cuadro['lado_a'],
-                'ancho_corte' => $cuadro['lado_b'],
-                'tipo_corte' => 'lámina',
-                'origen' => 'Cuadro #' . ($i + 1),
-            ]);
+                'largo_corte'       => $cuadro['lado_a'],
+                'ancho_corte'       => $cuadro['lado_b'],
+                'tipo_corte'        => 'lámina',
+                'origen'            => 'Cuadro #' . ($i + 1),
+                'created_at'        => $now,
+                'updated_at'        => $now,
+            ];
         }
+        \App\Models\CorteMaterialVenta::insert($cortesBatch);
         // restar stock vidrios
         // generar un if triple para los 3 casos de contorno trupan vidrio
         if ($tipoMaterial === 'contorno') {
