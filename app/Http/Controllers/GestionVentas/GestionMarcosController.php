@@ -145,8 +145,7 @@ class GestionMarcosController extends Controller
     public function procesarMarcos($venta, array $cuadros, $factorPrecioVenta)
     {
         $totalCuadros = 0;
-
-
+        $medidasExternas = [];
 
         foreach ($cuadros as $index => $cuadro) {
 
@@ -154,15 +153,18 @@ class GestionMarcosController extends Controller
             $resultadoMateriales = $this->procesarMaterialesCuadro($detalle, $cuadro, $factorPrecioVenta);
             $totalCuadros += $resultadoMateriales['total'];
 
-
+            // Guardar las medidas externas asociadas al detalle (sin persistir en BD)
+            if (isset($cuadro['lado_a_ext'], $cuadro['lado_b_ext'])) {
+                $medidasExternas[$detalle->id] = [
+                    'lado_a_ext' => $cuadro['lado_a_ext'],
+                    'lado_b_ext' => $cuadro['lado_b_ext'],
+                ];
+            }
         }
 
-
-
-
         return [
-            'total' => $totalCuadros,
-
+            'total'          => $totalCuadros,
+            'medidas_externas' => $medidasExternas,
         ];
     }
 
@@ -193,7 +195,6 @@ class GestionMarcosController extends Controller
         $precioContornos = 0;
         $tiempos = [];
 
-        // Procesar cada tipo de material si está especificado
         if (!empty($cuadro['id_materia_prima_varillas'])) {
             $t0 = microtime(true);
             $precioVarillas = $this->procesarVarillas($detalle, $cuadro);
@@ -350,8 +351,8 @@ class GestionMarcosController extends Controller
     {
         return [
             [
-                'largo' => $cuadro['lado_a'],
-                'ancho' => $cuadro['lado_b'],
+                'largo' => $cuadro['lado_a_ext'],
+                'ancho' => $cuadro['lado_b_ext'],
                 'cantidad' => $cuadro['cantidad'],
                 'nombre' => 'Cuadro'
             ]

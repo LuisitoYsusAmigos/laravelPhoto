@@ -30,7 +30,7 @@ class GestionVentaController extends Controller
 
     public function crearVentaCompleta(Request $request)
     {
-        // Validación básica
+
         $validator = Validator::make($request->all(), [
             'pago' => 'required|numeric|min:0',
             'idCliente' => 'required|exists:clientes,id',
@@ -91,24 +91,16 @@ class GestionVentaController extends Controller
             foreach ($cuadrosModificados as $index => &$cuadro) {
                 if (empty($cuadro['id_materia_prima_varillas'])) {
 
-                    // return response()->json([
-                    //    'error' => "Debe proporcionar una varilla válida para hacer el cálculo correcto del material en el cuadro #" . ($index + 1)
-                    // ], 400);
                 } else {
 
-                    // calcular tamaño externo del marco usando las medidas del cuadro actual
                     $medidasExternas = $this->gestionMarcos->obtenerMarcoExterno($cuadro);
-
-                    // Sobrescribir las medidas con el tamaño externo calculado
-                    $cuadro['lado_a'] = $medidasExternas['lado_a'];
-                    $cuadro['lado_b'] = $medidasExternas['lado_b'];
-
+                    $cuadro['lado_a_ext'] = $medidasExternas['lado_a'];
+                    $cuadro['lado_b_ext'] = $medidasExternas['lado_b'];
                 }
 
             }
-
-            // Reemplazamos los cuadros del request con los cuadros modificados
             $request->merge(['cuadros' => $cuadrosModificados]);
+            //dd($request->cuadros);
         }
 
         if (! empty($request->detalles)) {
@@ -124,7 +116,6 @@ class GestionVentaController extends Controller
             }
         }
 
-        //  Validar marcos y stock ANTES de crear la venta
         if (! empty($request->cuadros)) {
             $validacionMarcos = $this->gestionMarcos->verificarDisponibilidadMarcos($request->cuadros);
 
@@ -155,6 +146,7 @@ class GestionVentaController extends Controller
             if (! empty($request->cuadros)) {
                 $resultadoMarcos = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros, $factorPrecioVenta);
                 $totalCuadros = $resultadoMarcos['total'];
+                $medidasExternas = $resultadoMarcos['medidas_externas'] ?? [];
             }
             $totalVenta = $totalProductos + $totalCuadros;
 
@@ -167,7 +159,7 @@ class GestionVentaController extends Controller
 
             return response()->json([
                 'message' => 'Venta completa creada exitosamente',
-                'venta' => $this->formatearRespuestaVenta($venta),
+                'venta'   => $this->formatearRespuestaVenta($venta, $medidasExternas ?? []),
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -615,7 +607,7 @@ class GestionVentaController extends Controller
         }
     }
 
-    private function formatearRespuestaVenta($venta)
+    private function formatearRespuestaVenta($venta, array $medidasExternas = [])
     {
         return [
             'id' => $venta->id,
@@ -648,7 +640,7 @@ class GestionVentaController extends Controller
                     'nombreProducto' => optional($detalle->producto)->nombre,
                 ];
             }),
-            'detalle_venta_personalizadas' => $venta->detalleVentaPersonalizadas->map(function ($detalle) use ($venta) {
+            'detalle_venta_personalizadas' => $venta->detalleVentaPersonalizadas->map(function ($detalle) use ($venta, $medidasExternas) {
                 $detalleArray = $detalle->toArray();
                 $totalBaseUnitario = $detalle->materialesVentaPersonalizadas->sum(function ($mat) {
                     return $mat->precio_unitario * $mat->cantidad;
@@ -672,6 +664,12 @@ class GestionVentaController extends Controller
                 $detalleArray['cantidad'] = $cantidad;
                 $detalleArray['precio_unitario'] = $precioTotal / $cantidad;
                 $detalleArray['total'] = $precioTotal;
+
+                // Agregar medidas externas si están disponibles para este detalle
+                if (isset($medidasExternas[$detalle->id])) {
+                    $detalleArray['lado_a_ext'] = $medidasExternas[$detalle->id]['lado_a_ext'];
+                    $detalleArray['lado_b_ext'] = $medidasExternas[$detalle->id]['lado_b_ext'];
+                }
 
                 return $detalleArray;
             }),

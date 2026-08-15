@@ -253,6 +253,7 @@ class UsoVarillasCuadro
 
     private function generarListaPiezas($necesidades)
     {
+        
         $piezas = [];
 
         foreach ($necesidades as $necesidad) {
