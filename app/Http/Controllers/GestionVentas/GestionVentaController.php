@@ -454,6 +454,9 @@ class GestionVentaController extends Controller
 
                 return $ventaFormateada;
             });
+            // coloca un log con la cantidad de registro encontrando y los parametros q se usaron para obtner las ventas
+            Log::info('Cantidad de registros encontrados: ' . $totalItems);
+            Log::info('Parametros utilizados: ' . json_encode($request->all()));
 
             return response()->json([
                 'currentPage' => $page,
