@@ -623,24 +623,34 @@ public function ventasPorFechaDetallado(Request $request)
             return response()->json(['error' => 'Formato de fecha inválido. Usa d-m-y'], 400);
         }
 
-        $ventas = Venta::whereDate('fecha', $fecha)->get();
+        $sucursales = \App\Models\Sucursal::all();
+        $ventasDelDia = Venta::whereDate('fecha', $fecha)->get();
+        
+        $resultado = [];
 
-        $totalVentas = $ventas->sum('precioTotal');
-        $numeroVentas = $ventas->count();
-        $totalEfectivo = $ventas->sum('saldo');
+        foreach ($sucursales as $sucursal) {
+            $ventas = $ventasDelDia->where('idSucursal', $sucursal->id);
 
-        // Aquí podrías filtrar por tipo de pago si tuvieras un campo, por ahora simulado
-        $totalTarjeta = 0.00;
-        $totalTransferencia = 0.00;
+            $totalVentas = $ventas->sum('precioTotal');
+            $numeroVentas = $ventas->count();
+            $totalEfectivo = $ventas->sum('saldo');
 
-        return response()->json([
-            'fecha_consultada' => $fecha,
-            'total_ventas' => round($totalVentas, 2),
-            'numero_ventas' => $numeroVentas,
-            'efectivo' => round($totalEfectivo, 2),
-            'tarjeta' => $totalTarjeta,
-            'transferencia' => $totalTransferencia
-        ]);
+            // Aquí podrías filtrar por tipo de pago si tuvieras un campo, por ahora simulado
+            $totalTarjeta = 0.00;
+            $totalTransferencia = 0.00;
+
+            $resultado[] = [
+                'id_sucursal' => $sucursal->id,
+                'fecha_consultada' => $fecha,
+                'total_ventas' => round($totalVentas, 2),
+                'numero_ventas' => $numeroVentas,
+                'efectivo' => round($totalEfectivo, 2),
+                'tarjeta' => $totalTarjeta,
+                'transferencia' => $totalTransferencia
+            ];
+        }
+
+        return response()->json($resultado);
     }
 
 

@@ -15,6 +15,7 @@ class Caja extends Model
         'ventas',
         'fecha',
         'id_usuario',
+        'id_sucursal',
         'observaciones'
     ];
 
@@ -22,5 +23,11 @@ class Caja extends Model
     public function usuario()
     {
         return $this->belongsTo(User::class , 'id_usuario');
+    }
+
+    // Relación con la sucursal
+    public function sucursal()
+    {
+        return $this->belongsTo(Sucursal::class, 'id_sucursal');
     }
 }

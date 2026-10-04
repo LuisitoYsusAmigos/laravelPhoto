@@ -218,6 +218,8 @@ Route::delete('/pago/{id}', [PagoController::class, 'destroy']);
 use App\Http\Controllers\CajaController;
 
 Route::get('/cajas', [CajaController::class, 'index']);
+Route::get('/cajas/{idSucursal}', [CajaController::class, 'getAllSucursal']);
+
 Route::post('/caja', [CajaController::class, 'store']);
 Route::get('/caja/{id}', [CajaController::class, 'show']);
 
@@ -230,6 +232,7 @@ Route::get('/caja/html/{fecha}', [CajaController::class, 'htmlPorDia'])->name('h
 Route::get('/cajas/html/mes/{mes}', [CajaController::class, 'htmlPorMes'])->name('html.cajas.mes');
 
 Route::get('/caja/pdf/{fecha}', [CajaController::class, 'pdfPorDia'])->name('pdf.caja.dia');
+Route::get('/caja/pdf/{fecha}/{idSucursal}', [CajaController::class, 'pdfDiaSucursal'])->name('pdf.caja.dia.sucursal');
 Route::get('/caja/pdf/mes/{fechaMes}', [CajaController::class, 'cajaPorMes'])->name('pdf.caja.mes');
 
 // Route::get('/pruebaController', [CajaController::class, 'errotest']);

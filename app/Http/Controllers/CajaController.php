@@ -30,7 +30,26 @@ class CajaController extends Controller
         return response()->json($cajas);
     }
 
+    // Listar cajas por sucursal
+    public function getAllSucursal($idSucursal)
+    {
+        $sucursal = \App\Models\Sucursal::find($idSucursal);
+        if (!$sucursal) {
+            return response()->json(['message' => 'Sucursal no encontrada'], 404);
+        }
 
+        $cajas = Caja::where('id_sucursal', $idSucursal)->get();
+
+        $cajas->transform(function ($caja) {
+            if (is_string($caja->detalle)) {
+                $caja->detalle = json_decode($caja->detalle);
+            }
+            unset($caja->usuario);
+            return $caja;
+        });
+
+        return response()->json($cajas);
+    }
 
     // Crear una nueva caja
     public function store(Request $request)
@@ -48,20 +67,38 @@ class CajaController extends Controller
         // Usar la fecha proporcionada o la del sistema
         $fecha = $request->filled('fecha') ? date('Y-m-d', strtotime($request->fecha)) : now()->toDateString();
 
-        // Validar que no exista ya una caja con esa fecha
-        $cajaExistente = Caja::where('fecha', $fecha)->first();
-        if ($cajaExistente) {
-            return response()->json(['error' => 'Ya existe una caja registrada para la fecha ' . $fecha], 409);
+        // Obtener el usuario y su sucursal
+        $usuario = \App\Models\User::find($request->id_usuario);
+        $idSucursal = $usuario->id_sucursal ?? null;
+
+        if (!$idSucursal) {
+            return response()->json(['error' => 'El usuario no tiene una sucursal asignada'], 400);
         }
 
-        // Calcular cantidad de ventas en esa fecha
-        $ventasDelDia = \App\Models\Venta::whereDate('fecha', $fecha)->count();
+        // Validar que no exista ya una caja con esa fecha y sucursal
+        $cajaExistente = Caja::where('fecha', $fecha)
+                             ->where('id_sucursal', $idSucursal)
+                             ->first();
+        if ($cajaExistente) {
+            return response()->json(['error' => 'Ya existe una caja registrada para la fecha ' . $fecha . ' en esta sucursal'], 409);
+        }
 
-        // Sumar total de pagos en esa fecha
-        $totalPagos = \App\Models\Pago::whereDate('fecha', $fecha)->sum('monto');
+        // Calcular cantidad de ventas en esa fecha para esta sucursal
+        $ventasDelDia = \App\Models\Venta::whereDate('fecha', $fecha)
+                                         ->where('idSucursal', $idSucursal)
+                                         ->count();
 
-        // Agrupar pagos por forma de pago
+        // Sumar total de pagos en esa fecha para esta sucursal
+        $totalPagos = \App\Models\Pago::whereDate('fecha', $fecha)
+            ->whereHas('venta', function ($q) use ($idSucursal) {
+                $q->where('idSucursal', $idSucursal);
+            })->sum('monto');
+
+        // Agrupar pagos por forma de pago para esta sucursal
         $pagosPorForma = \App\Models\Pago::whereDate('fecha', $fecha)
+            ->whereHas('venta', function ($q) use ($idSucursal) {
+                $q->where('idSucursal', $idSucursal);
+            })
             ->selectRaw('idFormaPago, SUM(monto) as total')
             ->groupBy('idFormaPago')
             ->get();
@@ -82,6 +119,7 @@ class CajaController extends Controller
             'fecha' => $fecha,
             'observaciones' => $request->observaciones, // guardar observaciones si se proporcionan
             'id_usuario' => $request->id_usuario,
+            'id_sucursal' => $idSucursal,
         ]);
 
         return response()->json($caja, 201);
@@ -247,8 +285,44 @@ class CajaController extends Controller
         $pdf = Pdf::loadView('caja.cierre-caja-con-listado', compact('caja', 'pagos'));
         return $pdf->stream("cierre_diario_{$fecha}.pdf");
     }
-    public function cajaPorMes($fechaMes)
-{
+
+    public function pdfDiaSucursal($fecha, $idSucursal)
+    {
+        // Validación 1: Verificar que la sucursal existe
+        $sucursal = \App\Models\Sucursal::find($idSucursal);
+        if (!$sucursal) {
+            return response()->json(['message' => 'Sucursal no encontrada'], 404);
+        }
+
+        // Validación 2: Verificar que existe el cierre de caja para la fecha y sucursal
+        $caja = Caja::where('fecha', $fecha)->where('id_sucursal', $idSucursal)->first();
+
+        if (!$caja) {
+            return response()->json(['message' => 'No se encontró un cierre de caja para la fecha indicada en esta sucursal'], 404);
+        }
+
+        $pagos = \App\Models\Pago::select(
+            'pagos.*',
+            'forma_de_pagos.nombre as nombre_forma_pago',
+            'ventas.precioProducto',
+            'ventas.precioPerzonalizado',
+            'ventas.idCliente',
+            'clientes.nombre as nombre_cliente',
+            'clientes.apellido as apellido_cliente'
+        )
+        ->join('forma_de_pagos', 'pagos.idFormaPago', '=', 'forma_de_pagos.id')
+        ->join('ventas', 'pagos.idVenta', '=', 'ventas.id')
+        ->join('clientes', 'ventas.idCliente', '=', 'clientes.id')
+        ->where('pagos.fecha', $fecha)
+        ->where('ventas.idSucursal', $idSucursal)
+        ->get();
+        
+        $pdf = Pdf::loadView('caja.cierre-caja-con-listado', compact('caja', 'pagos'));
+        return $pdf->stream("cierre_diario_{$fecha}_sucursal_{$idSucursal}.pdf");
+    }
+
+    public function cajaPorMes($fechaMes){
+        
     // $fechaMes en formato YYYY-MM
     $año = \Carbon\Carbon::parse($fechaMes)->year;
     $mes = \Carbon\Carbon::parse($fechaMes)->month;

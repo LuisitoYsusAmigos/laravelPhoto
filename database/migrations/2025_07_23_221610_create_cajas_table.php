@@ -19,11 +19,13 @@ return new class extends Migration
             $table->date('fecha');
             $table->text('observaciones')->nullable();
             $table->foreignId('id_usuario')->constrained('users')->onDelete('cascade');
+            $table->foreignId('id_sucursal')->constrained('sucursales')->onDelete('restrict');
             $table->timestamps();
         });
     }
 
     /**
+     * 
      * Reverse the migrations.
      */
     public function down(): void
