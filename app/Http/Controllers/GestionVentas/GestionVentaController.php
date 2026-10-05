@@ -44,16 +44,8 @@ class GestionVentaController extends Controller
 
             'detalles' => 'nullable|array',
             'detalles.*.idProducto' => 'required_with:detalles|integer',
-            'detalles.*.cantidad' => 'required_with:detalles|integer|min:1',
-
-            'cuadros' => 'nullable|array',
-            'cuadros.*.lado_a' => 'required_with:cuadros|numeric|min:1|decimal:0,2',
-            'cuadros.*.lado_b' => 'required_with:cuadros|numeric|min:1|decimal:0,2',
-            'cuadros.*.cantidad' => 'required_with:cuadros|integer|min:1',
-            'cuadros.*.id_materia_prima_varillas' => 'nullable|integer',
-            'cuadros.*.id_materia_prima_trupans' => 'nullable|integer',
-            'cuadros.*.id_materia_prima_vidrios' => 'nullable|integer',
-            'cuadros.*.id_materia_prima_contornos' => 'nullable|integer',
+            'detalles.*.cantidad' => 'required_with:detalles|integer|min:1'
+            
         ]);
 
         $factorPrecioVenta = $request->input('factorPrecioVenta') ?? 1;
@@ -64,19 +56,6 @@ class GestionVentaController extends Controller
             ], 400);
         }
 
-        if ($request->has('cuadros')) {
-            $cuadrosModificados = $request->input('cuadros');
-            foreach ($cuadrosModificados as &$c) {
-                if (isset($c['lado_a'])) {
-                    $c['lado_a'] = (int) ($c['lado_a'] * 10);
-                }
-                if (isset($c['lado_b'])) {
-                    $c['lado_b'] = (int) ($c['lado_b'] * 10);
-                }
-            }
-            $request->merge(['cuadros' => $cuadrosModificados]);
-        }
-
         $request->merge([
             'saldo' => $request->input('pago'),
         ]);
@@ -84,31 +63,6 @@ class GestionVentaController extends Controller
             return response()->json([
                 'error' => 'Debe incluir al menos productos o cuadros personalizados',
             ], 400);
-        }
-
-        if (! empty($request->cuadros)) {
-            $cuadrosModificados = $request->input('cuadros');
-            foreach ($cuadrosModificados as $index => &$cuadro) {
-                if (empty($cuadro['id_materia_prima_varillas'])) {
-
-                    // return response()->json([
-                    //    'error' => "Debe proporcionar una varilla válida para hacer el cálculo correcto del material en el cuadro #" . ($index + 1)
-                    // ], 400);
-                } else {
-
-                    // calcular tamaño externo del marco usando las medidas del cuadro actual
-                    $medidasExternas = $this->gestionMarcos->obtenerMarcoExterno($cuadro);
-
-                    // Sobrescribir las medidas con el tamaño externo calculado
-                    $cuadro['lado_a'] = $medidasExternas['lado_a'];
-                    $cuadro['lado_b'] = $medidasExternas['lado_b'];
-
-                }
-
-            }
-
-            // Reemplazamos los cuadros del request con los cuadros modificados
-            $request->merge(['cuadros' => $cuadrosModificados]);
         }
 
         if (! empty($request->detalles)) {
@@ -124,19 +78,7 @@ class GestionVentaController extends Controller
             }
         }
 
-        //  Validar marcos y stock ANTES de crear la venta
-        if (! empty($request->cuadros)) {
-            $validacionMarcos = $this->gestionMarcos->verificarDisponibilidadMarcos($request->cuadros);
-
-            $errores = array_filter($validacionMarcos, fn ($c) => $c['valido'] === false);
-
-            if (! empty($errores)) {
-                return response()->json([
-                    'message' => 'Errores en los cuadros personalizados',
-                    'detalles' => $errores,
-                ], 400);
-            }
-        }
+        
 
         DB::beginTransaction();
 
@@ -152,11 +94,7 @@ class GestionVentaController extends Controller
                 $totalProductos = $this->gestionProductos->procesarProductos($venta, $request->detalles);
             }
 
-            if (! empty($request->cuadros)) {
-                $resultadoMarcos = $this->gestionMarcos->procesarMarcos($venta, $request->cuadros, $factorPrecioVenta);
-                $totalCuadros = $resultadoMarcos['total'];
-            }
-            $totalVenta = $totalProductos + $totalCuadros;
+            $totalVenta = $totalProductos;
 
             $this->actualizarTotalesVenta($venta, $totalProductos, $totalCuadros, $totalVenta);
 

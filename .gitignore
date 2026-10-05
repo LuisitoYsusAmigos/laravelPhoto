@@ -12,6 +12,7 @@
 .env.backup
 .envProdHost
 .env.production
+.envJugueteriaLocal
 .phpactor.json
 .phpunit.result.cache
 Homestead.json

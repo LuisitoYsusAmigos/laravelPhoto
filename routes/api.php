@@ -6,22 +6,16 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\CotizadorController;
 use App\Http\Controllers\FuncionesGeneralesController;
 use App\Http\Controllers\LugarController;
-use App\Http\Controllers\MateriaPrimaContornoController;
-use App\Http\Controllers\MateriaPrimaTrupanController;
-use App\Http\Controllers\MateriaPrimaVarillaController;
-use App\Http\Controllers\MateriaPrimaVidrioController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\RolController;
-use App\Http\Controllers\StockContornoController;
 use App\Http\Controllers\StockProductoController;
-use App\Http\Controllers\StockTrupanController;
-use App\Http\Controllers\StockVarillaController;
-use App\Http\Controllers\StockVidrioController;
 use App\Http\Controllers\SubCategoriaController;
 use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VentaController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\FormaDePagoController;
+use App\Http\Controllers\GestionVentas\GestionVentaController;
 
 // Lugares
 Route::get('/lugares', [LugarController::class, 'index']);
@@ -66,77 +60,6 @@ Route::get('/productos/search', [ProductoController::class, 'search']);
 Route::get('/productos/search-categorias', [ProductoController::class, 'searchCategorias']);
 Route::get('/productos/paginados', [ProductoController::class, 'indexPaginado']);
 
-// mateira prima varilla
-// Materia Prima Varillas
-Route::get('/materiaPrimaVarillas', [MateriaPrimaVarillaController::class, 'index']);
-Route::post('/materiaPrimaVarilla', [MateriaPrimaVarillaController::class, 'store']);
-Route::get('/materiaPrimaVarilla/{id}', [MateriaPrimaVarillaController::class, 'show']);
-Route::post('/materiaPrimaVarilla/edit/{id}', [MateriaPrimaVarillaController::class, 'update']);
-Route::delete('/materiaPrimaVarilla/{id}', [MateriaPrimaVarillaController::class, 'destroy']);
-
-// Funciones adicionales para Materia Prima Varilla
-Route::get('/materiaPrimaVarillas/paginados', [MateriaPrimaVarillaController::class, 'indexPaginado']);
-Route::get('/materiaPrimaVarillas/search', [MateriaPrimaVarillaController::class, 'search']);
-Route::get('/materiaPrimaVarillas/search-categorias', [MateriaPrimaVarillaController::class, 'searchCategorias']);
-
-// mateira prima trupan
-Route::get('/materiaPrimaTrupanes', [MateriaPrimaTrupanController::class, 'index']);
-Route::post('/materiaPrimaTrupan', [MateriaPrimaTrupanController::class, 'store']);
-Route::get('/materiaPrimaTrupan/{id}', [MateriaPrimaTrupanController::class, 'show']);
-Route::post('/materiaPrimaTrupan/edit/{id}', [MateriaPrimaTrupanController::class, 'update']);
-Route::delete('/materiaPrimaTrupan/{id}', [MateriaPrimaTrupanController::class, 'destroy']);
-
-Route::get('/materiaPrimaTrupanes/paginados', [MateriaPrimaTrupanController::class, 'indexPaginado']); // Listado paginado
-Route::get('/materiaPrimaTrupanes/search', [MateriaPrimaTrupanController::class, 'search']); // Búsqueda general
-Route::get('/materiaPrimaTrupanes/search-categorias', [MateriaPrimaTrupanController::class, 'searchCategorias']); // Filtro por categoría y subcategoría
-
-// materia prima vidrio
-Route::get('/materiaPrimaVidrios', [MateriaPrimaVidrioController::class, 'index']);
-Route::post('/materiaPrimaVidrio', [MateriaPrimaVidrioController::class, 'store']);
-Route::get('/materiaPrimaVidrio/{id}', [MateriaPrimaVidrioController::class, 'show']);
-Route::post('/materiaPrimaVidrio/edit/{id}', [MateriaPrimaVidrioController::class, 'update']);
-Route::delete('/materiaPrimaVidrio/{id}', [MateriaPrimaVidrioController::class, 'destroy']);
-
-Route::get('/materiaPrimaVidrios/paginados', [MateriaPrimaVidrioController::class, 'indexPaginado']); // Listado paginado
-Route::get('/materiaPrimaVidrios/search', [MateriaPrimaVidrioController::class, 'search']); // Búsqueda general
-Route::get('/materiaPrimaVidrios/search-categorias', [MateriaPrimaVidrioController::class, 'searchCategorias']); // Filtro por categoría y subcategoría
-
-// materia prima contorno
-Route::get('/materiaPrimaContornos', [MateriaPrimaContornoController::class, 'index']);
-Route::post('/materiaPrimaContorno', [MateriaPrimaContornoController::class, 'store']);
-Route::get('/materiaPrimaContorno/{id}', [MateriaPrimaContornoController::class, 'show']);
-Route::post('/materiaPrimaContorno/edit/{id}', [MateriaPrimaContornoController::class, 'update']);
-Route::delete('/materiaPrimaContorno/{id}', [MateriaPrimaContornoController::class, 'destroy']);
-
-Route::get('/materiaPrimaContornos/paginados', [MateriaPrimaContornoController::class, 'indexPaginado']); // Listado paginado
-Route::get('/materiaPrimaContornos/search', [MateriaPrimaContornoController::class, 'search']); // Búsqueda general
-Route::get('/materiaPrimaContornos/search-categorias', [MateriaPrimaContornoController::class, 'searchCategorias']); // Filtro por categoría y subcategoría
-
-// stock varila
-
-Route::get('/stockVarillas', [StockVarillaController::class, 'index']); // Obtener todos los registros
-Route::post('/stockVarillas', [StockVarillaController::class, 'store']); // Crear un nuevo registro
-Route::get('/stockVarilla/{id}', [StockVarillaController::class, 'show']); // Obtener un registro por ID
-Route::get('/stockVarillas/porVarilla/{id}', [StockVarillaController::class, 'indexPorVarilla']);
-Route::put('/stockVarilla/{id}', [StockVarillaController::class, 'update']); // Actualizar un registro
-Route::delete('/stockVarilla/{id}', [StockVarillaController::class, 'destroy']); // Eliminar un registro
-
-// stock vidrio
-Route::get('/stockVidrios', [StockVidrioController::class, 'index']); // Obtener todos los registros
-Route::post('/stockVidrio', [StockVidrioController::class, 'store']); // Crear un nuevo registro
-Route::get('/stockVidrio/{id}', [StockVidrioController::class, 'show']); // Obtener un registro por ID
-Route::get('/stockVidrios/porVidrio/{id}', [StockVidrioController::class, 'indexPorVidrio']);
-Route::put('/stockVidrio/{id}', [StockVidrioController::class, 'update']); // Actualizar un registro
-Route::delete('/stockVidrio/{id}', [StockVidrioController::class, 'destroy']); // Eliminar un registro
-
-// stock trupan
-Route::get('/stockTrupans', [StockTrupanController::class, 'index']); // Obtener todos los registros
-Route::post('/stockTrupans', [StockTrupanController::class, 'store']); // Crear un nuevo registro
-Route::get('/stockTrupans/{id}', [StockTrupanController::class, 'show']); // Obtener un registro por ID
-Route::get('/stockTrupans/porTrupan/{id}', [StockTrupanController::class, 'indexPorTrupan']);
-Route::put('/stockTrupans/{id}', [StockTrupanController::class, 'update']); // Actualizar un registro
-Route::delete('/stockTrupans/{id}', [StockTrupanController::class, 'destroy']); // Eliminar un registro
-
 // Stock de Productos
 Route::get('/stockProductos', [StockProductoController::class, 'index']);   // Obtener todos los registros
 Route::post('/stockProducto', [StockProductoController::class, 'store']);   // Crear un nuevo registro
@@ -144,14 +67,6 @@ Route::get('/stockProducto/{id}', [StockProductoController::class, 'show']);    
 Route::get('/stockProductos/porProducto/{id_producto}', [StockProductoController::class, 'getByProducto']);
 Route::put('/stockProducto/{id}', [StockProductoController::class, 'update']);  // Actualizar un registro
 Route::delete('/stockProducto/{id}', [StockProductoController::class, 'destroy']); // Eliminar un registro
-// stock de contornos
-
-Route::get('/stockContornos', [StockContornoController::class, 'index']);
-Route::post('/stockContorno', [StockContornoController::class, 'store']);
-Route::get('/stockContorno/{id}', [StockContornoController::class, 'show']);
-Route::put('/stockContorno/{id}', [StockContornoController::class, 'update']);
-Route::delete('/stockContorno/{id}', [StockContornoController::class, 'destroy']);
-Route::get('/stockContorno/porContorno/{id}', [StockContornoController::class, 'indexPorContorno']);
 
 // cliente
 Route::get('/clientes', [ClienteController::class, 'index']); // Obtener todos los registros
@@ -173,7 +88,7 @@ Route::put('/rol/{id}', [RolController::class, 'update']); // Actualizar un rol
 Route::delete('/rol/{id}', [RolController::class, 'destroy']); // Eliminar un rol
 
 // ventas
-// venta
+
 Route::get('/ventas', [VentaController::class, 'index']); // Obtener todas las ventas
 Route::get('/ventas/paginadas', [VentaController::class, 'indexPaginado']); // Obtener ventas paginadas
 Route::get('/ventas/search', [VentaController::class, 'search']); // Buscar ventas
@@ -196,7 +111,7 @@ Route::get('/ventas/detallado', [VentaController::class, 'ventasPorFechaDetallad
 Route::get('/ventas/cierrecaja', [VentaController::class, 'resumenDelDia']);
 
 // formas de pago
-use App\Http\Controllers\FormaDePagoController;
+
 
 Route::get('/formasPago', [FormaDePagoController::class, 'index']);
 Route::post('/formasPago', [FormaDePagoController::class, 'store']);
@@ -298,32 +213,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/logout', [AuthController::class, 'logout']);
 });
 
-// user
-Route::get('/users', [UserController::class, 'index']); // Obtener todos los usuarios
-// Route::post('/user', [UserController::class, 'store']); // Crear un nuevo usuario
-Route::get('/user/{id}', [UserController::class, 'show']); // Obtener un usuario por ID
-Route::put('/user/{id}', [UserController::class, 'update']); // Actualizar un usuario
-Route::delete('/user/{id}', [UserController::class, 'destroy']); // Eliminar un usuario
 
-// Funciones Generales
+Route::get('/users', [UserController::class, 'index']); 
+Route::get('/user/{id}', [UserController::class, 'show']);
+Route::put('/user/{id}', [UserController::class, 'update']);
+Route::delete('/user/{id}', [UserController::class, 'destroy']);
+
+
 Route::get('/estadisticas/clientesNuevos', [FuncionesGeneralesController::class, 'ClientesNuevos']);
-// 4 del cuadro de estadisticas
-// Route::get('/clientes/total', [ClienteController::class, 'totalClientes']);
-// venta completa de prodcuto y marcos
-
-// use App\Http\Controllers\GestiionVentas\GestionVenta;
-
-// Ruta para crear venta completa (productos + cuadros personalizados)
-use App\Http\Controllers\GestionVentas\GestionVentaController;
-
 Route::post('/ventaProductoMarco', [GestionVentaController::class, 'crearVentaCompleta']);
 Route::post('/ventaProductoMarco/SimularVenta', [GestionVentaController::class, 'SimularVenta']);
 
-// devoluciones
-
 Route::delete('/ventaProductoMarco/devolucion/{id}', [GestionVentaController::class, 'crearDevolucion']);
 
-// En routes/api.php
+
 Route::get('/ventaProductoMarco/{id}', [GestionVentaController::class, 'obtenerVentaCompleta']);
 Route::get('/ventaProductoMarco', [GestionVentaController::class, 'obtenerVentas']);
 
