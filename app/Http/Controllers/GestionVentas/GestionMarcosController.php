@@ -193,32 +193,29 @@ class GestionMarcosController extends Controller
         $precioTrupans = 0;
         $precioVidrios = 0;
         $precioContornos = 0;
-        $tiempos = [];
+        
 
         if (!empty($cuadro['id_materia_prima_varillas'])) {
-            $t0 = microtime(true);
+            
             $precioVarillas = $this->procesarVarillas($detalle, $cuadro);
-            $tiempos['procesarVarillas'] = round((microtime(true) - $t0) * 1000, 2) . ' ms';
+            
         }
 
         if (!empty($cuadro['id_materia_prima_trupans'])) {
-            $t0 = microtime(true);
+            
             $precioTrupans = $this->procesarTrupans($detalle, $cuadro);
-            $tiempos['procesarTrupans'] = round((microtime(true) - $t0) * 1000, 2) . ' ms';
+            
         }
 
         if (!empty($cuadro['id_materia_prima_vidrios'])) {
-            $t0 = microtime(true);
             $precioVidrios = $this->procesarVidrios($detalle, $cuadro);
-            $tiempos['procesarVidrios'] = round((microtime(true) - $t0) * 1000, 2) . ' ms';
+            
         }
 
         if (!empty($cuadro['id_materia_prima_contornos'])) {
-            $t0 = microtime(true);
             $precioContornos = $this->procesarContornos($detalle, $cuadro);
-            $tiempos['procesarContornos'] = round((microtime(true) - $t0) * 1000, 2) . ' ms';
+            
         }
-
         return [
             'total' => intval(($precioVarillas + $precioTrupans + $precioVidrios + $precioContornos) * $factorPrecioVenta),
         ];
@@ -239,8 +236,8 @@ class GestionMarcosController extends Controller
         if (!$jsonRespuesta['terminado']) {
             throw new \Exception('No hay disponibilidad de esas medidas de varillas para el cuadro especificado');
         }
-
-        return $this->procesarResultadoVarillas($detalle, $jsonRespuesta['retazosUsados'], $resultado['retazosUsados']);
+        $resultado= $this->procesarResultadoVarillas($detalle, $jsonRespuesta['retazosUsados'], $resultado['retazosUsados']);
+        return $resultado;
     }
 
     /**
@@ -395,6 +392,7 @@ class GestionMarcosController extends Controller
             $precioUnitario = $retazo['cantidad'] > 0 ? ($precioTotal / $retazo['cantidad']) : $precioTotal;
 
             $totalVarillas += $precioTotal;
+            //dd($totalVarillas);
 
             $materialVenta = MaterialesVentaPersonalizada::create([
                 'stock_contorno_id' => null,
@@ -434,7 +432,7 @@ class GestionMarcosController extends Controller
             // Restar stock físico en la base de datos
             StockVarilla::where('id', $retazo['id'])->decrement('stock', $retazo['cantidad']);
         }
-
+        $totalVarillas = intval($totalVarillas);
         return $totalVarillas;
     }
 
@@ -453,7 +451,7 @@ class GestionMarcosController extends Controller
         // Aplicar fórmula correcta: área_m² × precio_m² × factor_desperdicio (por unidad)
         $precioUnitario = $areaM2 * $precioM2 * $factorDesperdicio;
         $precioTotal = intval($precioUnitario * $cuadro['cantidad']);
-
+        //dd($precioTotal);
         $materialData = [
             'stock_contorno_id' => $tipoMaterial === 'contorno' ? $materialId : null,
             'stock_trupan_id' => $tipoMaterial === 'trupan' ? $materialId : null,
