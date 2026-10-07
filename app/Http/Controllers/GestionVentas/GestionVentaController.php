@@ -216,10 +216,6 @@ class GestionVentaController extends Controller
             'cliente',
             'sucursal',
             'detalleVentaProductos',
-            'detalleVentaPersonalizadas.materiaPrimaVarilla',
-            'detalleVentaPersonalizadas.materiaPrimaTrupan',
-            'detalleVentaPersonalizadas.materiaPrimaVidrio',
-            'detalleVentaPersonalizadas.materiaPrimaContorno',
         ]);
     }
 
@@ -236,11 +232,6 @@ class GestionVentaController extends Controller
                 'cliente',
                 'sucursal',
                 'detalleVentaProductos.producto',
-                'detalleVentaPersonalizadas.materiaPrimaVarilla',
-                'detalleVentaPersonalizadas.materiaPrimaTrupan',
-                'detalleVentaPersonalizadas.materiaPrimaVidrio',
-                'detalleVentaPersonalizadas.materiaPrimaContorno',
-                'detalleVentaPersonalizadas.materialesVentaPersonalizadas',
             ])->find($id);
 
             if (! $venta) {
@@ -369,10 +360,6 @@ class GestionVentaController extends Controller
                     'cliente',
                     'sucursal',
                     'detalleVentaProductos',
-                    'detalleVentaPersonalizadas.materiaPrimaVarilla',
-                    'detalleVentaPersonalizadas.materiaPrimaTrupan',
-                    'detalleVentaPersonalizadas.materiaPrimaVidrio',
-                    'detalleVentaPersonalizadas.materiaPrimaContorno',
                 ])
                 ->get();
 
@@ -424,7 +411,6 @@ class GestionVentaController extends Controller
             // 1. Verificar que la venta existe
             $venta = Venta::with([
                 'detalleVentaProductos',
-                'detalleVentaPersonalizadas.materialesVentaPersonalizada',
             ])->find($idVenta);
 
             if (! $venta) {
@@ -453,12 +439,7 @@ class GestionVentaController extends Controller
                 $this->gestionProductos->eliminarDetallesProductos($idVenta);
             }
 
-            // 4. Por ahora, si hay marcos personalizados, mostrar error
-            if ($venta->detalleVentaPersonalizadas->count() > 0) {
-                return response()->json([
-                    'error' => 'No se pueden eliminar ventas con marcos personalizados. Esta funcionalidad estará disponible próximamente.',
-                ], 400);
-            }
+            // 4. Por ahora, si hay marcos personalizados, mostrar error (eliminado)
 
             // 5. Eliminar pagos asociados
             $pagosEliminados = Pago::where('idVenta', $idVenta)->delete();
@@ -511,7 +492,6 @@ class GestionVentaController extends Controller
         try {
             $venta = Venta::with([
                 'detalleVentaProductos',
-                'detalleVentaPersonalizadas',
                 'pagos',
             ])->find($idVenta);
 
@@ -522,13 +502,7 @@ class GestionVentaController extends Controller
                 ], 404);
             }
 
-            // Validar si tiene marcos personalizados
-            if ($venta->detalleVentaPersonalizadas->count() > 0) {
-                return response()->json([
-                    'puede_eliminar' => false,
-                    'motivo' => 'No se pueden eliminar ventas con marcos personalizados. Esta funcionalidad estará disponible próximamente.',
-                ], 400);
-            }
+            // Validar si tiene marcos personalizados (eliminado)
 
             $productosCount = $venta->detalleVentaProductos->count();
             $pagosCount = $venta->pagos->count();
@@ -586,33 +560,6 @@ class GestionVentaController extends Controller
                     'nombreProducto' => optional($detalle->producto)->nombre,
                 ];
             }),
-            'detalle_venta_personalizadas' => $venta->detalleVentaPersonalizadas->map(function ($detalle) use ($venta) {
-                $detalleArray = $detalle->toArray();
-                $totalBaseUnitario = $detalle->materialesVentaPersonalizadas->sum(function ($mat) {
-                    return $mat->precio_unitario * $mat->cantidad;
-                });
-
-                // Calcular la cantidad de cuadros basándose en los cortes
-                $cantidad = \Illuminate\Support\Facades\DB::table('corte_material_ventas')
-                    ->join('materiales_venta_personalizadas', 'corte_material_ventas.material_vp_id', '=', 'materiales_venta_personalizadas.id')
-                    ->where('materiales_venta_personalizadas.detalleVP_id', $detalle->id)
-                    ->distinct('corte_material_ventas.origen')
-                    ->count('corte_material_ventas.origen');
-
-                if ($cantidad == 0) {
-                    $cantidad = 1;
-                }
-
-                $factor = $venta->factorPrecioVenta > 0 ? $venta->factorPrecioVenta : 1;
-
-                $precioTotal = $totalBaseUnitario * $factor;
-
-                $detalleArray['cantidad'] = $cantidad;
-                $detalleArray['precio_unitario'] = $precioTotal / $cantidad;
-                $detalleArray['total'] = $precioTotal;
-
-                return $detalleArray;
-            }),
         ];
     }
 
@@ -637,41 +584,7 @@ class GestionVentaController extends Controller
                 $devolucionProductos->devolucionStockProductos($venta);
             }
 
-            if ($venta->detalleVentaPersonalizadas()->exists()) {
-                $detalleIds = $venta->detalleVentaPersonalizadas()->pluck('id');
-
-                $tieneVarillas = MaterialesVentaPersonalizada::whereIn('detalleVP_id', $detalleIds)
-                    ->whereNotNull('stock_varilla_id')
-                    ->exists();
-                if ($tieneVarillas) {
-                    $devolucionVarillas = new DevolucionStockVarillas;
-                    $devolucionVarillas->devolucionStockVarillas($venta);
-                }
-
-                $tieneTrupans = MaterialesVentaPersonalizada::whereIn('detalleVP_id', $detalleIds)
-                    ->whereNotNull('stock_trupan_id')
-                    ->exists();
-                if ($tieneTrupans) {
-                    $devolucionTrupans = new DevolucionStockTrupans;
-                    $devolucionTrupans->devolucionStockTrupans($venta);
-                }
-
-                $tieneVidrios = MaterialesVentaPersonalizada::whereIn('detalleVP_id', $detalleIds)
-                    ->whereNotNull('stock_vidrio_id')
-                    ->exists();
-                if ($tieneVidrios) {
-                    $devolucionVidrios = new DevolucionStockVidrios;
-                    $devolucionVidrios->devolucionStockVidrios($venta);
-                }
-
-                $tieneContornos = MaterialesVentaPersonalizada::whereIn('detalleVP_id', $detalleIds)
-                    ->whereNotNull('stock_contorno_id')
-                    ->exists();
-                if ($tieneContornos) {
-                    $devolucionContornos = new DevolucionStockContornos;
-                    $devolucionContornos->devolucionStockContornos($venta);
-                }
-            }
+            // Lógica de devolucion de personalizados (eliminada)
 
             $venta->delete();
 
