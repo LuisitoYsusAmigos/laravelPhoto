@@ -164,6 +164,13 @@ class GestionVentaController extends Controller
             $venta = $this->cargarRelacionesVenta($venta);
 
             DB::commit();
+             
+            Log::info('Venta completa creada exitosamente', [
+                
+                'id_venta' => $venta->id,
+                'venta' => $venta,
+                'request' => $request->all(),
+            ]);
 
             return response()->json([
                 'message' => 'Venta completa creada exitosamente',
