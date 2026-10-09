@@ -19,6 +19,11 @@ class DatabaseSeeder extends Seeder
         // Crear sucursal genérica
         $sucursal = Sucursal::create([
             'lugar' => 'Sucursal Principal',
+            'nombre_sucursal' => 'PhotoStore',
+            'gerente' => 'Diego Sandoval',
+            'direccion' => 'Dir: Barrio La Pampa, Av. La Paz y Potosí',
+            'contactos' => '69315632 - 72993950',
+            'correo' => 'fotografiatarija@gmail.com',
         ]);
 
         // Crear rol admin
@@ -51,6 +56,15 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password123'),
             'id_sucursal' => $sucursal->id,
             'id_rol' => $rolAdmin->id,
+        ]);
+
+        User::create([
+            "name" => "David",
+            "username" => "david",
+            "email" => "david@gmail.com",
+            "password" => bcrypt('david234567'),
+            "id_sucursal" => $sucursal->id,
+            "id_rol" => $rolAdmin->id,
         ]);
 
         // CORREGIDO: `$this->call([...]);`

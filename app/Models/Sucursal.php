@@ -9,6 +9,11 @@ class Sucursal extends Model
     protected $table = 'sucursal';
 
     protected $fillable = [
-        'lugar'
+        'lugar',
+        'nombre_sucursal',
+        'gerente',
+        'direccion',
+        'contactos',
+        'correo'
     ];
 }

@@ -21,6 +21,11 @@ class SucursalController extends Controller
         // Validación
         $validator = Validator::make($request->all(), [
             'lugar' => 'required|unique:sucursal',
+            'nombre_sucursal' => 'nullable|string',
+            'gerente' => 'nullable|string',
+            'direccion' => 'nullable|string',
+            'contactos' => 'nullable|string',
+            'correo' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -30,6 +35,11 @@ class SucursalController extends Controller
         // Crear sucursal
         $sucursal = Sucursal::create([
             'lugar' => $request->input('lugar'),
+            'nombre_sucursal' => $request->input('nombre_sucursal') ?? '',
+            'gerente' => $request->input('gerente') ?? '',
+            'direccion' => $request->input('direccion') ?? '',
+            'contactos' => $request->input('contactos') ?? '',
+            'correo' => $request->input('correo') ?? '',
         ]);
 
         return response()->json(['message' => 'Sucursal creada', 'sucursal' => $sucursal], 201);
@@ -54,6 +64,11 @@ class SucursalController extends Controller
         // Validación
         $validator = Validator::make($request->all(), [
             'lugar' => 'required|unique:sucursal,lugar,' . $id,
+            'nombre_sucursal' => 'nullable|string',
+            'gerente' => 'nullable|string',
+            'direccion' => 'nullable|string',
+            'contactos' => 'nullable|string',
+            'correo' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -62,6 +77,11 @@ class SucursalController extends Controller
 
         // Actualizar sucursal
         $sucursal->lugar = $request->input('lugar');
+        $sucursal->nombre_sucursal = $request->input('nombre_sucursal') ?? '';
+        $sucursal->gerente = $request->input('gerente') ?? '';
+        $sucursal->direccion = $request->input('direccion') ?? '';
+        $sucursal->contactos = $request->input('contactos') ?? '';
+        $sucursal->correo = $request->input('correo') ?? '';
         $sucursal->save();
 
         return response()->json(['message' => 'Sucursal actualizada', 'sucursal' => $sucursal], 200);
