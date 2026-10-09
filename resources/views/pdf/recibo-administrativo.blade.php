@@ -95,9 +95,10 @@
   <div class="recibo-container">
     <div class="header">
       <div class="info-empresa">
-        <strong>PhotoStore / Diego Sandoval</strong><br>
-        Dir: Barrio La Pampa, Av. La Paz y Potosí<br>
-        Correo: fotografiatarija@gmail.com
+        <strong>{{ $venta['sucursal']['nombre_sucursal'] }} / {{ $venta['sucursal']['gerente'] }}</strong><br>
+        {{ $venta['sucursal']['direccion'] }}<br>
+        Cel: {{ $venta['sucursal']['contactos'] }}<br>
+        Correo: {{ $venta['sucursal']['correo'] }}
       </div>
       <div class="title">
         <h2 style="margin:0">RECIBO ADMINISTRATIVO</h2>
