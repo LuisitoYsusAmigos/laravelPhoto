@@ -145,8 +145,7 @@ class GestionMarcosController extends Controller
     public function procesarMarcos($venta, array $cuadros, $factorPrecioVenta)
     {
         $totalCuadros = 0;
-
-
+        $medidasExternas = [];
 
         foreach ($cuadros as $index => $cuadro) {
 
@@ -191,31 +190,27 @@ class GestionMarcosController extends Controller
         $precioTrupans = 0;
         $precioVidrios = 0;
         $precioContornos = 0;
-        $tiempos = [];
+
 
         // Procesar cada tipo de material si está especificado
         if (!empty($cuadro['id_materia_prima_varillas'])) {
-            $t0 = microtime(true);
+
             $precioVarillas = $this->procesarVarillas($detalle, $cuadro);
-            $tiempos['procesarVarillas'] = round((microtime(true) - $t0) * 1000, 2) . ' ms';
         }
 
         if (!empty($cuadro['id_materia_prima_trupans'])) {
-            $t0 = microtime(true);
+
             $precioTrupans = $this->procesarTrupans($detalle, $cuadro);
-            $tiempos['procesarTrupans'] = round((microtime(true) - $t0) * 1000, 2) . ' ms';
         }
 
         if (!empty($cuadro['id_materia_prima_vidrios'])) {
-            $t0 = microtime(true);
+
             $precioVidrios = $this->procesarVidrios($detalle, $cuadro);
-            $tiempos['procesarVidrios'] = round((microtime(true) - $t0) * 1000, 2) . ' ms';
         }
 
         if (!empty($cuadro['id_materia_prima_contornos'])) {
-            $t0 = microtime(true);
+
             $precioContornos = $this->procesarContornos($detalle, $cuadro);
-            $tiempos['procesarContornos'] = round((microtime(true) - $t0) * 1000, 2) . ' ms';
         }
 
         return [
@@ -239,7 +234,8 @@ class GestionMarcosController extends Controller
             throw new \Exception('No hay disponibilidad de esas medidas de varillas para el cuadro especificado');
         }
 
-        return $this->procesarResultadoVarillas($detalle, $jsonRespuesta['retazosUsados'], $resultado['retazosUsados']);
+        $resultado= $this->procesarResultadoVarillas($detalle, $jsonRespuesta['retazosUsados'], $resultado['retazosUsados']);
+        return $resultado;
     }
 
     /**
@@ -350,8 +346,8 @@ class GestionMarcosController extends Controller
     {
         return [
             [
-                'largo' => $cuadro['lado_a'],
-                'ancho' => $cuadro['lado_b'],
+                'largo' => $cuadro['lado_a_ext'],
+                'ancho' => $cuadro['lado_b_ext'],
                 'cantidad' => $cuadro['cantidad'],
                 'nombre' => 'Cuadro'
             ]
@@ -433,7 +429,7 @@ class GestionMarcosController extends Controller
             // Restar stock físico en la base de datos
             StockVarilla::where('id', $retazo['id'])->decrement('stock', $retazo['cantidad']);
         }
-
+$totalVarillas = intval($totalVarillas);
         return $totalVarillas;
     }
 
@@ -547,12 +543,23 @@ class GestionMarcosController extends Controller
     public function simularPrecioMarco(array $cuadros, $factorPrecioVenta)
     {
         $totalCuadros = 0;
+        $medidasExternas = [];
         foreach ($cuadros as $index => $cuadro) {
             $resultadoMateriales = $this->simularMaterialesCuadro($cuadro, $factorPrecioVenta);
             $totalCuadros += $resultadoMateriales['total'];
+
+            // Guardar las medidas externas asociadas al detalle (sin persistir en BD)
+            if (isset($cuadro['lado_a_ext'], $cuadro['lado_b_ext'])) {
+                $medidasExternas[$detalle->id] = [
+                    'lado_a_ext' => $cuadro['lado_a_ext'],
+                    'lado_b_ext' => $cuadro['lado_b_ext'],
+                ];
+            }            
+
         }
         return [
             'total' => $totalCuadros,
+            'medidas_externas' => $medidasExternas
         ];
     }
 
