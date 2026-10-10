@@ -152,7 +152,13 @@ class GestionMarcosController extends Controller
             $detalle = $this->crearDetalleVentaPersonalizada($venta, $cuadro);
             $resultadoMateriales = $this->procesarMaterialesCuadro($detalle, $cuadro, $factorPrecioVenta);
             $totalCuadros += $resultadoMateriales['total'];
-
+            // Guardar las medidas externas asociadas al detalle (sin persistir en BD)
+            if (isset($cuadro['lado_a_ext'], $cuadro['lado_b_ext'])) {
+                $medidasExternas[$detalle->id] = [
+                    'lado_a_ext' => $cuadro['lado_a_ext'],
+                    'lado_b_ext' => $cuadro['lado_b_ext'],
+                ];
+            }
 
         }
 
@@ -161,7 +167,7 @@ class GestionMarcosController extends Controller
 
         return [
             'total' => $totalCuadros,
-
+            'medidas_externas' => $medidasExternas,
         ];
     }
 
@@ -227,9 +233,9 @@ class GestionMarcosController extends Controller
         $necesidadesCuadros = $this->crearNecesidadCuadro($cuadro);
 
         $resultado = $this->usoVarillasCuadro->optimizarCorte($necesidadesCuadros, $varillasDisponibles, 0.0);
-        // dd removido
+
         $jsonRespuesta = $this->usoVarillasCuadro->generarJson($resultado);
-        //dd($varillasDisponibles, $necesidadesCuadros, $resultado, $jsonRespuesta);
+
         if (!$jsonRespuesta['terminado']) {
             throw new \Exception('No hay disponibilidad de esas medidas de varillas para el cuadro especificado');
         }
@@ -426,10 +432,10 @@ class GestionMarcosController extends Controller
                 }
             }
 
-            // Restar stock físico en la base de datos
+            
             StockVarilla::where('id', $retazo['id'])->decrement('stock', $retazo['cantidad']);
         }
-$totalVarillas = intval($totalVarillas);
+        $totalVarillas = intval($totalVarillas);
         return $totalVarillas;
     }
 
@@ -540,28 +546,7 @@ $totalVarillas = intval($totalVarillas);
 
 
 
-    public function simularPrecioMarco(array $cuadros, $factorPrecioVenta)
-    {
-        $totalCuadros = 0;
-        $medidasExternas = [];
-        foreach ($cuadros as $index => $cuadro) {
-            $resultadoMateriales = $this->simularMaterialesCuadro($cuadro, $factorPrecioVenta);
-            $totalCuadros += $resultadoMateriales['total'];
-
-            // Guardar las medidas externas asociadas al detalle (sin persistir en BD)
-            if (isset($cuadro['lado_a_ext'], $cuadro['lado_b_ext'])) {
-                $medidasExternas[$detalle->id] = [
-                    'lado_a_ext' => $cuadro['lado_a_ext'],
-                    'lado_b_ext' => $cuadro['lado_b_ext'],
-                ];
-            }            
-
-        }
-        return [
-            'total' => $totalCuadros,
-            'medidas_externas' => $medidasExternas
-        ];
-    }
+   
 
     private function simularMaterialesCuadro($cuadro, $factorPrecioVenta)
     {
