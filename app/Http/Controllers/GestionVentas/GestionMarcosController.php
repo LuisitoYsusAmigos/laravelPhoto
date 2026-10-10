@@ -166,7 +166,7 @@ class GestionMarcosController extends Controller
 
 
         return [
-            'total' => $totalCuadros,
+            'total'          => $totalCuadros,
             'medidas_externas' => $medidasExternas,
         ];
     }
