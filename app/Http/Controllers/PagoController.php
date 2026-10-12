@@ -147,7 +147,9 @@ class PagoController extends Controller
         $montoPagado = $venta->saldo + $venta->descuento;
         //dd($montoPago, ' esto es el monto pago y el precio total es ', $venta->precioTotal);
         // Validar que el precio total y saldo sean diferentes (venta incompleta)
+        //dd($venta);
         if ($venta->precioTotal == $montoPagado) {
+            dd("precio total: ", $venta->precioTotal, "monto pagado: ", $montoPagado);
 
             DB::update('UPDATE ventas SET recogido = 1 WHERE id = ?', [$venta->id]);
 

@@ -56,6 +56,8 @@ class GestionVentaController extends Controller
             'cuadros.*.id_materia_prima_contornos' => 'nullable|integer',
         ]);
 
+        $jsonOriginal = $request->all();
+
         $factorPrecioVenta = $request->input('factorPrecioVenta') ?? 1;
         if ($validator->fails()) {
             return response()->json([
@@ -164,6 +166,11 @@ class GestionVentaController extends Controller
             $venta = $this->cargarRelacionesVenta($venta);
 
             DB::commit();
+            
+            Log::info('Venta completa creada exitosamente', [
+                'venta_id' => $venta->id,
+                'jsonOriginal' => $jsonOriginal,
+            ]);
 
             return response()->json([
                 'message' => 'Venta completa creada exitosamente',
