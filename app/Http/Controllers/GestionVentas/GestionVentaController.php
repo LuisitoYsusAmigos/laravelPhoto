@@ -30,6 +30,7 @@ class GestionVentaController extends Controller
 
     public function crearVentaCompleta(Request $request)
     {
+        $jsonOriginal = $request->all();
         $validator = Validator::make($request->all(), [
             'pago' => 'required|numeric|min:0',
             'idCliente' => 'required|exists:clientes,id',
@@ -161,10 +162,8 @@ class GestionVentaController extends Controller
             DB::commit();
              
             Log::info('Venta completa creada exitosamente', [
-                
-                'id_venta' => $venta->id,
-                'venta' => $venta,
-                'request' => $request->all(),
+                'venta_id' => $venta->id,
+                'jsonOriginal' => $jsonOriginal,
             ]);
 
             return response()->json([
