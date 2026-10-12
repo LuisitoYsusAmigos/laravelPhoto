@@ -654,6 +654,7 @@ class GestionVentaController extends Controller
                 $totalBaseUnitario = $detalle->materialesVentaPersonalizadas->sum(function ($mat) {
                     return $mat->precio_unitario * $mat->cantidad;
                 });
+                
 
                 // Calcular la cantidad de cuadros basándose en los cortes
                 $cantidad = \Illuminate\Support\Facades\DB::table('corte_material_ventas')
@@ -668,7 +669,7 @@ class GestionVentaController extends Controller
 
                 $factor = $venta->factorPrecioVenta > 0 ? $venta->factorPrecioVenta : 1;
 
-                $precioTotal = $totalBaseUnitario * $factor;
+                $precioTotal = intval($totalBaseUnitario * $factor) ;
 
                 $detalleArray['cantidad'] = $cantidad;
                 $detalleArray['precio_unitario'] = $precioTotal / $cantidad;
