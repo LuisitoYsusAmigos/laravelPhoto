@@ -154,6 +154,14 @@ class ProductoController extends Controller
             return response()->json(['message' => 'Producto no encontrado'], 404);
         }
 
+        Log::info('DEBUG ACTUALIZAR IMAGEN', [
+            'producto_id' => $id,
+            'hasFile' => $request->hasFile('imagen'),
+            'allFiles' => array_keys($request->allFiles()),
+            'contentType' => $request->header('Content-Type'),
+            'imagenAnterior' => $producto->imagen,
+        ]);
+
         $validator = Validator::make($request->all(), [
             'codigo' => 'string|nullable',
             'descripcion' => 'required|string',
