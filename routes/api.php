@@ -221,6 +221,7 @@ Route::delete('/user/{id}', [UserController::class, 'destroy']);
 
 
 Route::get('/estadisticas/clientesNuevos', [FuncionesGeneralesController::class, 'ClientesNuevos']);
+Route::get('/fechaSistema', [FuncionesGeneralesController::class, 'fechaSistema']);
 Route::post('/ventaProductoMarco', [GestionVentaController::class, 'crearVentaCompleta']);
 Route::post('/ventaProductoMarco/SimularVenta', [GestionVentaController::class, 'SimularVenta']);
 

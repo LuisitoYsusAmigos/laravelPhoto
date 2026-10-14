@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class FuncionesGeneralesController extends Controller
 {
@@ -36,5 +37,20 @@ class FuncionesGeneralesController extends Controller
         ");
 
         return response()->json($resultado[0]);
+    }
+
+    /**
+     * Retorna la fecha y hora actual del sistema.
+     */
+    public function fechaSistema()
+    {
+        Log::info("UsoDeController " . basename(__FILE__) . ", " . __FUNCTION__);
+        $now = now();
+        return response()->json([
+            'fecha' => $now->toDateString(),
+            'hora' => $now->toTimeString(),
+            'fechaHora' => $now->toDateTimeString(),
+            'zonaHoraria' => $now->timezoneName,
+        ]);
     }
 } 

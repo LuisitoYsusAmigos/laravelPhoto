@@ -37,7 +37,6 @@ class GestionVentaController extends Controller
             'idSucursal' => 'required|exists:sucursal,id',
             'idFormaPago' => 'required|exists:forma_de_pagos,id',
             'idUsuario' => 'required|exists:users,id',
-            'factorPrecioVenta' => 'nullable|numeric|min:0',
             'fechaEntrega' => 'nullable|date',
             'descuento' => 'nullable|integer|min:0',
             'entregado' => 'nullable|boolean',
@@ -48,7 +47,7 @@ class GestionVentaController extends Controller
             
         ]);
 
-        $factorPrecioVenta = $request->input('factorPrecioVenta') ?? 1;
+        
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Faltan datos o datos inválidos',
