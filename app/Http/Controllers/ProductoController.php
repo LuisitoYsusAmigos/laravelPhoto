@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Producto;
+use App\Models\StockProducto;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
@@ -214,44 +215,45 @@ class ProductoController extends Controller
             $producto->imagen = 'storage/productos/' . $filename;
             $producto->save();
         }
-        $stock_global_Nuevo = $request->input('stock_global_actual');
-        
-        
-        //updateStockGlobal($stock_global_Nuevo);
+        $stock_global_Nuevo = (int) $request->input('stock_global_actual');
+        $totalStock = (int) StockProducto::where('id_producto', $id)->sum('stock');
 
-        
-        $stock_global_Nuevo = $request->input('stock_global_actual');
-        $totalStock = \App\Models\StockProducto::where('id_producto', $id)->sum('stock');
+        if ($stock_global_Nuevo > $totalStock) {
+            // Si el nuevo dato es mayor, se crea un nuevo stock con la información del último lote (id más alto)
+            $diferencia = $stock_global_Nuevo - $totalStock;
+            $ultimoStock = StockProducto::where('id_producto', $id)->orderBy('id', 'desc')->first();
 
-        //dd('global anterior', $totalStock, 'global nuevo' ,$stock_global_Nuevo, ($totalStock>=$stock_global_Nuevo));
-        if($totalStock>=$stock_global_Nuevo){
-            $producto->stock_global_actual = $stock_global_Nuevo;
-            $producto->save();
-            //dd('se puede');
-            // si se puede quiero que vayas descontando de los stock con este ide prodcuto desde el stock con id mas bajo al mas alto, si el stock llega a 0 lo actualizas y vas al siguiente stock asi vaciando uno por uno hasta que se complete el stock_global_Nuevo
-            
-            $stocks = \App\Models\StockProducto::where('id_producto', $id)->orderBy('id', 'asc')->get();
+            StockProducto::create([
+                'stock'       => $diferencia,
+                'precio'      => $ultimoStock ? $ultimoStock->precio : $producto->precioCompra,
+                'contable'    => $ultimoStock ? $ultimoStock->contable : true,
+                'id_producto' => $producto->id,
+            ]);
+        } elseif ($stock_global_Nuevo < $totalStock) {
+            // Si el nuevo dato es menor, se descuenta desde el stock más antiguo al más nuevo (id más bajo al más alto)
             $cantidad_a_descontar = $totalStock - $stock_global_Nuevo;
-            
+            $stocks = StockProducto::where('id_producto', $id)->orderBy('id', 'asc')->get();
 
             foreach ($stocks as $s) {
                 if ($cantidad_a_descontar <= 0) {
                     break;
                 }
-                
+
                 if ($s->stock >= $cantidad_a_descontar) {
                     $s->stock -= $cantidad_a_descontar;
                     $s->save();
-                    $cantidad_a_descontar = 0; // Ya se descontó todo
+                    $cantidad_a_descontar = 0; // Ya se cubrió la diferencia
                 } else {
                     $cantidad_a_descontar -= $s->stock;
-                    $s->stock = 0; // Se vació este lote de stock
+                    $s->stock = 0; // Se vacía este lote y se continúa al siguiente
                     $s->save();
                 }
             }
-        }else{
-            return response()->json(['message' => 'No se puede actualizar el stock, el stock ingresado es mayor al stock actual'], 400);// cambia el mensaje de erorr, se gardaron todoso los camposon excepto por stock debido a que no se pudo actualizar el stock    
         }
+        // Si $stock_global_Nuevo == $totalStock, no se modifica la tabla de stock_productos.
+
+        $producto->stock_global_actual = $stock_global_Nuevo;
+        $producto->save();
         
         Log::info("Producto actualizado " . now()->toDateTimeString() . " - precio compra: " . $producto->precioCompra . " precio venta: " . $producto->precioVenta);
         Log::info(json_encode($producto));
