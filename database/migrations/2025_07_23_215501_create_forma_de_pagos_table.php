@@ -17,13 +17,14 @@ return new class extends Migration
             $table->id();
             $table->string('nombre')->unique();
             $table->string('descripcion')->nullable();
+            $table->decimal('comision', 8, 2)->default(1.00);
             $table->boolean('activo')->default(true);
             $table->timestamps();
         });
 
 
     }
-    
+
 
     /**
      * Reverse the migrations.

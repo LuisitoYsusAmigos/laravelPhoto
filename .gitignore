@@ -16,6 +16,7 @@
 .envProdPhotoStore
 .envdesaJugueteria
 .envdesaPhotoStore
+.envProdJuguteria
 
 .phpactor.json
 .phpunit.result.cache

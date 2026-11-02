@@ -21,6 +21,7 @@ class FormaDePagoController extends Controller
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|string|max:255|unique:forma_de_pagos,nombre',
             'descripcion' => 'required|string|max:500',
+            'comision' => 'nullable|numeric|min:0',
             'activo' => 'nullable|boolean'
         ]);
 
@@ -34,6 +35,7 @@ class FormaDePagoController extends Controller
         $forma = FormaDePago::create([
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
+            'comision' => $request->comision ?? 1.00,
             'activo' => $request->activo ?? true // Default true si no se envía
         ]);
 
@@ -73,6 +75,7 @@ class FormaDePagoController extends Controller
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|string|max:255|unique:forma_de_pagos,nombre,' . $id,
             'descripcion' => 'nullable|string|max:500',
+            'comision' => 'nullable|numeric|min:0',
             'activo' => 'nullable|boolean'
         ]);
 
@@ -86,6 +89,7 @@ class FormaDePagoController extends Controller
         $forma->update([
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
+            'comision' => $request->comision ?? $forma->comision,
             'activo' => $request->activo ?? $forma->activo // Mantiene el valor actual si no se envía
         ]);
 

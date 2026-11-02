@@ -43,10 +43,23 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Crear Forma de Pago (Efectivo)
+        // Crear Formas de Pago
         FormaDePago::firstOrCreate(
             ['nombre' => 'Efectivo'],
-            ['descripcion' => 'Pago en efectivo', 'activo' => true]
+            [
+                'descripcion' => 'Pago en efectivo',
+                'comision' => 1.00,
+                'activo' => true
+            ]
+        );
+
+        FormaDePago::firstOrCreate(
+            ['nombre' => 'Tarjeta'],
+            [
+                'descripcion' => 'Pago con tarjeta',
+                'comision' => 1.40,
+                'activo' => true
+            ]
         );
 
         User::create([

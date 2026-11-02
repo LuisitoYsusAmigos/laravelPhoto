@@ -11,6 +11,12 @@ class FormaDePago extends Model
     protected $fillable = [
         'nombre',
         'descripcion',
+        'comision',
         'activo'
+    ];
+
+    protected $casts = [
+        'comision' => 'decimal:2',
+        'activo' => 'boolean',
     ];
 }
