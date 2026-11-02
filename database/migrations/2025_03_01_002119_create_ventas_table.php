@@ -23,7 +23,7 @@ class CreateVentasTable extends Migration
             //factor de precio de venta
             $table->float('factorPrecioVenta')->default(1);
 
-            $table->foreignId('idCliente')->constrained('clientes')->onDelete('cascade');
+            $table->foreignId('idCliente')->nullable()->constrained('clientes')->nullOnDelete();
             $table->foreignId('idSucursal')->constrained('sucursal')->onDelete('cascade');
             $table->foreignId('idUsuario')->constrained('users')->onDelete('cascade');
             

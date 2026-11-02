@@ -116,9 +116,15 @@
       </tr>
       <tr>
         <td>{{ \Carbon\Carbon::parse($venta['fecha'])->format('d/m/Y H:i') }}</td>
-        <td>{{ $venta['cliente']['nombre'] }} {{ $venta['cliente']['apellido'] }}</td>
-        <td>{{ $venta['cliente']['telefono'] }}</td>
-        <td>{{ $venta['sucursal']['lugar'] }}</td>
+        <td>
+          @if(!empty($venta['cliente']))
+            {{ $venta['cliente']['nombre'] ?? '' }} {{ $venta['cliente']['apellido'] ?? '' }}
+          @else
+            Cliente Genérico
+          @endif
+        </td>
+        <td>{{ $venta['cliente']['telefono'] ?? 'S/N' }}</td>
+        <td>{{ $venta['sucursal']['lugar'] ?? '' }}</td>
       </tr>
     </table>
 

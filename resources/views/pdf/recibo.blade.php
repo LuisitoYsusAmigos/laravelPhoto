@@ -97,10 +97,16 @@
       </tr>
       <tr>
         <td>{{ \Carbon\Carbon::parse($venta['fecha'])->format('Y-m-d') }}</td>
-        <td>{{ \Carbon\Carbon::parse($venta['fechaEntrega'])->format('Y-m-d') }}</td>
-        <td>{{ $venta['cliente']['nombre'] }} {{ $venta['cliente']['apellido'] }}</td>
-        <td>{{ $venta['cliente']['telefono'] }}</td>
-        <td>{{ $venta['sucursal']['lugar'] }}</td>
+        <td>{{ !empty($venta['fechaEntrega']) ? \Carbon\Carbon::parse($venta['fechaEntrega'])->format('Y-m-d') : 'Inmediata' }}</td>
+        <td>
+          @if(!empty($venta['cliente']))
+            {{ $venta['cliente']['nombre'] ?? '' }} {{ $venta['cliente']['apellido'] ?? '' }}
+          @else
+            Cliente Genérico
+          @endif
+        </td>
+        <td>{{ $venta['cliente']['telefono'] ?? 'S/N' }}</td>
+        <td>{{ $venta['sucursal']['lugar'] ?? '' }}</td>
       </tr>
     </table>
 
