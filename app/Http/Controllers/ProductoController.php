@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\DB;
+use App\Services\ImageService;
 
 class ProductoController extends Controller
 {
@@ -68,7 +69,7 @@ class ProductoController extends Controller
             'id_lugar' => 'required|exists:lugars,id',
             'categoria_id' => 'required|exists:categorias,id',
             'sub_categoria_id' => 'required|exists:sub_categorias,id',
-            'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096'
         ]);
 
         if ($validator->fails()) {
@@ -79,8 +80,6 @@ class ProductoController extends Controller
         $data['stock_global_actual'] = 0;
 
         // Crear el producto sin imagen para obtener el ID
-        
-        //dd($request);
         $producto = Producto::create($request->except('imagen'));
 
         // Verificar si se subió una imagen
@@ -98,26 +97,12 @@ class ProductoController extends Controller
                 'tipo' => $file->getMimeType()
             ]);
 
-            // Definir la ruta de almacenamiento en public/storage/productos
             $destinationPath = public_path('storage/productos');
-
-            // Asegurar que la carpeta existe
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0777, true);
-            }
-
-            // Crear el nombre de archivo con el ID del producto
-            $extension = $file->getClientOriginalExtension();
-            $filename = $producto->id . '.' . $extension;
-
-            // Mover la imagen a la carpeta deseada
-            $file->move($destinationPath, $filename);
+            $filename = ImageService::convertToWebp($file, $destinationPath, (string) $producto->id);
 
             // Guardar la ruta relativa en la base de datos
             $producto->imagen = 'storage/productos/' . $filename;
             $producto->save();
-            // Guardar la ruta relativa en la base de datos y actualizar precioVenta
-            //dd($productoNuevo);
         }
         //datos para el stock
         $stock = [
@@ -175,7 +160,7 @@ class ProductoController extends Controller
             'id_lugar' => 'required|exists:lugars,id',
             'categoria_id' => 'required|exists:categorias,id',
             'sub_categoria_id' => 'nullable|exists:sub_categorias,id',
-            'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
             'visibilidad' => 'nullable|boolean'
         ]);
        
@@ -184,16 +169,10 @@ class ProductoController extends Controller
             return response()->json($validator->errors(), 400);
         }
 
-        // Eliminar imagen anterior si existe
-        if ($producto->imagen && File::exists(public_path($producto->imagen))) {
-            File::delete(public_path($producto->imagen));
-            $producto->imagen = null;
-        }
-
         // Actualizar campos excepto imagen
         $producto->update($request->except('imagen'));
 
-        // Si viene una nueva imagen, subirla
+        // Si viene una nueva imagen, eliminar la anterior y convertir la nueva a WebP
         if ($request->hasFile('imagen')) {
             $file = $request->file('imagen');
 
@@ -201,16 +180,11 @@ class ProductoController extends Controller
                 return response()->json(['error' => 'Archivo de imagen no válido'], 400);
             }
 
+            // Eliminar imagen anterior si existe
+            ImageService::deleteImage($producto->imagen);
+
             $destinationPath = public_path('storage/productos');
-
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0777, true);
-            }
-
-            $extension = $file->getClientOriginalExtension();
-            $filename = $producto->id . '.' . $extension;
-
-            $file->move($destinationPath, $filename);
+            $filename = ImageService::convertToWebp($file, $destinationPath, (string) $producto->id);
 
             $producto->imagen = 'storage/productos/' . $filename;
             $producto->save();
@@ -274,9 +248,7 @@ class ProductoController extends Controller
         }
 
         // Eliminar la imagen si existe
-        if ($producto->imagen && File::exists(public_path($producto->imagen))) {
-            File::delete(public_path($producto->imagen));
-        }
+        ImageService::deleteImage($producto->imagen);
 
         $producto->delete();
 
