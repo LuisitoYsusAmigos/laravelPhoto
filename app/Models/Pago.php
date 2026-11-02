@@ -27,4 +27,9 @@ class Pago extends Model
     {
         return $this->belongsTo(FormaDePago::class, 'idFormaPago');
     }
+
+    public function formaDePago()
+    {
+        return $this->belongsTo(FormaDePago::class, 'idFormaPago');
+    }
 }

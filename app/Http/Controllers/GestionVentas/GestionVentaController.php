@@ -5,6 +5,7 @@ namespace App\Http\Controllers\GestionVentas;
 use App\Http\Controllers\Controller;
 use App\Models\MaterialesVentaPersonalizada;
 use App\Models\Pago;
+use App\Models\FormaDePago;
 use App\Models\Venta;
 use App\Services\DevolucionStockContornos;
 use App\Services\DevolucionStockProductos;
@@ -164,17 +165,29 @@ class GestionVentaController extends Controller
 
     private function procesarPago($venta, $saldo, $precioTotal, $idFormaPago, $entregado, $descuento, $fechaEntrega)
     {
-        if ($descuento != null) {
-            // dd("se envio descuento");
+        $formaPago = FormaDePago::find($idFormaPago);
+        $comision = $formaPago ? floatval($formaPago->comision) : 1.0;
+
+        // Subtotal * comisión (si comisión > 1)
+        if ($comision > 1) {
+            $precioConComision = (int) round($precioTotal * $comision);
+        } else {
+            $precioConComision = (int) $precioTotal;
+        }
+
+        $precioTotal = $precioConComision;
+
+        if ($descuento != null && $descuento > 0) {
             if ($descuento > $precioTotal) {
                 throw new \Exception('El descuento no puede ser mayor al precio total de la venta');
             } else {
                 $precioTotal = $precioTotal - $descuento;
-                // Actualizar el precio total en la base de datos para que refleje el descuento
-                $venta->update(['precioTotal' => $precioTotal]);
-                // dd("descuento aplicado");
             }
         }
+
+        // Actualizar el precio total en la base de datos para reflejar comisión y descuento
+        $venta->update(['precioTotal' => $precioTotal]);
+
         if ($saldo > $precioTotal) {
             $exceso = $saldo - $precioTotal;
             throw new \Exception("Hay un excedente de $exceso unidades en el saldo/pagos");
@@ -215,6 +228,7 @@ class GestionVentaController extends Controller
             'cliente',
             'sucursal',
             'detalleVentaProductos',
+            'pagos.formaPago',
         ]);
     }
 
@@ -231,6 +245,7 @@ class GestionVentaController extends Controller
                 'cliente',
                 'sucursal',
                 'detalleVentaProductos.producto',
+                'pagos.formaPago',
             ])->find($id);
 
             if (! $venta) {
@@ -239,17 +254,7 @@ class GestionVentaController extends Controller
                 ], 404);
             }
 
-            // Obtener el idFormaPago del primer pago
-            $idFormaPago = DB::table('pagos')
-                ->where('idVenta', $id)
-                ->orderBy('id', 'ASC')
-                ->value('idFormaPago');
-            if ($idFormaPago === null) {
-                $idFormaPago = 0; // o cualquier valor que indique "sin forma de pago"
-            }
-            // Formatear la respuesta y agregar id_forma_pago
             $ventaFormateada = $this->formatearRespuestaVenta($venta);
-            $ventaFormateada['id_forma_pago'] = $idFormaPago;
 
             return response()->json([
                 'message' => 'Venta obtenida exitosamente',
@@ -359,24 +364,13 @@ class GestionVentaController extends Controller
                     'cliente',
                     'sucursal',
                     'detalleVentaProductos',
+                    'pagos.formaPago',
                 ])
                 ->get();
 
             // Transformar elementos
             $ventasTransformadas = $ventas->map(function ($venta) {
-                // Obtener el idFormaPago del primer pago
-                $idFormaPago = DB::table('pagos')
-                    ->where('idVenta', $venta->id)
-                    ->orderBy('id', 'ASC')
-                    ->value('idFormaPago');
-                if ($idFormaPago === null) {
-                    $idFormaPago = 0; // o cualquier valor que indique "sin forma de pago"
-                }
-                // Armar la respuesta formateada
-                $ventaFormateada = $this->formatearRespuestaVenta($venta);
-                $ventaFormateada['id_forma_pago'] = $idFormaPago;
-
-                return $ventaFormateada;
+                return $this->formatearRespuestaVenta($venta);
             });
 
             return response()->json([
@@ -528,6 +522,29 @@ class GestionVentaController extends Controller
 
     private function formatearRespuestaVenta($venta)
     {
+        $primerPago = null;
+        if ($venta->relationLoaded('pagos')) {
+            $primerPago = $venta->pagos->sortBy('id')->first();
+        } else {
+            $primerPago = Pago::with('formaPago')->where('idVenta', $venta->id)->orderBy('id', 'ASC')->first();
+        }
+
+        $formaPago = $primerPago ? $primerPago->formaPago : null;
+        $idFormaPago = $formaPago ? $formaPago->id : 0;
+        $comision = $formaPago ? floatval($formaPago->comision) : 1.0;
+        $porcentajeComision = ($comision > 1) ? round(($comision - 1) * 100, 2) : 0;
+
+        $formaPagoData = null;
+        if ($formaPago) {
+            $formaPagoData = [
+                'id' => $formaPago->id,
+                'nombre' => $formaPago->nombre,
+                'descripcion' => !empty(trim($formaPago->descripcion ?? '')) ? $formaPago->descripcion : ' ',
+                'comision' => $comision,
+                'porcentaje_comision' => $porcentajeComision,
+            ];
+        }
+
         return [
             'id' => $venta->id,
             'saldo' => $venta->saldo,
@@ -543,6 +560,8 @@ class GestionVentaController extends Controller
             'descuento' => $venta->descuento,
             'precioTotal' => $venta->precioTotal,
             'factorPrecioVenta' => $venta->factorPrecioVenta,
+            'id_forma_pago' => $idFormaPago,
+            'forma_de_pago' => $formaPagoData,
             'created_at' => $venta->created_at,
             'updated_at' => $venta->updated_at,
             'cliente' => $venta->cliente,

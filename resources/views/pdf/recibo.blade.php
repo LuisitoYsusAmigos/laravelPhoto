@@ -169,9 +169,22 @@
 
     @php
       $subtotal = $venta['precioProducto'];
-
-
       $aCuenta = $venta['precioTotal'] - $venta['saldo'];
+
+      $formaPago = $venta['forma_de_pago'] ?? null;
+      if (!$formaPago && !empty($venta['id_forma_pago'])) {
+          $fpModel = \App\Models\FormaDePago::find($venta['id_forma_pago']);
+          if ($fpModel) {
+              $formaPago = [
+                  'comision' => floatval($fpModel->comision),
+                  'descripcion' => !empty(trim($fpModel->descripcion ?? '')) ? $fpModel->descripcion : ' ',
+              ];
+          }
+      }
+      $comision = floatval($formaPago['comision'] ?? 1);
+      $descripcionPago = !empty(trim($formaPago['descripcion'] ?? '')) ? $formaPago['descripcion'] : ' ';
+      $porcentajeComision = ($comision - 1) * 100;
+      $porcentajeComisionTexto = (floor($porcentajeComision) == $porcentajeComision) ? (int)$porcentajeComision : rtrim(rtrim(number_format($porcentajeComision, 2, '.', ''), '0'), '.');
     @endphp
 
     <table class="detalle-pago">
@@ -194,6 +207,12 @@
         <td>{{ number_format($venta['precioTotal'] / 100, 2) }}</td>
       </tr>
     </table>
+
+    @if($comision > 1)
+      <div style="margin-top: 15px; font-size: 13px; font-weight: bold; text-align: right;">
+        {{ $porcentajeComisionTexto }}% de comision por forma de pago "{{ $descripcionPago }}"
+      </div>
+    @endif
 
     <div class="footer-line"></div>
   </div>

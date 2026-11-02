@@ -61,4 +61,10 @@ class Venta extends Model
     {
         return $this->hasMany(DetalleVentaPersonalizada::class, 'id_venta');
     }
+
+    // Relación con Pagos
+    public function pagos()
+    {
+        return $this->hasMany(Pago::class, 'idVenta');
+    }
 }
