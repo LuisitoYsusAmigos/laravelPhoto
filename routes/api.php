@@ -16,6 +16,7 @@ use App\Http\Controllers\VentaController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FormaDePagoController;
 use App\Http\Controllers\GestionVentas\GestionVentaController;
+use App\Http\Controllers\CatalogoController;
 
 // Lugares
 Route::get('/lugares', [LugarController::class, 'index']);
@@ -245,3 +246,9 @@ Route::get('/verificar-host', function () {
         'version_php' => PHP_VERSION,
     ]);
 });
+
+// Catálogo de Productos
+Route::get('/catalogo/html', [CatalogoController::class, 'htmlCatalogo'])->name('catalogo.html');
+Route::get('/catalogo/pdf', [CatalogoController::class, 'getPdfCatalogo'])->name('catalogo.pdf');
+Route::get('/htmlCatalogo', [CatalogoController::class, 'htmlCatalogo']);
+Route::get('/getPdfCatalogo', [CatalogoController::class, 'getPdfCatalogo']);
