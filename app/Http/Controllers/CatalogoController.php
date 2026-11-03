@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Producto;
 use App\Models\Categoria;
 use App\Models\SubCategoria;
+use App\Models\Sucursal;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class CatalogoController extends Controller
@@ -20,9 +21,21 @@ class CatalogoController extends Controller
 
         $categoriaId = $request->input('categoria_id') ?? $request->input('categoria');
         $subCategoriaId = $request->input('sub_categoria_id') ?? $request->input('sub_categoria') ?? $request->input('subcategoria');
+        $sucursalId = $request->input('id_sucursal') ?? $request->input('sucursal_id') ?? $request->input('sucursal');
 
         $categoria = null;
         $subCategoria = null;
+        $sucursal = null;
+
+        // Si se envía sucursal
+        if (!empty($sucursalId)) {
+            $sucursal = Sucursal::find($sucursalId);
+            $query->where('id_sucursal', $sucursalId);
+        }
+
+        if (!$sucursal) {
+            $sucursal = Sucursal::first();
+        }
 
         // Si se envía categoría
         if (!empty($categoriaId)) {
@@ -42,6 +55,7 @@ class CatalogoController extends Controller
             'productos' => $productos,
             'categoria' => $categoria,
             'subCategoria' => $subCategoria,
+            'sucursal' => $sucursal,
         ];
     }
 

@@ -248,7 +248,5 @@ Route::get('/verificar-host', function () {
 });
 
 // Catálogo de Productos
-Route::get('/catalogo/html', [CatalogoController::class, 'htmlCatalogo'])->name('catalogo.html');
-Route::get('/catalogo/pdf', [CatalogoController::class, 'getPdfCatalogo'])->name('catalogo.pdf');
-Route::get('/htmlCatalogo', [CatalogoController::class, 'htmlCatalogo']);
-Route::get('/getPdfCatalogo', [CatalogoController::class, 'getPdfCatalogo']);
+Route::get('/htmlCatalogo', [CatalogoController::class, 'htmlCatalogo'])->name('catalogo.html');
+Route::get('/getPdfCatalogo', [CatalogoController::class, 'getPdfCatalogo'])->name('catalogo.pdf');

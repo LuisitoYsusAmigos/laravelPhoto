@@ -13,7 +13,7 @@
       margin: 0;
     }
 
-    body {
+    html, body {
       margin: 0;
       padding: 0;
       background: #dfe1e5;
@@ -22,55 +22,49 @@
     }
 
     .catalog-page {
-      position: relative;
       width: 210mm;
-      min-height: 285mm;
       margin: 0 auto;
-      padding: 0 0 16mm 0;
-      overflow: hidden;
+      padding: 0;
       background: #f1f2f5;
       page-break-after: always;
-      break-after: page;
     }
 
     .catalog-page:last-child {
       page-break-after: avoid;
-      break-after: avoid;
     }
 
     .catalog-header {
-      position: relative;
-      height: 52mm;
-      margin: 0 10mm 4mm;
+      height: 38mm;
+      margin: 0 10mm 2.5mm;
       background: #c7191d;
-      border-bottom-right-radius: 10mm;
+      border-bottom-right-radius: 6mm;
+      position: relative;
+      overflow: hidden;
     }
 
     .brand-block {
       position: absolute;
-      z-index: 2;
       top: 0;
-      left: -10mm;
-      width: 48mm;
-      height: 40mm;
-      padding: 6mm 4mm 4mm;
+      left: 0;
+      width: 44mm;
+      height: 32mm;
+      padding: 4mm 2mm;
       color: #ffffff;
       text-align: center;
       background: #050505;
-      clip-path: polygon(0 0, 78% 0, 100% 50%, 78% 100%, 0 100%);
+      border-bottom-right-radius: 5mm;
     }
 
     .brand-symbol {
       display: block;
       margin: 0 auto 1mm;
-      font-size: 26pt;
+      font-size: 20pt;
       line-height: 1;
       font-weight: 900;
-      transform: skew(-12deg);
     }
 
     .brand-name {
-      font-size: 8pt;
+      font-size: 7pt;
       line-height: 1.15;
       font-weight: 700;
       text-transform: uppercase;
@@ -79,89 +73,84 @@
 
     .header-title {
       position: absolute;
-      top: 12mm;
-      left: 42mm;
-      right: 8mm;
+      top: 4mm;
+      left: 48mm;
+      right: 6mm;
       color: #ffffff;
-      font-weight: 700;
-      line-height: 1;
+      line-height: 1.05;
     }
 
     .header-title .small {
       display: block;
-      font-size: 18pt;
+      font-size: 11pt;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
+      margin-bottom: 1mm;
+      font-weight: 700;
     }
 
     .header-title .large {
       display: block;
-      font-size: 26pt;
+      font-size: 19pt;
+      font-weight: 800;
       text-transform: uppercase;
-    }
-
-    .header-decoration {
-      position: absolute;
-      top: 2mm;
-      right: 4mm;
-      color: rgba(255, 255, 255, 0.4);
-      font-size: 28pt;
-      transform: rotate(-20deg);
+      letter-spacing: 0.5px;
     }
 
     .header-ribbon {
       position: absolute;
       left: 0;
-      bottom: 0;
-      width: 130mm;
-      height: 8mm;
-      padding: 1.5mm 4mm;
+      top: 32mm;
+      width: 140mm;
+      height: 6mm;
+      line-height: 6mm;
+      padding: 0 4mm;
       color: #ffffff;
       background: #050505;
-      clip-path: polygon(0 0, 100% 0, 96% 100%, 0 100%);
-      font-size: 9pt;
+      border-top-right-radius: 3mm;
+      font-size: 7.5pt;
+      font-weight: 700;
       white-space: nowrap;
       overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     .products-table {
       width: 190mm;
       margin: 0 10mm;
       border-collapse: separate;
-      border-spacing: 3.5mm;
+      border-spacing: 2.5mm;
       table-layout: fixed;
+    }
+
+    .products-table tr {
+      page-break-inside: avoid;
+      page-break-after: avoid;
     }
 
     .products-table td {
       width: 33.33%;
-      height: 57mm;
-      max-height: 57mm;
+      height: 48mm;
       vertical-align: top;
       background: #ffffff;
       padding: 0;
-      position: relative;
+      border: 1px solid #e0e2e6;
     }
 
     .product-card {
-      position: relative;
       width: 100%;
-      height: 57mm;
-      padding: 0 3mm 2mm;
+      height: 48mm;
       overflow: hidden;
       background: #ffffff;
+      position: relative;
     }
 
     .product-heading {
-      position: relative;
-      width: calc(100% + 3mm);
-      height: 7.5mm;
-      margin-left: -3mm;
-      padding: 1.2mm 3mm;
+      height: 6mm;
+      line-height: 6mm;
+      padding: 0 2.5mm;
       color: #ffffff;
       background: #050505;
-      clip-path: polygon(0 0, 100% 0, 96% 100%, 0 100%);
-      font-size: 8.5pt;
+      font-size: 7.5pt;
       font-weight: 700;
       white-space: nowrap;
       overflow: hidden;
@@ -169,94 +158,102 @@
     }
 
     .product-details {
-      position: relative;
-      z-index: 1;
-      margin-top: 1.5mm;
-      font-size: 7.5pt;
-      line-height: 1.2;
-      color: #444;
-      height: 7.5mm;
+      height: 6.5mm;
+      line-height: 3.2mm;
+      padding: 1mm 2.5mm 0;
+      font-size: 6.5pt;
+      color: #333333;
       overflow: hidden;
     }
 
     .product-image {
-      position: absolute;
-      left: 3mm;
-      right: 3mm;
-      top: 17mm;
-      bottom: 9mm;
+      height: 26mm;
+      line-height: 26mm;
       text-align: center;
       overflow: hidden;
     }
 
     .product-image img {
-      max-width: 100%;
-      max-height: 27mm;
+      max-height: 26mm;
+      max-width: 90%;
       height: auto;
       object-fit: contain;
       display: inline-block;
       vertical-align: middle;
     }
 
+    .no-image {
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 26mm;
+      font-size: 7.5pt;
+      color: #9a9a9a;
+    }
+
+    .product-price-bar {
+      height: 8.5mm;
+      line-height: 8.5mm;
+      padding-left: 2.5mm;
+      position: relative;
+    }
+
     .product-price {
-      position: absolute;
-      z-index: 2;
-      left: 3mm;
-      bottom: 1mm;
-      font-size: 16pt;
-      line-height: 1;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 13pt;
+      line-height: 8.5mm;
       font-weight: 800;
-      font-style: italic;
       color: #050505;
     }
 
     .product-price .currency {
+      font-size: 8.5pt;
+      font-weight: 600;
       margin-right: 1mm;
-      font-size: 10pt;
-      font-style: normal;
-      vertical-align: 2px;
     }
 
     .corner-accent {
       position: absolute;
       right: 0;
       bottom: 0;
-      width: 10mm;
-      height: 10mm;
-      background: #c7191d;
-      clip-path: polygon(100% 0, 100% 100%, 0 100%);
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 0 8.5mm 8.5mm;
+      border-color: transparent transparent #c7191d transparent;
     }
 
     .empty-card {
       background: #fafafa;
-      border: 1px dashed #e0e0e0;
+      border: 1px dashed #d5d8dc;
     }
 
     .catalog-footer {
-      position: absolute;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      height: 15mm;
+      width: 190mm;
+      margin: 2mm 10mm 0;
+      height: 12mm;
       background: #050505;
+      position: relative;
     }
 
     .footer-red {
       position: absolute;
       left: 0;
+      top: 0;
       bottom: 0;
-      width: 145mm;
-      height: 15mm;
-      padding-left: 10mm;
-      color: #ffffff;
+      width: 165mm;
       background: #c7191d;
-      border-top-right-radius: 10mm;
-      font-size: 9.5pt;
-      line-height: 15mm;
+      border-top-right-radius: 6mm;
+      padding: 0 6mm;
+      color: #ffffff;
+      font-size: 7.5pt;
+      line-height: 12mm;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .footer-globe {
-      font-size: 13pt;
+      font-size: 11pt;
       margin-right: 2mm;
       vertical-align: middle;
     }
@@ -272,18 +269,13 @@
     }
   </style>
 </head>
-<body>
-
-  @php
+<body>@php
     $chunks = $productos->chunk(9);
-  @endphp
-
-  @if($chunks->isEmpty())
-    <main class="catalog-page">
+  @endphp@if($chunks->isEmpty())<main class="catalog-page">
       <header class="catalog-header">
         <div class="brand-block">
-          <span class="brand-symbol">P</span>
-          <div class="brand-name">Photostore<br>Tarija</div>
+          <span class="brand-symbol">{{ mb_strtoupper(mb_substr($sucursal->nombre_sucursal ?? 'S', 0, 1)) }}</span>
+          <div class="brand-name">{{ $sucursal->nombre_sucursal ?? 'Catálogo' }}</div>
         </div>
         <div class="header-title">
           <span class="small">Catálogo de</span>
@@ -293,121 +285,130 @@
           No se encontraron productos disponibles
         </div>
       </header>
-      <div style="text-align: center; margin-top: 50mm; font-size: 14pt; color: #777;">
+      <div style="text-align: center; margin-top: 40mm; font-size: 13pt; color: #777;">
         No hay productos visibles para los filtros seleccionados.
       </div>
       <footer class="catalog-footer">
         <div class="footer-red">
           <span class="footer-globe">&#9678;</span>
-          <span>Photostore - Catálogo de productos</span>
+          <span>
+            {{ $sucursal->nombre_sucursal ?? '' }}
+            @if(!empty($sucursal->direccion)) + {{ $sucursal->direccion }} @endif
+            @if(!empty($sucursal->contactos)) + cel : {{ $sucursal->contactos }} @endif
+            &bull; Catálogo Digital
+          </span>
         </div>
       </footer>
     </main>
   @else
     @foreach($chunks as $chunkIndex => $chunk)
       <main class="catalog-page">
-        <header class="catalog-header">
-          <div class="brand-block">
-            <span class="brand-symbol">P</span>
-            <div class="brand-name">Photostore<br>Tarija</div>
-          </div>
+      <header class="catalog-header">
+        <div class="brand-block">
+          <span class="brand-symbol">{{ mb_strtoupper(mb_substr($sucursal->nombre_sucursal ?? 'S', 0, 1)) }}</span>
+          <div class="brand-name">{{ $sucursal->nombre_sucursal ?? 'Catálogo' }}</div>
+        </div>
 
-          <div class="header-title">
-            <span class="small">
-              @if(!empty($categoria))
-                {{ $categoria->nombre }}
-              @else
-                Catálogo de
-              @endif
-            </span>
-            <span class="large">
-              @if(!empty($subCategoria))
-                {{ $subCategoria->nombre }}
-              @else
-                Productos
-              @endif
-            </span>
-          </div>
-
-          <div class="header-decoration" aria-hidden="true">&#10022;</div>
-
-          <div class="header-ribbon">
-            @if(!empty($subCategoria))
-              Subcategoría: {{ $subCategoria->nombre }}
-            @elseif(!empty($categoria))
-              Categoría: {{ $categoria->nombre }}
+        <div class="header-title">
+          <span class="small">
+            @if(!empty($categoria))
+              {{ $categoria->nombre }}
             @else
-              Productos disponibles en nuestra tienda
+              Catálogo de
             @endif
-            &bull; Pág. {{ $chunkIndex + 1 }} / {{ $chunks->count() }}
-          </div>
-        </header>
+          </span>
+          <span class="large">
+            @if(!empty($subCategoria))
+              {{ $subCategoria->nombre }}
+            @else
+              Productos
+            @endif
+          </span>
+        </div>
 
-        @php
-          $rows = $chunk->chunk(3);
-        @endphp
+        <div class="header-ribbon">
+          @if(!empty($subCategoria))
+            Subcategoría: {{ $subCategoria->nombre }}
+          @elseif(!empty($categoria))
+            Categoría: {{ $categoria->nombre }}
+          @else
+            Productos disponibles en nuestra tienda
+          @endif
+          &bull; Pág. {{ $chunkIndex + 1 }} / {{ $chunks->count() }}
+        </div>
+      </header>
 
-        <table class="products-table" aria-label="Productos del catálogo">
-          @foreach($rows as $row)
-            <tr>
-              @foreach($row as $producto)
-                @php
-                  $imgPath = null;
-                  if (!empty($producto->imagen)) {
-                      $localPath = public_path($producto->imagen);
-                      if (file_exists($localPath)) {
-                          $imgPath = !empty($esPdf) ? $localPath : asset($producto->imagen);
-                      }
-                  }
-                  $titulo = !empty($producto->codigo) ? $producto->codigo : 'ART-' . str_pad($producto->id, 3, '0', STR_PAD_LEFT);
-                @endphp
-                <td>
-                  <article class="product-card">
-                    <div class="product-heading" title="{{ $titulo }}">{{ $titulo }}</div>
-                    <div class="product-details" title="{{ $producto->descripcion }}">{{ $producto->descripcion }}</div>
-                    <div class="product-image">
-                      @if($imgPath)
-                        <img src="{{ $imgPath }}" alt="{{ $producto->descripcion }}">
-                      @else
-                        <span style="color: #9a9a9a; font-size: 8pt; line-height: 25mm;">Sin imagen</span>
-                      @endif
-                    </div>
+      @php
+        $rows = $chunk->chunk(3);
+      @endphp
+
+      <table class="products-table" aria-label="Productos del catálogo">
+        @foreach($rows as $row)
+          <tr>
+            @foreach($row as $producto)
+              @php
+                $imgPath = null;
+                if (!empty($producto->imagen)) {
+                    $localPath = public_path($producto->imagen);
+                    if (file_exists($localPath)) {
+                        $imgPath = !empty($esPdf) ? $localPath : asset($producto->imagen);
+                    }
+                }
+                $titulo = !empty($producto->codigo) ? $producto->codigo : 'ART-' . str_pad($producto->id, 3, '0', STR_PAD_LEFT);
+              @endphp
+              <td>
+                <article class="product-card">
+                  <div class="product-heading" title="{{ $titulo }}">{{ $titulo }}</div>
+                  <div class="product-details" title="{{ $producto->descripcion }}">{{ $producto->descripcion }}</div>
+                  <div class="product-image">
+                    @if($imgPath)
+                      <img src="{{ $imgPath }}" alt="{{ $producto->descripcion }}">
+                    @else
+                      <span class="no-image">Sin imagen</span>
+                    @endif
+                  </div>
+                  <div class="product-price-bar">
                     <div class="product-price">
                       <span class="currency">Bs.</span>{{ number_format($producto->precioVenta / 100, 2) }}
                     </div>
                     <div class="corner-accent"></div>
-                  </article>
-                </td>
-              @endforeach
+                  </div>
+                </article>
+              </td>
+            @endforeach
 
-              {{-- Rellenar celdas vacías si la última fila tiene menos de 3 productos --}}
-              @for($i = $row->count(); $i < 3; $i++)
-                <td>
-                  <article class="product-card empty-card"></article>
-                </td>
-              @endfor
-            </tr>
-          @endforeach
+            {{-- Rellenar celdas vacías si la última fila tiene menos de 3 productos --}}
+            @for($i = $row->count(); $i < 3; $i++)
+              <td>
+                <article class="product-card empty-card"></article>
+              </td>
+            @endfor
+          </tr>
+        @endforeach
 
-          {{-- Rellenar filas vacías si la página tiene menos de 3 filas --}}
-          @for($r = $rows->count(); $r < 3; $r++)
-            <tr>
-              <td><article class="product-card empty-card"></article></td>
-              <td><article class="product-card empty-card"></article></td>
-              <td><article class="product-card empty-card"></article></td>
-            </tr>
-          @endfor
-        </table>
+        {{-- Rellenar filas vacías si la página tiene menos de 3 filas --}}
+        @for($r = $rows->count(); $r < 3; $r++)
+          <tr>
+            <td><article class="product-card empty-card"></article></td>
+            <td><article class="product-card empty-card"></article></td>
+            <td><article class="product-card empty-card"></article></td>
+          </tr>
+        @endfor
+      </table>
 
-        <footer class="catalog-footer">
-          <div class="footer-red">
-            <span class="footer-globe">&#9678;</span>
-            <span>Photostore Tarija &bull; Catálogo Digital</span>
-          </div>
-        </footer>
-      </main>
+      <footer class="catalog-footer">
+        <div class="footer-red">
+          <span class="footer-globe">&#9678;</span>
+          <span>
+            {{ $sucursal->nombre_sucursal ?? '' }}
+            @if(!empty($sucursal->direccion)) + {{ $sucursal->direccion }} @endif
+            @if(!empty($sucursal->contactos)) + cel : {{ $sucursal->contactos }} @endif
+            &bull; Catálogo Digital
+          </span>
+        </div>
+      </footer>
+    </main>
     @endforeach
   @endif
-
 </body>
 </html>
