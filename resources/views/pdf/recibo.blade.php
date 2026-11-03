@@ -146,17 +146,17 @@
             <td>Marco personalizado</td>
             <td>{{ $personalizado['lado_a'] / 10 }} x {{ $personalizado['lado_b'] / 10 }} Cm</td>
             <td>
-              @if($personalizado['materia_prima_varilla'])
-                Varilla: {{ $personalizado['materia_prima_varilla']['descripcion'] }}<br>
+              @if(!empty($personalizado['materia_prima_varilla']))
+                Varilla{{ !empty($personalizado['materia_prima_varilla']['codigo']) ? ' (' . $personalizado['materia_prima_varilla']['codigo'] . ')' : '' }}: {{ $personalizado['materia_prima_varilla']['descripcion'] }}<br>
               @endif
-              @if($personalizado['materia_prima_trupan'])
-                Trupan: {{ $personalizado['materia_prima_trupan']['descripcion'] }}<br>
+              @if(!empty($personalizado['materia_prima_trupan']))
+                Trupan{{ !empty($personalizado['materia_prima_trupan']['codigo']) ? ' (' . $personalizado['materia_prima_trupan']['codigo'] . ')' : '' }}: {{ $personalizado['materia_prima_trupan']['descripcion'] }}<br>
               @endif
-              @if($personalizado['materia_prima_vidrio'])
-                Vidrio: {{ $personalizado['materia_prima_vidrio']['descripcion'] }}<br>
+              @if(!empty($personalizado['materia_prima_vidrio']))
+                Vidrio{{ !empty($personalizado['materia_prima_vidrio']['codigo']) ? ' (' . $personalizado['materia_prima_vidrio']['codigo'] . ')' : '' }}: {{ $personalizado['materia_prima_vidrio']['descripcion'] }}<br>
               @endif
-              @if(isset($personalizado['materia_prima_contorno']))
-                Contorno: {{ $personalizado['materia_prima_contorno']['descripcion'] }}
+              @if(!empty($personalizado['materia_prima_contorno']))
+                Contorno{{ !empty($personalizado['materia_prima_contorno']['codigo']) ? ' (' . $personalizado['materia_prima_contorno']['codigo'] . ')' : '' }}: {{ $personalizado['materia_prima_contorno']['descripcion'] }}
               @endif
             </td>
             <td>{{ $personalizado['cantidad'] ?? 1 }}</td>
