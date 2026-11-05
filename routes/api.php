@@ -329,3 +329,18 @@ Route::get('/ventaProductoMarco', [GestionVentaController::class, 'obtenerVentas
 
 Route::delete('/ventaProductoMarco/{id}', [GestionVentaController::class, 'eliminarVenta']);
 Route::get('/ventaProductoMarco/{id}/verificar-eliminacion', [GestionVentaController::class, 'verificarEliminacionVenta']);
+
+Route::get('/verificar-host', function () {
+    $gd = extension_loaded('gd');
+    $info = $gd ? gd_info() : [];
+    $pdoMysql = extension_loaded('pdo_mysql');
+    $pdoDrivers = class_exists(\PDO::class) ? \PDO::getAvailableDrivers() : [];
+
+    return response()->json([
+        'version_php' => PHP_VERSION,
+        'pdo_mysql_habilitado' => $pdoMysql,
+        'pdo_drivers_disponibles' => $pdoDrivers,
+        'gd_habilitado' => $gd,
+        'soporte_webp' => $info['WebP Support'] ?? false,
+    ]);
+});
