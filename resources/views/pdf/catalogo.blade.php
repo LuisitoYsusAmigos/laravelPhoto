@@ -1,3 +1,16 @@
+@php
+  $colorPrimario = $colorPrimario ?? '#c7191d';
+  $colorSecundario = $colorSecundario ?? '#050505';
+  $sizeImage = isset($sizeImage) && $sizeImage > 0 ? (float)$sizeImage : 1.0;
+  $mostrarNombreCategorias = $mostrarNombreCategorias ?? false;
+
+  // Medidas de la imagen y tarjeta
+  $imgHeightMm = round(26 * $sizeImage, 2);
+  if ($imgHeightMm > 32) {
+      $imgHeightMm = 32;
+  }
+  $detailsHeightMm = max(2.0, round(47 - 6 - 8.5 - $imgHeightMm, 2));
+@endphp
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -17,7 +30,7 @@
       margin: 0;
       padding: 0;
       background: #dfe1e5;
-      color: #050505;
+      color: {{ $colorSecundario }};
       font-family: Arial, Helvetica, sans-serif;
     }
 
@@ -36,7 +49,7 @@
     .catalog-header {
       height: 38mm;
       margin: 0 10mm 2.5mm;
-      background: #c7191d;
+      background: {{ $colorPrimario }};
       border-bottom-right-radius: 6mm;
       position: relative;
       overflow: hidden;
@@ -51,7 +64,7 @@
       padding: 4mm 2mm;
       color: #ffffff;
       text-align: center;
-      background: #050505;
+      background: {{ $colorSecundario }};
       border-bottom-right-radius: 5mm;
     }
 
@@ -106,7 +119,7 @@
       line-height: 6mm;
       padding: 0 4mm;
       color: #ffffff;
-      background: #050505;
+      background: {{ $colorSecundario }};
       border-top-right-radius: 3mm;
       font-size: 7.5pt;
       font-weight: 700;
@@ -149,7 +162,7 @@
       line-height: 6mm;
       padding: 0 2.5mm;
       color: #ffffff;
-      background: #050505;
+      background: {{ $colorSecundario }};
       font-size: 7.5pt;
       font-weight: 700;
       white-space: nowrap;
@@ -158,7 +171,7 @@
     }
 
     .product-details {
-      height: 6.5mm;
+      height: {{ $detailsHeightMm }}mm;
       line-height: 3.2mm;
       padding: 1mm 2.5mm 0;
       font-size: 6.5pt;
@@ -167,15 +180,15 @@
     }
 
     .product-image {
-      height: 26mm;
-      line-height: 26mm;
+      height: {{ $imgHeightMm }}mm;
+      line-height: {{ $imgHeightMm }}mm;
       text-align: center;
       overflow: hidden;
     }
 
     .product-image img {
-      max-height: 26mm;
-      max-width: 90%;
+      max-height: {{ $imgHeightMm }}mm;
+      max-width: {{ min(98, round(90 * $sizeImage, 1)) }}%;
       height: auto;
       object-fit: contain;
       display: inline-block;
@@ -185,7 +198,7 @@
     .no-image {
       display: inline-block;
       vertical-align: middle;
-      line-height: 26mm;
+      line-height: {{ $imgHeightMm }}mm;
       font-size: 7.5pt;
       color: #9a9a9a;
     }
@@ -202,7 +215,7 @@
       font-size: 13pt;
       line-height: 8.5mm;
       font-weight: 800;
-      color: #050505;
+      color: {{ $colorSecundario }};
     }
 
     .product-price .currency {
@@ -219,7 +232,7 @@
       height: 0;
       border-style: solid;
       border-width: 0 0 8.5mm 8.5mm;
-      border-color: transparent transparent #c7191d transparent;
+      border-color: transparent transparent {{ $colorPrimario }} transparent;
     }
 
     .empty-card {
@@ -231,7 +244,7 @@
       width: 190mm;
       margin: 2mm 10mm 0;
       height: 12mm;
-      background: #050505;
+      background: {{ $colorSecundario }};
       position: relative;
     }
 
@@ -241,7 +254,7 @@
       top: 0;
       bottom: 0;
       width: 165mm;
-      background: #c7191d;
+      background: {{ $colorPrimario }};
       border-top-right-radius: 6mm;
       padding: 0 6mm;
       color: #ffffff;
@@ -278,8 +291,24 @@
           <div class="brand-name">{{ $sucursal->nombre_sucursal ?? 'Catálogo' }}</div>
         </div>
         <div class="header-title">
-          <span class="small">Catálogo de</span>
-          <span class="large">Productos</span>
+          <span class="small">
+            @if(!empty($mostrarNombreCategorias) && !empty($categoriaTexto))
+              {{ $categoriaTexto }}
+            @elseif(!empty($categoria))
+              {{ $categoria->nombre }}
+            @else
+              Catálogo de
+            @endif
+          </span>
+          <span class="large">
+            @if(!empty($mostrarNombreCategorias) && !empty($subCategoriaTexto))
+              {{ $subCategoriaTexto }}
+            @elseif(!empty($subCategoria))
+              {{ $subCategoria->nombre }}
+            @else
+              Productos
+            @endif
+          </span>
         </div>
         <div class="header-ribbon">
           No se encontraron productos disponibles
@@ -311,14 +340,18 @@
 
         <div class="header-title">
           <span class="small">
-            @if(!empty($categoria))
+            @if(!empty($mostrarNombreCategorias) && !empty($categoriaTexto))
+              {{ $categoriaTexto }}
+            @elseif(!empty($categoria))
               {{ $categoria->nombre }}
             @else
               Catálogo de
             @endif
           </span>
           <span class="large">
-            @if(!empty($subCategoria))
+            @if(!empty($mostrarNombreCategorias) && !empty($subCategoriaTexto))
+              {{ $subCategoriaTexto }}
+            @elseif(!empty($subCategoria))
               {{ $subCategoria->nombre }}
             @else
               Productos
@@ -327,12 +360,22 @@
         </div>
 
         <div class="header-ribbon">
-          @if(!empty($subCategoria))
-            Subcategoría: {{ $subCategoria->nombre }}
-          @elseif(!empty($categoria))
-            Categoría: {{ $categoria->nombre }}
+          @if(!empty($mostrarNombreCategorias))
+            @if(!empty($subCategoriaTexto) && $subCategoriaTexto !== 'Todas las subcategorías')
+              Subcategorías: {{ $subCategoriaTexto }}
+            @elseif(!empty($categoriaTexto) && $categoriaTexto !== 'Todas las categorías')
+              Categorías: {{ $categoriaTexto }}
+            @else
+              Productos disponibles en nuestra tienda
+            @endif
           @else
-            Productos disponibles en nuestra tienda
+            @if(!empty($subCategoria))
+              Subcategoría: {{ $subCategoria->nombre }}
+            @elseif(!empty($categoria))
+              Categoría: {{ $categoria->nombre }}
+            @else
+              Productos disponibles en nuestra tienda
+            @endif
           @endif
           &bull; Pág. {{ $chunkIndex + 1 }} / {{ $chunks->count() }}
         </div>

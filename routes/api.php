@@ -251,6 +251,77 @@ Route::get('/verificar-host', function () {
     ]);
 });
 
-// Catálogo de Productos
+// Catálogo de Productos (v1)
 Route::get('/htmlCatalogo', [CatalogoController::class, 'htmlCatalogo'])->name('catalogo.html');
 Route::get('/getPdfCatalogo', [CatalogoController::class, 'getPdfCatalogo'])->name('catalogo.pdf');
+
+// Catálogo de Productos (v2)
+Route::post('/v2/htmlCatalogo', [CatalogoController::class, 'htmlCatalogoV2'])->name('catalogo.v2.html');
+Route::post('/v2/getPdfCatalogo', [CatalogoController::class, 'getPdfCatalogoV2'])->name('catalogo.v2.pdf');
+
+/*
+|--------------------------------------------------------------------------
+| Ejemplo de JSON para probar POST /api/v2/htmlCatalogo y /api/v2/getPdfCatalogo
+|--------------------------------------------------------------------------
+|
+| Con valores estándar actuales (mismo tamaño base "sizeImage": 1 y colores rojo "#c7191d" y negro "#050505"):
+|
+| {
+|   "catalogo": {
+|     "sucursal_id": 1,
+|     "categoria_ids": [1, 2],
+|     "subcategoria_ids": [1, 2]
+|   },
+|   "formato_catalogo": {
+|     "color_primario": "#c7191d",
+|     "color_secundario": "#050505",
+|     "sizeImage": 1,
+|     "mostrar_nombre_categorias": false
+|   }
+| }
+|
+| Notas de uso:
+| - "categoria_ids" y "subcategoria_ids" son obligatorios.
+| - Para incluir todas las categorías o todas las subcategorías sin filtrar, se puede enviar "*" o ["*"]:
+|   Ejemplo: "categoria_ids": "*", "subcategoria_ids": "*"
+| - "color_primario": color hexadecimal predominante (actual en el blade: #c7191d).
+| - "color_secundario": color hexadecimal secundario (actual en el blade: #050505).
+| - "sizeImage": tamaño relativo de la imagen (1 = tamaño actual; valores > 1 aumentan el espacio de la imagen dentro de la tarjeta de 48mm).
+| - "mostrar_nombre_categorias": booleano opcional (por defecto false). Si es true muestra el label "Categorías: Nombre 1, Nombre 2..."; si es false muestra el título general "CATÁLOGO DE PRODUCTOS".
+*/
+
+
+// Catálogo de Productos (v2)
+Route::post('/v2/htmlCatalogo', [CatalogoController::class, 'htmlCatalogoV2'])->name('catalogo.v2.html');
+Route::post('/v2/getPdfCatalogo', [CatalogoController::class, 'getPdfCatalogoV2'])->name('catalogo.v2.pdf');
+
+/*
+|--------------------------------------------------------------------------
+| Ejemplo de JSON para probar POST /api/v2/htmlCatalogo y /api/v2/getPdfCatalogo
+|--------------------------------------------------------------------------
+|
+| Con valores estándar actuales (mismo tamaño base "sizeImage": 1 y colores rojo "#c7191d" y negro "#050505"):
+|
+| {
+|   "catalogo": {
+|     "sucursal_id": 1,
+|     "categoria_ids": [1, 2],
+|     "subcategoria_ids": [1, 2]
+|   },
+|   "formato_catalogo": {
+|     "color_primario": "#c7191d",
+|     "color_secundario": "#050505",
+|     "sizeImage": 1,
+|     "mostrar_nombre_categorias": false
+|   }
+| }
+|
+| Notas de uso:
+| - "categoria_ids" y "subcategoria_ids" son obligatorios.
+| - Para incluir todas las categorías o todas las subcategorías sin filtrar, se puede enviar "*" o ["*"]:
+|   Ejemplo: "categoria_ids": "*", "subcategoria_ids": "*"
+| - "color_primario": color hexadecimal predominante (actual en el blade: #c7191d).
+| - "color_secundario": color hexadecimal secundario (actual en el blade: #050505).
+| - "sizeImage": tamaño relativo de la imagen (1 = tamaño actual; valores > 1 aumentan el espacio de la imagen dentro de la tarjeta de 48mm).
+| - "mostrar_nombre_categorias": booleano opcional (por defecto false). Si es true muestra el label "Categorías: Nombre 1, Nombre 2..."; si es false muestra el título general "CATÁLOGO DE PRODUCTOS".
+*/
